@@ -1,4 +1,5 @@
 from pydantic import BaseModel
+from datetime import datetime
 
 class EventCreate(BaseModel):
     title: str
@@ -9,39 +10,43 @@ class EventCreate(BaseModel):
     price: int = 0
     category: str | None = None
 
+
 class EventResponse(BaseModel):
     id: int
     title: str
     location: str
     total_seats: int
     available_seats: int
-    escription: str | None = None
+    description: str | None = None   # FIXED typo
     date_time: str | None = None
     price: int
     category: str | None = None
 
     class Config:
-        from_attributes = True  # for SQLAlchemy -> Pydantic (v2)
+        from_attributes = True
+
 
 class BookingCreate(BaseModel):
-    user_name: str
-    event_id: int
+    event_id: int        # FIXED: removed user_name
     tickets: int
+
 
 class BookingResponse(BaseModel):
     id: int
     user_name: str
     event_id: int
     tickets: int
-    booking_time: str | None = None
+    booking_time: datetime | None = None  # FIXED type
 
     class Config:
         from_attributes = True
+
 
 class UserCreate(BaseModel):
     username: str
     password: str
     role: str = "user"
+
 
 class UserResponse(BaseModel):
     id: int
