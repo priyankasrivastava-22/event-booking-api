@@ -1,4 +1,4 @@
-from fastapi import FastAPI, Depends, HTTPException
+"""from fastapi import FastAPI, Depends, HTTPException
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 from sqlalchemy.orm import Session
 from passlib.context import CryptContext
@@ -7,6 +7,12 @@ from datetime import datetime, timedelta
 from dotenv import load_dotenv
 from fastapi import Query
 import os
+
+# TOKEN BLACKLIST
+blacklisted_tokens = set()
+
+# PASSWORD RESET STORAGE
+password_reset_tokens = {}
 
 import models
 import schemas
@@ -65,25 +71,21 @@ def log_action(db, user, action):
     db.commit()
 
 # Get current user from token
-def get_current_user(
-    credentials: HTTPAuthorizationCredentials = Depends(security),
-    db: Session = Depends(get_db)
-):
-    try:
-        token = credentials.credentials
-        payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
+def get_current_user(credentials: HTTPAuthorizationCredentials = Depends(security), db: Session = Depends(get_db)):
+    token = credentials.credentials
 
+    # check blacklist
+    blacklisted = db.query(models.BlacklistedToken).filter(models.BlacklistedToken.token == token).first()
+    if blacklisted:
+        raise HTTPException(status_code=401, detail="Token expired or logged out")
+
+    try:
+        payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
         username = payload.get("sub")
         role = payload.get("role")
 
         if not username:
             raise HTTPException(status_code=401, detail="Invalid token")
-
-        # Check if user exists and is active
-        db_user = db.query(models.User).filter(models.User.username == username).first()
-
-        if not db_user or not db_user.is_active:
-            raise HTTPException(status_code=403, detail="User is blocked")
 
         return {"username": username, "role": role}
 
@@ -104,6 +106,8 @@ def register(user: schemas.UserCreate, db: Session = Depends(get_db)):
         raise HTTPException(status_code=400, detail="Username already exists")
 
     hashed_password = hash_password(user.password)
+
+    role = getattr(user, "role", "user")
 
     new_user = models.User(
         username=user.username,
@@ -127,6 +131,9 @@ def login(user: schemas.UserCreate, db: Session = Depends(get_db)):
 
     if not verify_password(user.password, db_user.password):
         raise HTTPException(status_code=400, detail="Wrong password")
+
+    if not db_user.is_active:
+        raise HTTPException(status_code=403, detail="User is blocked")
 
     token = create_token({
         "sub": db_user.username,
@@ -627,3 +634,118 @@ def send_notification(
     db.commit()
 
     return {"message": "Notification sent"}
+
+
+@app.post("/password-reset/request")
+def request_reset(username: str, db: Session = Depends(get_db)):
+
+    user = db.query(models.User).filter(models.User.username == username).first()
+
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found")
+
+    def create_token(data: dict, expires_delta: timedelta | None = None):
+        to_encode = data.copy()
+
+        if expires_delta:
+            expire = datetime.utcnow() + expires_delta
+        else:
+            expire = datetime.utcnow() + timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
+
+        to_encode.update({"exp": expire})
+        return jwt.encode(to_encode, SECRET_KEY, algorithm=ALGORITHM)
+
+    reset_entry = models.PasswordReset(
+        username=username,
+        token=create_token(),
+        expires_at=datetime.utcnow() + timedelta(minutes=10)
+    )
+
+    db.add(reset_entry)
+    db.commit()
+
+    return {"reset_token": create_token()}
+
+
+@app.post("/password-reset/confirm")
+def reset_password(token: str, new_password: str, db: Session = Depends(get_db)):
+
+    record = db.query(models.PasswordReset).filter(models.PasswordReset.token == token).first()
+
+    if not record:
+        raise HTTPException(status_code=400, detail="Invalid token")
+
+    if record.expires_at < datetime.utcnow():
+        raise HTTPException(status_code=400, detail="Token expired")
+
+    user = db.query(models.User).filter(models.User.username == record.username).first()
+
+    user.password = hash_password(new_password)
+
+    db.delete(record)
+    db.commit()
+
+    return {"message": "Password updated"}
+
+@app.post("/logout")
+def logout(
+    credentials: HTTPAuthorizationCredentials = Depends(security),
+    db: Session = Depends(get_db)
+):
+    token = credentials.credentials
+
+    blacklisted = models.BlacklistedToken(token=token)
+    db.add(blacklisted)
+    db.commit()
+
+    return {"message": "Logged out successfully"}
+
+
+@app.post("/verify/request")
+def send_verification(username: str, db: Session = Depends(get_db)):
+
+    token = create_token({"sub": username})
+
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found")
+
+    db.add(models.EmailVerification(username=username, token=token))
+    db.commit()
+
+    return {"verification_token": token}
+
+
+@app.post("/verify/confirm")
+def verify_account(token: str, db: Session = Depends(get_db)):
+
+    data = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
+    username = data.get("sub")
+
+    user = db.query(models.User).filter(models.User.username == username).first()
+
+    user.is_verified = True
+    db.commit()
+
+    return {"message": "Account verified"}"""
+
+
+from dotenv import load_dotenv
+load_dotenv()
+from fastapi import FastAPI
+from database import engine
+import models
+
+from routers import auth, events, bookings, admin, analytics, engagement, profile, payment
+
+app = FastAPI()
+
+models.Base.metadata.create_all(bind=engine)
+
+app.include_router(auth.router)
+app.include_router(events.router)
+app.include_router(bookings.router)
+app.include_router(admin.router)
+app.include_router(analytics.router)
+app.include_router(engagement.router)
+app.include_router(profile.router)
+app.include_router(payment.router)

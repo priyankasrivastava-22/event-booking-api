@@ -1,5 +1,6 @@
 from pydantic import BaseModel
 from datetime import datetime
+from typing import Optional
 
 class EventCreate(BaseModel):
     title: str
@@ -56,3 +57,59 @@ class UserResponse(BaseModel):
 
     class Config:
         from_attributes = True
+
+
+class CategoryBase(BaseModel):
+    name: str
+
+
+class CategoryResponse(BaseModel):
+    id: int
+    name: str
+
+    class Config:
+        from_attributes = True
+
+
+class NotificationBase(BaseModel):
+    message: str
+
+
+class NotificationResponse(BaseModel):
+    id: int
+    message: str
+
+    class Config:
+        from_attributes = True
+
+class UserProfile(BaseModel):
+    full_name: str | None = None
+    bio: str | None = None
+    email: str | None = None
+    profile_image: str | None = None
+
+
+class UserProfileUpdate(BaseModel):
+    full_name: str | None = None
+    bio: str | None = None
+    email: str | None = None
+
+
+class PaymentCreate(BaseModel):
+    booking_id: int
+    method: str = "mock"
+
+class PaymentResponse(BaseModel):
+    id: int
+    booking_id: int
+    user_name: str
+    amount: int
+    status: str
+    transaction_id: str
+
+    class Config:
+        from_attributes = True
+
+class ProfileUpdate(BaseModel):
+    full_name: Optional[str] = None
+    bio: Optional[str] = None
