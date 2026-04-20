@@ -9,6 +9,7 @@ class EventCreate(BaseModel):
     description: str | None = None
     date_time: str | None = None
     price: int = 0
+    category_id: Optional[int] = None
     category: str | None = None
 
 
@@ -18,7 +19,7 @@ class EventResponse(BaseModel):
     location: str
     total_seats: int
     available_seats: int
-    description: str | None = None   # FIXED typo
+    description: str | None = None
     date_time: str | None = None
     price: int
     category: str | None = None
@@ -28,7 +29,7 @@ class EventResponse(BaseModel):
 
 
 class BookingCreate(BaseModel):
-    event_id: int        # FIXED: removed user_name
+    event_id: int
     tickets: int
 
 
@@ -69,6 +70,14 @@ class CategoryResponse(BaseModel):
 
     class Config:
         from_attributes = True
+
+class CategoryCreate(BaseModel):
+    name: str
+
+
+class NotificationCreate(BaseModel):
+    message: str
+    user_name: Optional[str] = None
 
 
 class NotificationBase(BaseModel):

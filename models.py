@@ -1,7 +1,7 @@
 from sqlalchemy import Column, Integer, String, ForeignKey, Boolean, DateTime
 from database import Base
 from sqlalchemy.orm import relationship
-from datetime import datetime
+from datetime import datetime, timezone
 
 # ---------------- EVENT ----------------
 class Event(Base):
@@ -15,10 +15,12 @@ class Event(Base):
     date_time = Column(String, nullable=True)
     price = Column(Integer, default=0)
     category = Column(String, nullable=True)
+    category_id = Column(Integer, ForeignKey("categories.id"), nullable=True)
 
     total_seats = Column(Integer)
     available_seats = Column(Integer)
 
+    category_rel = relationship("Category", back_populates="events")
 
 # ---------------- BOOKING ----------------
 class Booking(Base):
@@ -29,7 +31,7 @@ class Booking(Base):
     event_id = Column(Integer, ForeignKey("events.id"))
     tickets = Column(Integer)
 
-    booking_time = Column(DateTime, default=datetime.utcnow)
+    booking_time = Column(DateTime, default=lambda: datetime.now(timezone.utc))
     payment_status = Column(String, default="pending")
 
     event = relationship("Event")
@@ -51,8 +53,8 @@ class User(Base):
     bio = Column(String, nullable=True)
 
     email = Column(String, unique=True, nullable=True)
-    profile_image = Column(String, nullable=True)
 
+    is_verified = Column(Boolean, default=False)
 
 # ---------------- CATEGORY ----------------
 class Category(Base):
@@ -60,7 +62,7 @@ class Category(Base):
 
     id = Column(Integer, primary_key=True, index=True)
     name = Column(String, unique=True)
-
+    events = relationship("Event", back_populates="category_rel")
 
 # ---------------- NOTIFICATION ----------------
 class Notification(Base):
@@ -68,7 +70,8 @@ class Notification(Base):
 
     id = Column(Integer, primary_key=True, index=True)
     message = Column(String)
-    created_at = Column(DateTime, default=datetime.utcnow)
+    user_name = Column(String, nullable=True)
+    created_at = Column(DateTime, default=lambda: datetime.now(timezone.utc))
 
 
 # ---------------- AUDIT LOG ----------------
@@ -78,7 +81,7 @@ class AuditLog(Base):
     id = Column(Integer, primary_key=True, index=True)
     action = Column(String)
     performed_by = Column(String)
-    timestamp = Column(DateTime, default=datetime.utcnow)
+    timestamp = Column(DateTime, default=lambda: datetime.now(timezone.utc))
 
 
 # ---------------- BLACKLIST TOKEN ----------------
@@ -106,7 +109,7 @@ class EmailVerification(Base):
     id = Column(Integer, primary_key=True, index=True)
     username = Column(String)
     token = Column(String, unique=True)
-
+    expires_at = Column(DateTime)
 
 #----------------PAYMENT------------------------------
 class Payment(Base):
@@ -121,6 +124,6 @@ class Payment(Base):
     method = Column(String, default="mock")
 
     transaction_id = Column(String, unique=True)
-    created_at = Column(DateTime, default=datetime.utcnow)
+    created_at = Column(DateTime, default=lambda: datetime.now(timezone.utc))
 
 

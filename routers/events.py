@@ -7,30 +7,89 @@ router = APIRouter()
 
 @router.post("/events", response_model=schemas.EventResponse)
 def create_event(event: schemas.EventCreate, db: Session = Depends(get_db)):
-    db_event = models.Event(**event.dict(), available_seats=event.total_seats)
+
+    category_id = None
+    category_name = None
+
+    # NEW SYSTEM
+    if event.category_id:
+        category = db.query(models.Category).filter(
+            models.Category.id == event.category_id
+        ).first()
+
+        if not category:
+            raise HTTPException(status_code=400, detail="Invalid category_id")
+
+        category_id = category.id
+        category_name = category.name
+
+    # OLD SYSTEM (fallback)
+    elif event.category:
+        category_name = event.category
+
+    db_event = models.Event(
+        title=event.title,
+        location=event.location,
+        description=event.description,
+        date_time=event.date_time,
+        price=event.price,
+        total_seats=event.total_seats,
+        available_seats=event.total_seats,
+
+        # BOTH fields
+        category=category_name,
+        category_id=category_id
+    )
+
     db.add(db_event)
     db.commit()
     db.refresh(db_event)
+
     return db_event
 
 
 @router.get("/events")
-def get_events(page: int = 1, limit: int = 10, db: Session = Depends(get_db)):
-    skip = (page - 1) * limit
-    return db.query(models.Event).offset(skip).limit(limit).all()
+def get_events(
+    page: int = 1,
+    limit: int = 10,
 
+    # SEARCH
+    title: str = None,
 
-@router.get("/events/search")
-def search_events(title: str = None, category: str = None, db: Session = Depends(get_db)):
+    # FILTERS
+    category_id: int = None,
+    date: str = None,
+    min_price: int = None,
+    max_price: int = None,
+
+    db: Session = Depends(get_db)
+):
     query = db.query(models.Event)
 
+    # SEARCH BY TITLE
     if title:
-        query = query.filter(models.Event.title.contains(title))
-    if category:
-        query = query.filter(models.Event.category == category)
+        query = query.filter(models.Event.title.ilike(f"%{title}%"))
 
-    return query.all()
+    # FILTER BY CATEGORY (NEW)
+    if category_id:
+        query = query.filter(models.Event.category_id == category_id)
 
+    # FILTER BY DATE
+    if date:
+        query = query.filter(models.Event.date_time == date)
+
+    # FILTER BY PRICE
+    if min_price is not None:
+        query = query.filter(models.Event.price >= min_price)
+
+    if max_price is not None:
+        query = query.filter(models.Event.price <= max_price)
+
+    # PAGINATION
+    skip = (page - 1) * limit
+    events = query.offset(skip).limit(limit).all()
+
+    return events
 
 @router.get("/events/{event_id}")
 def get_event(event_id: int, db: Session = Depends(get_db)):
@@ -49,7 +108,20 @@ def update_event(event_id: int, data: schemas.EventCreate, db: Session = Depends
     event.title = data.title
     event.location = data.location
     event.price = data.price
-    event.category = data.category
+    # handle category update safely
+    if data.category_id:
+        category = db.query(models.Category).filter(
+            models.Category.id == data.category_id
+        ).first()
+
+        if not category:
+            raise HTTPException(status_code=400, detail="Invalid category_id")
+
+        event.category_id = category.id
+        event.category = category.name
+
+    elif data.category:
+        event.category = data.category
 
     db.commit()
     return event
