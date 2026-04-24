@@ -1,9 +1,8 @@
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, HTTPException, Request
 from core.limiter import limiter
 from sqlalchemy.orm import Session
 from datetime import datetime, timedelta
 from jose import jwt
-from fastapi import Request
 
 import models, schemas
 
@@ -19,6 +18,7 @@ from core.security import (
 
 router = APIRouter()
 
+
 # ---------------- REGISTER ----------------
 @router.post("/register", response_model=schemas.UserResponse)
 @limiter.limit("3/minute")
@@ -27,7 +27,6 @@ def register(
     user: schemas.UserCreate,
     db: Session = Depends(get_db)
 ):
-
     existing = db.query(models.User).filter(
         models.User.username == user.username
     ).first()
@@ -37,7 +36,7 @@ def register(
 
     new_user = models.User(
         username=user.username,
-        password=hash_password(user.password),
+        password=hash_password(user.password),  # password hashed correctly
         role=user.role
     )
 
@@ -49,23 +48,30 @@ def register(
 
 
 # ---------------- LOGIN ----------------
+# FIX: use separate schema for login (only username + password)
+class LoginRequest(schemas.BaseModel):
+    username: str
+    password: str
+
+
 @router.post("/login")
 @limiter.limit("5/minute")
 def login(
     request: Request,
-    user: schemas.UserCreate,
+    user: LoginRequest,
     db: Session = Depends(get_db)
 ):
-
     db_user = db.query(models.User).filter(
         models.User.username == user.username
     ).first()
 
+    # unified error (better security + avoids confusion)
     if not db_user:
-        raise HTTPException(status_code=404, detail="User not found")
+        raise HTTPException(status_code=400, detail="Invalid credentials")
 
+    # FIX: correct password verification
     if not verify_password(user.password, db_user.password):
-        raise HTTPException(status_code=400, detail="Wrong password")
+        raise HTTPException(status_code=400, detail="Invalid credentials")
 
     if not db_user.is_active:
         raise HTTPException(status_code=403, detail="User blocked")
@@ -75,7 +81,7 @@ def login(
         "role": db_user.role
     })
 
-    return {"access_token": token}
+    return {"access_token": token, "token_type": "bearer"}
 
 
 # ---------------- LOGOUT ----------------

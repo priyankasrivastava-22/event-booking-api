@@ -96,7 +96,7 @@ from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 from sqlalchemy.orm import Session
 from jose import jwt, JWTError
 from passlib.context import CryptContext
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 import os
 from database import SessionLocal
 import models
@@ -105,14 +105,6 @@ import models
 SECRET_KEY = os.getenv("SECRET_KEY")
 ALGORITHM = os.getenv("ALGORITHM", "HS256")
 ACCESS_TOKEN_EXPIRE_MINUTES = int(os.getenv("ACCESS_TOKEN_EXPIRE_MINUTES", "60"))
-
-def create_token(data: dict):
-    to_encode = data.copy()
-
-    expire = datetime.utcnow() + timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
-    to_encode.update({"exp": expire})
-
-    return jwt.encode(to_encode, SECRET_KEY, algorithm=ALGORITHM)
 
 # IMPORTANT: prevent crash but still enforce requirement
 if not SECRET_KEY:
@@ -168,7 +160,10 @@ def get_current_user(
         if not username:
             raise HTTPException(status_code=401, detail="Invalid token")
 
-        return {"username": username, "role": role}
+        return {
+            "username": username,
+            "role": role
+        }
 
     except JWTError:
         raise HTTPException(status_code=401, detail="Invalid token")
