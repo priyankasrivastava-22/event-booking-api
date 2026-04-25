@@ -1,0 +1,65 @@
+body {
+    color: white;
+}
+
+.card {
+    background: rgba(255,255,255,0.08);
+    border-radius: 15px;
+    backdrop-filter: blur(10px);
+    border: none;
+}
+
+input {
+    background: #1a2238 !important;
+    color: white !important;
+}
+
+        body {
+            color: white;
+            font-family: 'Segoe UI', sans-serif;
+        }
+
+        .card {
+            background: rgba(255,255,255,0.08);
+            border-radius: 15px;
+            backdrop-filter: blur(10px);
+            border: none;
+            color: white;
+        }
+
+        h2 {
+            font-weight: bold;
+        }
+
+        p {
+            color: #ddd;
+        }
+
+        span {
+            color: #fff;
+            font-weight: 500;
+        }
+
+        .btn-primary {
+            background: linear-gradient(45deg, #6a11cb, #2575fc);
+            border: none;
+        }
+
+        .btn-primary:hover {
+            opacity: 0.9;
+        }
+
+        input {
+            background: #1a2238 !important;
+            border: none !important;
+            color: white !important;
+        }
+
+        input:focus {
+            outline: none;
+            box-shadow: none;
+        }
+
+        #message {
+            font-weight: 500;
+        }

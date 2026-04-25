@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+
+  <title>EventBook - Login</title>
+
+  <!-- Bootstrap -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+
+  <!-- Icons -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons/font/bootstrap-icons.css" rel="stylesheet">
+
+  <!-- Custom CSS -->
+<!--  <link rel="stylesheet" href="css/login.css">-->
+  <link rel="stylesheet" href="css/common.css">
+
+</head>
+
+<body>
+
+<div class="container-fluid vh-100">
+  <div class="row h-100">
+
+    <!-- LEFT SIDE (HERO) -->
+    <div class="col-lg-7 d-none d-lg-flex hero-section">
+
+      <div class="hero-content">
+        <h1>Every Event<br>Lives Here</h1>
+        <p>Book. Celebrate. Remember.</p>
+
+        <!-- Stats -->
+        <div class="stats-box">
+          <div>
+            <h4>25K+</h4>
+            <p>Events</p>
+          </div>
+          <div>
+            <h4>50K+</h4>
+            <p>Users</p>
+          </div>
+          <div>
+            <h4>100+</h4>
+            <p>Cities</p>
+          </div>
+          <div>
+            <h4>4.9★</h4>
+            <p>Rating</p>
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- RIGHT SIDE (LOGIN) -->
+    <div class="col-lg-5 d-flex align-items-center justify-content-center login-section">
+
+      <div class="login-card">
+
+        <div class="text-center mb-4">
+          <h3 class="logo">EVENTBOOK</h3>
+          <h5>Welcome Back</h5>
+          <p class="text-muted">Log in to continue</p>
+        </div>
+
+        <!-- FORM -->
+        <form id="loginForm">
+
+          <!-- Email -->
+          <div class="mb-3 input-group-custom">
+            <i class="bi bi-envelope"></i>
+            <input type="email" class="form-control" placeholder="Email address" required>
+          </div>
+
+          <!-- Password -->
+          <div class="mb-2 input-group-custom">
+            <i class="bi bi-lock"></i>
+            <input type="password" class="form-control" placeholder="Password" required>
+          </div>
+
+          <div class="d-flex justify-content-between mb-3">
+            <div>
+              <input type="checkbox"> Remember me
+            </div>
+            <a href="#" class="forgot">Forgot?</a>
+          </div>
+
+          <!-- Button -->
+          <button type="submit" class="btn login-btn w-100">
+            LOG IN →
+          </button>
+
+        </form>
+
+        <div class="divider">or continue with</div>
+
+        <!-- Social -->
+        <div class="d-flex gap-2">
+          <button class="btn social-btn w-50">Google</button>
+          <button class="btn social-btn w-50">Apple</button>
+        </div>
+
+        <div class="text-center mt-3">
+          New here? <a href="#">Create account</a>
+        </div>
+
+      </div>
+
+    </div>
+
+  </div>
+</div>
+
+<script src="js/login.js"></script>
+
+</body>
+</html>

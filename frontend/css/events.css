@@ -1,0 +1,21 @@
+body {
+    color: white;
+}
+
+.card {
+    background: rgba(255,255,255,0.08);
+    border-radius: 15px;
+    backdrop-filter: blur(10px);
+    border: none;
+    color: white;
+    transition: 0.3s;
+}
+
+.card:hover {
+    transform: translateY(-5px);
+}
+
+.navbar {
+    background: rgba(0,0,0,0.5);
+    backdrop-filter: blur(10px);
+}

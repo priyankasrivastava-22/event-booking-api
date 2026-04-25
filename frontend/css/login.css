@@ -1,0 +1,33 @@
+body {
+  margin: 0;
+  font-family: 'Segoe UI', sans-serif;
+
+  background:
+    linear-gradient(rgba(11,15,26,0.2), rgba(11,15,26,0.2)),
+    url("../images/login-bg.jpg");
+
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+
+  color: white;
+}
+
+.hero-section {
+  background: transparent;
+  padding: 40px;
+}
+
+.login-section {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.login-card {
+  max-width: 380px;
+  padding: 30px;
+  border-radius: 20px;
+  background: rgba(20, 25, 50, 0.6);
+  backdrop-filter: blur(20px);
+}
