@@ -1,30 +1,81 @@
 console.log("JS loaded");
+
 const API_URL = "http://127.0.0.1:8000";
 
-async function loadEvents() {
+// ---------------- AUTH CHECK ----------------
+function checkAuth() {
     const token = localStorage.getItem("token");
-
     if (!token) {
         alert("Please login first");
         window.location.href = "login.html";
-        return;
+        return null;
     }
+    return token;
+}
+
+// ---------------- LOAD CATEGORIES ----------------
+async function loadCategories() {
+    const token = checkAuth();
+    if (!token) return;
 
     try {
-        const res = await fetch(`${API_URL}/events`, {
+        const res = await fetch(`${API_URL}/categories`, {
+            headers: {
+                "Authorization": `Bearer ${token}`
+            }
+        });
+
+        const categories = await res.json();
+        console.log("Categories:", categories);
+
+        const dropdown = document.getElementById("categoryFilter");
+
+        // reset dropdown
+        dropdown.innerHTML = `<option value="">All Categories</option>`;
+
+        categories.forEach(cat => {
+            const option = document.createElement("option");
+            option.value = cat.name;
+            option.textContent = cat.name;
+            dropdown.appendChild(option);
+        });
+
+    } catch (err) {
+        console.error("Category load error:", err);
+    }
+}
+
+// ---------------- LOAD EVENTS ----------------
+async function loadEvents() {
+    const token = checkAuth();
+    if (!token) return;
+
+    const category = document.getElementById("categoryFilter")?.value || "";
+    const search = document.getElementById("searchInput")?.value || "";
+
+    let url = `${API_URL}/events`;
+
+    if (category || search) {
+        url = `${API_URL}/events/search?title=${search}&category=${category}`;
+    }
+
+    console.log("Fetching:", url);
+
+    try {
+        const res = await fetch(url, {
             headers: {
                 "Authorization": `Bearer ${token}`
             }
         });
 
         const data = await res.json();
+        console.log("Events:", data);
 
         const container = document.getElementById("eventsContainer");
         container.innerHTML = "";
 
-        // HANDLE EMPTY STATE
         if (!data || data.length === 0) {
-            container.innerHTML = "<p>No events available</p>";
+            container.innerHTML = "<p>No events found</p>";
             return;
         }
 
@@ -32,11 +83,11 @@ async function loadEvents() {
             const card = `
                 <div class="col-md-4 mb-4">
                     <div class="card p-3 h-100 text-white">
-                        <h5 class="text-white">${event.title}</h5>
-                        <p class="text-light">${event.location}</p>
-                        <p class="text-light">₹${event.price}</p>
-                        <p class="text-light">Seats: ${event.available_seats}</p>
-
+                        <h5>${event.title}</h5>
+                        <p>${event.location}</p>
+                        <p>₹${event.price}</p>
+                        <p>Category: ${event.category}</p>
+                        <p>Seats: ${event.available_seats}</p>
 
                         <button class="btn btn-primary w-100"
                             onclick="viewEvent(${event.id})">
@@ -45,24 +96,41 @@ async function loadEvents() {
                     </div>
                 </div>
             `;
-
             container.innerHTML += card;
         });
 
     } catch (err) {
-        console.error(err);
-        document.getElementById("eventsContainer").innerHTML =
-            "<p>Error loading events</p>";
+        console.error("Event load error:", err);
     }
 }
 
+// ---------------- LOGOUT ----------------
 function logout() {
     localStorage.removeItem("token");
     window.location.href = "login.html";
 }
 
+// ---------------- VIEW EVENT ----------------
 function viewEvent(id) {
     window.location.href = `event-details.html?id=${id}`;
 }
 
-loadEvents();
+// ---------------- INIT ----------------
+document.addEventListener("DOMContentLoaded", () => {
+    console.log("Page Loaded");
+
+    loadCategories();
+    loadEvents();
+
+    // filter change
+    const categoryDropdown = document.getElementById("categoryFilter");
+    if (categoryDropdown) {
+        categoryDropdown.addEventListener("change", loadEvents);
+    }
+
+    // optional: live search
+    const searchInput = document.getElementById("searchInput");
+    if (searchInput) {
+        searchInput.addEventListener("input", loadEvents);
+    }
+});
