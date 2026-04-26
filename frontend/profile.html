@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Profile</title>
+
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="css/common.css">
+
+    <style>
+        .profile-card {
+            max-width: 500px;
+            margin: auto;
+            margin-top: 80px;
+            background: rgba(255,255,255,0.08);
+            backdrop-filter: blur(10px);
+            border-radius: 16px;
+            padding: 30px;
+            color: white;
+        }
+
+        .label {
+            color: #aaa;
+            font-size: 14px;
+        }
+
+        .value {
+            font-size: 18px;
+            margin-bottom: 15px;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+
+    <div class="profile-card">
+
+        <h3 class="mb-4 text-center">My Profile</h3>
+
+        <div>
+            <div class="label">Username</div>
+            <div class="value" id="username">-</div>
+
+            <div class="label">Role</div>
+            <div class="value" id="role">-</div>
+
+            <div class="label">Total Bookings</div>
+            <div class="value" id="bookings">-</div>
+        </div>
+
+        <div class="d-flex justify-content-between mt-4">
+            <button class="btn btn-secondary"
+                onclick="window.location.href='events.html'">
+                Back
+            </button>
+
+            <button class="btn btn-danger" onclick="logout()">
+                Logout
+            </button>
+        </div>
+
+    </div>
+
+</div>
+
+<script src="js/profile.js"></script>
+
+</body>
+</html>

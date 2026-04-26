@@ -1,8 +1,7 @@
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, HTTPException, Request
 from core.limiter import limiter
 from sqlalchemy.orm import Session
 import models, schemas
-from fastapi import Request
 from utils.helpers import get_db
 from core.security import get_current_user
 
@@ -21,7 +20,6 @@ def book_event(
     if booking.tickets <= 0:
         raise HTTPException(status_code=400, detail="Tickets must be greater than 0")
 
-    # ATOMIC SEAT UPDATE (prevents race condition)
     updated = db.query(models.Event).filter(
         models.Event.id == booking.event_id,
         models.Event.available_seats >= booking.tickets
@@ -33,7 +31,6 @@ def book_event(
     if updated == 0:
         raise HTTPException(status_code=400, detail="Not enough seats available")
 
-    # CREATE BOOKING
     new_booking = models.Booking(
         user_name=user["username"],
         event_id=booking.event_id,
@@ -44,6 +41,7 @@ def book_event(
     db.commit()
     db.refresh(new_booking)
 
+    # notification
     db.add(models.Notification(
         message=f"Booking confirmed for event {booking.event_id}",
         user_name=user["username"]
@@ -55,13 +53,27 @@ def book_event(
 
 # ---------------- MY BOOKINGS ----------------
 @router.get("/my-bookings")
-def my_bookings(
-    db: Session = Depends(get_db),
-    user=Depends(get_current_user)
-):
-    return db.query(models.Booking).filter(
+def my_bookings(user=Depends(get_current_user), db: Session = Depends(get_db)):
+
+    bookings = db.query(models.Booking).filter(
         models.Booking.user_name == user["username"]
     ).all()
+
+    result = []
+
+    for b in bookings:
+        result.append({
+            "id": b.id,
+            "tickets": b.tickets,
+            "status": getattr(b, "status", "confirmed"),
+            "event": {
+                "title": b.event.title if b.event else "N/A",
+                "date_time": b.event.date_time if b.event else "",
+                "location": b.event.location if b.event else ""
+            }
+        })
+
+    return result
 
 
 # ---------------- CANCEL BOOKING ----------------
@@ -78,11 +90,10 @@ def cancel_booking(
     if not booking:
         raise HTTPException(status_code=404, detail="Booking not found")
 
-    # OPTIONAL SECURITY
     if booking.user_name != user["username"]:
         raise HTTPException(status_code=403, detail="Not allowed")
 
-    # RETURN SEATS BACK
+    # restore seats
     db.query(models.Event).filter(
         models.Event.id == booking.event_id
     ).update({
@@ -96,6 +107,7 @@ def cancel_booking(
         message=f"Booking cancelled for event {booking.event_id}",
         user_name=user["username"]
     ))
+
     db.commit()
 
     return {"success": True, "message": "cancelled"}
