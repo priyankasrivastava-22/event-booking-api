@@ -2,6 +2,45 @@ console.log("JS loaded");
 
 const API_URL = "http://127.0.0.1:8000";
 
+// ---------------- GET USER FROM TOKEN ----------------
+function getUserFromToken() {
+    const token = localStorage.getItem("token");
+    if (!token) return null;
+
+    try {
+        const payload = JSON.parse(atob(token.split(".")[1]));
+        return payload; // { sub, role }
+    } catch {
+        return null;
+    }
+}
+
+// ---------------- ADMIN BUTTON CONTROL ----------------
+// This ensures ONLY admin sees admin features in UI
+function setupAdminUI() {
+    const user = getUserFromToken();
+
+    // If no user OR not admin → do nothing
+    if (!user || user.role !== "admin") return;
+
+    // Find navbar
+    const navbar = document.querySelector(".navbar");
+
+    if (!navbar) return;
+
+    // Create Admin button
+    const btn = document.createElement("button");
+    btn.className = "btn btn-outline-light btn-sm ms-2";
+    btn.innerText = "Admin";
+
+    btn.onclick = () => {
+        window.location.href = "admin.html";
+    };
+
+    // Add button to navbar
+    navbar.appendChild(btn);
+}
+
 // ---------------- AUTH CHECK ----------------
 function checkAuth() {
     const token = localStorage.getItem("token");
@@ -118,6 +157,8 @@ function viewEvent(id) {
 // ---------------- INIT ----------------
 document.addEventListener("DOMContentLoaded", () => {
     console.log("Page Loaded");
+
+    setupAdminUI(); // ✅ ONLY ADDITION → controls admin visibility
 
     loadCategories();
     loadEvents();
