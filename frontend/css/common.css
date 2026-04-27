@@ -1,13 +1,13 @@
+/* ---------------- GLOBAL RESET ---------------- */
 html, body {
-  height: 100%;
-  margin: 0;
+    margin: 0;
+    padding: 0;
 }
-
 body {
   min-height: 100vh;
 
   background:
-    linear-gradient(rgba(11,15,26,0.2), rgba(11,15,26,0.2)),
+    linear-gradient(rgba(11,15,20,0.5), rgba(11,15,20,0.5)),
     url("../images/login-bg.jpg");
 
   background-size: cover;

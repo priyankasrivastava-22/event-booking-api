@@ -1,3 +1,19 @@
+// Function to switch between Login, Register, and Forgot views
+// This stays global so the HTML 'onclick' can find it.
+function showView(viewId) {
+    const views = document.querySelectorAll(".auth-view");
+    
+    views.forEach(v => {
+        v.classList.add("d-none"); // Hide all views
+    });
+
+    const activeView = document.getElementById(viewId);
+    if (activeView) {
+        activeView.classList.remove("d-none"); // Show the one you clicked
+    }
+}
+
+// Existing Login Logic
 const form = document.getElementById("loginForm");
 
 form.addEventListener("submit", async (e) => {
@@ -5,10 +21,6 @@ form.addEventListener("submit", async (e) => {
 
   const email = form.querySelector("input[type='email']").value;
   const password = form.querySelector("input[type='password']").value;
-
-  const formData = new URLSearchParams();
-  formData.append("username", email);
-  formData.append("password", password);
 
   try {
     const res = await fetch("http://127.0.0.1:8000/login", {
@@ -26,19 +38,12 @@ form.addEventListener("submit", async (e) => {
 
     if (res.ok) {
       console.log("LOGIN SUCCESS", data);
-
-      // Save token
       localStorage.setItem("token", data.access_token);
-
       alert("Login successful");
-
-      // Redirect
       window.location.href = "events.html";
-
     } else {
       alert(data.detail || "Invalid credentials");
     }
-
   } catch (err) {
     console.error(err);
     alert("Server error");
