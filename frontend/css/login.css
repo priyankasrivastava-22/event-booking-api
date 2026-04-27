@@ -1,33 +1,90 @@
-body {
-  margin: 0;
-  font-family: 'Segoe UI', sans-serif;
-
-  background:
-    linear-gradient(rgba(11,15,26,0.2), rgba(11,15,26,0.2)),
-    url("../images/login-bg.jpg");
-
-  background-size: cover;
-  background-position: center;
-  background-repeat: no-repeat;
-
-  color: white;
-}
-
-.hero-section {
-  background: transparent;
+/* Fix the card width so it's not too tiny */
+.login-card {
+  width: 100%;
+  max-width: 420px; /* Changed from 200px to allow space for text */
   padding: 40px;
+  border-radius: 24px;
+  background: rgba(20, 25, 50, 0.5); /* Semi-transparent dark */
+  backdrop-filter: blur(20px); /* The 'Glass' effect */
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  box-shadow: 0 20px 40px rgba(0,0,0,0.4);
 }
 
-.login-section {
+/* Custom styling for inputs with icons */
+.input-group-custom {
+  position: relative;
   display: flex;
   align-items: center;
-  justify-content: center;
 }
 
+.input-group-custom i {
+  position: absolute;
+  left: 15px;
+  color: #6366f1;
+}
+
+.input-group-custom input {
+  padding-left: 45px !important; /* Make room for the icon */
+  height: 50px;
+  border-radius: 12px;
+}
+
+/* Button Styling */
+.login-btn {
+  background: linear-gradient(45deg, #6366f1, #3b82f6);
+  color: white;
+  font-weight: bold;
+  height: 50px;
+  border-radius: 12px;
+  border: none;
+}
+
+.social-btn {
+  background: rgba(255,255,255,0.05);
+  border: 1px solid rgba(255,255,255,0.1);
+  color: white;
+  border-radius: 12px;
+}
+
+/* Animation for switching views */
+.auth-view {
+  animation: fadeIn 0.3s ease-in-out;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(5px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+
+/* login.css updates */
+
+.hero-section {
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between; /* Pushes content to top and bottom */
+}
+
+.hero-text-top h1 {
+    font-size: 6rem;
+    line-height: 1.1;
+    text-shadow: 0 4px 10px rgba(0,0,0,0.3);
+}
+
+.stats-container {
+    background: rgba(255, 255, 255, 0);
+    border-radius: 20px;
+    padding: 20px;
+    border: 1px solid rgba(255, 255, 255, 0);
+}
+
+/* Ensure the login card remains clean and centered  */
 .login-card {
-  max-width: 380px;
-  padding: 30px;
-  border-radius: 20px;
-  background: rgba(20, 25, 50, 0.6);
-  backdrop-filter: blur(20px);
+    width: 100%;
+    max-width: 420px;
+    padding: 40px;
+    background: rgba(20, 25, 50, 0.5);
+    backdrop-filter: blur(20px);
+    border-radius: 24px;
 }

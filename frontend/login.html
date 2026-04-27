@@ -3,19 +3,13 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Event Book - Login</title>
 
-  <title>EventBook - Login</title>
-
-  <!-- Bootstrap -->
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-
-  <!-- Icons -->
   <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons/font/bootstrap-icons.css" rel="stylesheet">
 
-  <!-- Custom CSS -->
-<!--  <link rel="stylesheet" href="css/login.css">-->
+  <link rel="stylesheet" href="css/login.css">
   <link rel="stylesheet" href="css/common.css">
-
 </head>
 
 <body>
@@ -23,96 +17,106 @@
 <div class="container-fluid vh-100">
   <div class="row h-100">
 
-    <!-- LEFT SIDE (HERO) -->
-    <div class="col-lg-7 d-none d-lg-flex hero-section">
+    <div class="col-lg-7 d-none d-lg-flex flex-column justify-content-between hero-section py-5 px-5">
 
-      <div class="hero-content">
-        <h1>Every Event<br>Lives Here</h1>
-        <p>Book. Celebrate. Remember.</p>
-
-        <!-- Stats -->
-        <div class="stats-box">
-          <div>
-            <h4>25K+</h4>
-            <p>Events</p>
-          </div>
-          <div>
-            <h4>50K+</h4>
-            <p>Users</p>
-          </div>
-          <div>
-            <h4>100+</h4>
-            <p>Cities</p>
-          </div>
-          <div>
-            <h4>4.9★</h4>
-            <p>Rating</p>
-          </div>
-        </div>
+      <div class="hero-text-top mt-5">
+        <h1 class="display-3 fw-bold">Every Event<br>Lives Here</h1>
+        <p class="fs-4 opacity-75">Book. Celebrate. Remember.</p>
       </div>
 
+      <div class="stats-container mb-5">
+        <div class="row text-center">
+            <div class="col-3">
+                <h4 class="fw-bold">25K+</h4>
+                <p class="small opacity-75">Events</p>
+            </div>
+            <div class="col-3">
+                <h4 class="fw-bold">50K+</h4>
+                <p class="small opacity-75">Users</p>
+            </div>
+            <div class="col-3">
+                <h4 class="fw-bold">100+</h4>
+                <p class="small opacity-75">Cities</p>
+            </div>
+            <div class="col-3">
+                <h4 class="fw-bold">4.9★</h4>
+                <p class="small opacity-75">Rating</p>
+            </div>
+        </div>
+      </div>
     </div>
 
-    <!-- RIGHT SIDE (LOGIN) -->
     <div class="col-lg-5 d-flex align-items-center justify-content-center login-section">
 
-      <div class="login-card">
+      <div class="login-card p-4">
 
         <div class="text-center mb-4">
-          <h3 class="logo">EVENTBOOK</h3>
-          <h5>Welcome Back</h5>
-          <p class="text-muted">Log in to continue</p>
+          <h3 class="logo fw-bold">EVENT BOOK</h3>
         </div>
 
-        <!-- FORM -->
-        <form id="loginForm">
+        <div id="loginView" class="auth-view">
+          <h5 class="text-center">Welcome Back</h5>
+          <p class="text-muted text-center mb-4">Log in to continue</p>
 
-          <!-- Email -->
-          <div class="mb-3 input-group-custom">
-            <i class="bi bi-envelope"></i>
-            <input type="email" class="form-control" placeholder="Email address" required>
-          </div>
-
-          <!-- Password -->
-          <div class="mb-2 input-group-custom">
-            <i class="bi bi-lock"></i>
-            <input type="password" class="form-control" placeholder="Password" required>
-          </div>
-
-          <div class="d-flex justify-content-between mb-3">
-            <div>
-              <input type="checkbox"> Remember me
+          <form id="loginForm">
+            <div class="mb-3 input-group-custom">
+              <i class="bi bi-envelope"></i>
+              <input type="email" class="form-control" placeholder="Email address" required>
             </div>
-            <a href="#" class="forgot">Forgot?</a>
+            <div class="mb-3 input-group-custom">
+              <i class="bi bi-lock"></i>
+              <input type="password" class="form-control" placeholder="Password" required>
+            </div>
+
+            <div class="d-flex justify-content-between mb-4 small">
+              <label><input type="checkbox"> Remember me</label>
+              <a href="#" onclick="showView('forgotView')" class="text-decoration-none forgot">Forgot?</a>
+            </div>
+
+            <button type="submit" class="btn login-btn w-100 mb-3">LOG IN →</button>
+          </form>
+
+          <div class="divider text-center my-3">or continue with</div>
+          <div class="d-flex gap-2 mb-4">
+            <button class="btn social-btn w-50">Google</button>
+            <button class="btn social-btn w-50">Apple</button>
           </div>
 
-          <!-- Button -->
-          <button type="submit" class="btn login-btn w-100">
-            LOG IN →
-          </button>
-
-        </form>
-
-        <div class="divider">or continue with</div>
-
-        <!-- Social -->
-        <div class="d-flex gap-2">
-          <button class="btn social-btn w-50">Google</button>
-          <button class="btn social-btn w-50">Apple</button>
+          <div class="text-center mt-3">
+            New here? <a href="#" onclick="showView('registerView')" class="text-decoration-none">Create account</a>
+          </div>
         </div>
 
-        <div class="text-center mt-3">
-          New here? <a href="#">Create account</a>
+        <div id="registerView" class="auth-view d-none">
+          <h5 class="text-center">Create Account</h5>
+          <p class="text-muted text-center mb-4">Join our community</p>
+          <form id="registerForm">
+            <div class="mb-3"><input type="text" class="form-control" placeholder="Username" required></div>
+            <div class="mb-3"><input type="email" class="form-control" placeholder="Email" required></div>
+            <div class="mb-3"><input type="password" class="form-control" placeholder="Password" required></div>
+            <button class="btn login-btn w-100">REGISTER</button>
+          </form>
+          <div class="text-center mt-4">
+            Already have an account? <a href="#" onclick="showView('loginView')" class="text-decoration-none">Login</a>
+          </div>
         </div>
 
-      </div>
+        <div id="forgotView" class="auth-view d-none">
+          <h5 class="text-center">Reset Password</h5>
+          <p class="text-muted text-center mb-4">Enter your email to receive a link</p>
+          <form id="forgotForm">
+            <div class="mb-3"><input type="email" class="form-control" placeholder="Email address" required></div>
+            <button class="btn login-btn w-100">SEND LINK</button>
+          </form>
+          <div class="text-center mt-4">
+            <a href="#" onclick="showView('loginView')" class="text-decoration-none">Back to Login</a>
+          </div>
+        </div>
 
-    </div>
-
+      </div> </div>
   </div>
 </div>
 
 <script src="js/login.js"></script>
-
 </body>
 </html>

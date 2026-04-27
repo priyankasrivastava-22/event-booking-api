@@ -1,7 +1,7 @@
 const API_URL = "http://127.0.0.1:8000";
 
-// ---------------- AUTH CHECK ----------------
-function checkAuth() {
+// ---------------- AUTH ----------------
+function getToken() {
     const token = localStorage.getItem("token");
     if (!token) {
         alert("Please login first");
@@ -13,7 +13,7 @@ function checkAuth() {
 
 // ---------------- LOAD BOOKINGS ----------------
 async function loadBookings() {
-    const token = checkAuth();
+    const token = getToken();
     if (!token) return;
 
     try {
@@ -26,7 +26,7 @@ async function loadBookings() {
         const data = await res.json();
         console.log("Bookings:", data);
 
-        const container = document.getElementById("bookingContainer");
+        const container = document.getElementById("bookingsContainer");
         container.innerHTML = "";
 
         if (!data || data.length === 0) {
@@ -37,19 +37,20 @@ async function loadBookings() {
         data.forEach(b => {
             const card = `
                 <div class="col-md-4 mb-4">
-                    <div class="card p-3">
-                        <h5>${b.event_title || "Event"}</h5>
+                    <div class="card p-3 text-white">
+                        <h5>${b.event.title}</h5>
+                        <p>Date: ${b.event.date_time}</p>
+                        <p>Location: ${b.event.location}</p>
                         <p>Tickets: ${b.tickets}</p>
-                        <p>Status: ${b.status || "Confirmed"}</p>
+                        <p>Status: ${b.status || "confirmed"}</p>
 
-                        <button class="btn btn-danger w-100"
+                        <button class="btn btn-danger w-100 mt-2"
                             onclick="cancelBooking(${b.id})">
                             Cancel Booking
                         </button>
                     </div>
                 </div>
             `;
-
             container.innerHTML += card;
         });
 
@@ -60,7 +61,7 @@ async function loadBookings() {
 
 // ---------------- CANCEL BOOKING ----------------
 async function cancelBooking(id) {
-    const token = checkAuth();
+    const token = getToken();
     if (!token) return;
 
     if (!confirm("Are you sure you want to cancel this booking?")) return;
@@ -73,12 +74,13 @@ async function cancelBooking(id) {
             }
         });
 
+        const data = await res.json();
+
         if (res.ok) {
             alert("Booking cancelled");
-            loadBookings(); // refresh
+            loadBookings(); // refresh list
         } else {
-            const data = await res.json();
-            alert(data.detail || "Cancel failed");
+            alert(data.detail);
         }
 
     } catch (err) {
@@ -86,9 +88,10 @@ async function cancelBooking(id) {
     }
 }
 
-// ---------------- BACK ----------------
-function goBack() {
-    window.location.href = "events.html";
+// ---------------- LOGOUT ----------------
+function logout() {
+    localStorage.removeItem("token");
+    window.location.href = "login.html";
 }
 
 // ---------------- INIT ----------------

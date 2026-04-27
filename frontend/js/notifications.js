@@ -1,19 +1,21 @@
 const API_URL = "http://127.0.0.1:8000";
 
 // ---------------- AUTH ----------------
-function checkAuth() {
+function getToken() {
     const token = localStorage.getItem("token");
+
     if (!token) {
-        alert("Please login first");
+        alert("Login required");
         window.location.href = "login.html";
         return null;
     }
+
     return token;
 }
 
 // ---------------- LOAD NOTIFICATIONS ----------------
 async function loadNotifications() {
-    const token = checkAuth();
+    const token = getToken();
     if (!token) return;
 
     try {
@@ -23,40 +25,51 @@ async function loadNotifications() {
             }
         });
 
-        const data = await res.json();
-        console.log("Notifications:", data);
-
-        const container = document.getElementById("notificationContainer");
-        container.innerHTML = "";
-
-        if (!data || data.length === 0) {
-            container.innerHTML = "<p>No notifications</p>";
+        if (res.status === 401) {
+            alert("Session expired. Please login again.");
+            localStorage.removeItem("token");
+            window.location.href = "login.html";
             return;
         }
 
-        data.forEach(n => {
-            const time = new Date(n.created_at).toLocaleString();
+        const data = await res.json();
+        console.log("Notifications:", data);
 
-            const item = `
-                <div class="notification">
-                    <p>${n.message}</p>
-                    <span class="time">${time}</span>
-                </div>
-            `;
-
-            container.innerHTML += item;
-        });
+        renderNotifications(data);
 
     } catch (err) {
-        console.error(err);
-        document.getElementById("notificationContainer").innerHTML =
-            "<p>Error loading notifications</p>";
+        console.error("Error:", err);
     }
 }
 
-// ---------------- BACK ----------------
+// ---------------- RENDER ----------------
+function renderNotifications(notifications) {
+    const container = document.getElementById("notificationContainer"); // ✅ FIXED
+
+    container.innerHTML = "";
+
+    if (!notifications || notifications.length === 0) {
+        container.innerHTML = "<p class='text-center'>No notifications yet</p>";
+        return;
+    }
+
+    notifications.forEach(n => {
+        const item = `
+            <div class="notification">
+                <p>${n.message}</p>
+                <div class="time">
+                    ${new Date(n.created_at).toLocaleString()}
+                </div>
+            </div>
+        `;
+
+        container.innerHTML += item;
+    });
+}
+
+// ---------------- BACK BUTTON ----------------
 function goBack() {
-    window.location.href = "events.html";
+    window.history.back();
 }
 
 // ---------------- INIT ----------------

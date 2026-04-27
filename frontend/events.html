@@ -21,13 +21,18 @@
             Logout
         </button>
 
-        <button class="btn btn-outline-light btn-sm"
-            onclick="window.location.href='my-bookings.html'">
+        <button class="btn btn-outline-light btn-sm" onclick="window.location.href='my-bookings.html'">
             My Bookings
         </button>
 
-        <!-- 🔥 ADMIN BUTTON REMOVED FROM HTML -->
-        <!-- It will now be injected ONLY for admin via JS -->
+        <button class="btn btn-outline-light btn-sm" onclick="window.location.href='notifications.html'">
+            Notifications
+            <span id="notifCount" class="badge bg-danger ms-1">0</span>
+        </button>
+
+        <button class="btn btn-outline-light btn-sm ms-2" onclick="window.location.href='profile.html'">
+            Profile
+        </button>
 
     </div>
 </nav>
