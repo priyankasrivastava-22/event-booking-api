@@ -3,66 +3,64 @@
 <head>
     <meta charset="UTF-8">
     <title>Events</title>
-
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    <!-- <link rel="stylesheet" href="css/events.css"> -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
     <link rel="stylesheet" href="css/common.css">
 </head>
-<body>
+<body class="d-flex flex-column" style="height: 100vh; overflow: hidden;">
 
-<!-- NAVBAR -->
-<nav class="navbar navbar-dark px-4">
-    <span class="navbar-brand">Event Booking</span>
+<nav class="navbar navbar-dark px-4 sticky-top">
+    <span class="navbar-brand fw-bold">EVENT BOOKING</span>
 
-    <!-- RIGHT SIDE ACTIONS -->
-    <div class="d-flex gap-2 align-items-center">
+    <div class="d-flex gap-3 align-items-center">
+        <input type="text" id="searchInput" class="form-control form-control-sm border-0 bg-dark text-white" placeholder="Search events..." style="width: 200px; background: rgba(255,255,255,0.1) !important;">
 
-        <button class="btn btn-outline-light btn-sm" onclick="logout()">
-            Logout
+        <button class="btn btn-outline-light btn-sm position-relative" onclick="window.location.href='notifications.html'">
+            <i class="bi bi-bell"></i>
+            <span id="notifCount" class="badge rounded-pill bg-danger position-absolute top-0 start-100 translate-middle">0</span>
         </button>
 
-        <button class="btn btn-outline-light btn-sm" onclick="window.location.href='my-bookings.html'">
-            My Bookings
-        </button>
-
-        <button class="btn btn-outline-light btn-sm" onclick="window.location.href='notifications.html'">
-            Notifications
-            <span id="notifCount" class="badge bg-danger ms-1">0</span>
-        </button>
-
-        <button class="btn btn-outline-light btn-sm ms-2" onclick="window.location.href='profile.html'">
-            Profile
-        </button>
-
+        <div class="dropdown">
+            <button class="btn btn-primary btn-sm dropdown-toggle d-flex align-items-center gap-2" type="button" id="profileDropdown" data-bs-toggle="dropdown">
+                <i class="bi bi-person-circle"></i> Profile
+            </button>
+            <ul class="dropdown-menu dropdown-menu-end shadow-lg p-3" style="min-width: 220px; background: rgba(20, 25, 40, 0.95); backdrop-filter: blur(10px); border: 1px solid rgba(255,255,255,0.1);">
+                <li class="text-white small mb-1 opacity-75">LOGGED IN AS</li>
+                <li class="text-white fw-bold mb-2" id="nav-username">Loading...</li>
+                <li><hr class="dropdown-divider border-secondary"></li>
+                <li><a class="dropdown-item text-white small" href="my-bookings.html">My Bookings</a></li>
+                <li><a class="dropdown-item text-danger small mt-2" href="#" onclick="logout()">Logout</a></li>
+            </ul>
+        </div>
     </div>
 </nav>
 
-<!-- FILTER BAR -->
-<div class="container mt-4">
-    <div class="d-flex gap-3 mb-4">
+<main class="flex-grow-1 d-flex flex-column overflow-hidden">
 
-        <!-- SEARCH -->
-        <input type="text" id="searchInput" class="form-control w-25"
-            placeholder="Search event...">
-
-        <!-- CATEGORY -->
-        <select id="categoryFilter" class="form-select w-25">
-            <option value="">All Categories</option>
-        </select>
-
+    <div class="container-fluid px-4 mt-4">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h3 class="mb-0">Available Events</h3>
+            <div style="min-width: 200px;">
+                <select id="categoryFilter" class="form-select custom-dropdown">
+                    <option value="">All Categories</option>
+                </select>
+            </div>
+        </div>
     </div>
-</div>
 
-<!-- CONTENT -->
-<div class="container">
-    <h3 class="mb-4">Available Events</h3>
+    <div class="flex-grow-1 overflow-auto px-4 pb-5">
+        <div id="eventsContainer" class="row row-cols-1 row-cols-sm-2 row-cols-md-5 g-3">
+            </div>
 
-    <div class="row" id="eventsContainer">
-        <!-- Events will load here -->
+        <nav class="mt-5">
+            <ul class="pagination justify-content-center" id="pagination">
+                </ul>
+        </nav>
     </div>
-</div>
+</main>
 
 <script src="js/events.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 
 </body>
 </html>

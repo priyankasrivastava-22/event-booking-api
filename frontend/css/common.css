@@ -100,3 +100,213 @@ body {
         transform: translateY(0);
     }
 }
+
+/* Fix Dropdown Background and Text visibility */
+.form-select, .dropdown-menu {
+    background-color: #1a1f2b !important;
+    color: white !important;
+    border: 1px solid rgba(255,255,255,0.1) !important;
+}
+
+.dropdown-item {
+    color: white !important;
+    transition: background 0.2s;
+}
+
+.dropdown-item:hover {
+    background: rgba(99, 102, 241, 0.2) !important;
+}
+
+/* Ensure the category select is scrollable and readable */
+.custom-dropdown {
+    max-height: 300px;
+    overflow-y: auto;
+}
+
+/* Pagination Styling */
+.page-link {
+    background: rgba(255,255,255,0.05);
+    border: 1px solid rgba(255,255,255,0.1);
+    color: white;
+}
+
+.page-item.active .page-link {
+    background: #6366f1;
+    border-color: #6366f1;
+}
+
+/* Refined Event Card */
+.card {
+    background: rgba(255, 255, 255, 0.05) !important;
+    border: 1px solid rgba(255,255,255,0.08) !important;
+}
+
+/* Fix for the Category Dropdown visibility */
+#categoryFilter {
+    background-color: rgba(255, 255, 255, 0.1) !important;
+    color: white !important;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+/* This fixes the options list inside the dropdown */
+#categoryFilter option {
+    background-color: #1a1d29; /* Match your dark theme background */
+    color: white;
+}
+
+/* If the list is too long, ensure it doesn't break the UI */
+.custom-dropdown {
+    max-height: 200px;
+    overflow-y: auto;
+}
+
+/* --- LAYOUT OVERRIDES --- */
+
+/* 1. Prevent the whole page from scrolling */
+html, body {
+    height: 100%;
+    overflow: hidden;
+}
+
+/* 2. Main content container - uses 100% width and removes Bootstrap padding */
+.main-dashboard {
+    height: 100vh;
+    display: flex;
+    flex-direction: column;
+    padding: 0 10px; /* Minimal 10px gap from the very edge of the screen */
+}
+
+/* 3. The scrollable area for events */
+.scrollable-content {
+    flex: 1;
+    overflow-y: auto;
+    padding-top: 10px;
+    padding-bottom: 30px;
+}
+
+/* 4. Header Alignment: Available Events (Left) | Filter (Right) */
+.dashboard-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    width: 100%;
+    padding: 15px 0;
+}
+
+/* --- 5-COLUMN GRID SYSTEM --- */
+.event-grid {
+    display: grid;
+    grid-template-columns: repeat(5, 1fr); /* Forces exactly 5 columns */
+    gap: 12px; /* Space between cards */
+    width: 100%;
+}
+
+/* --- SMALLER CARD STYLING --- */
+.small-card {
+    min-height: 280px; /* Smaller footprint */
+}
+
+.small-card img {
+    height: 130px !important; /* Shorter images */
+    object-fit: cover;
+}
+
+.small-card .card-body {
+    padding: 10px !important; /* Tighter spacing */
+}
+
+.small-card h6 {
+    font-size: 0.9rem; /* Smaller title */
+    margin-bottom: 2px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.small-card p {
+    font-size: 0.75rem; /* Smaller text */
+    margin-bottom: 8px;
+}
+
+.small-card .btn-sm {
+    font-size: 0.7rem;
+    padding: 4px;
+}
+
+/* Ensure dropdown options are visible in dark mode */
+#categoryFilter {
+    background-color: #1a1d29 !important;
+    color: white !important;
+}
+
+#categoryFilter option {
+    background-color: #1a1d29;
+    color: white;
+}
+
+
+/* --- BOOTSTRAP COMPATIBLE LAYOUT --- */
+
+/* Keeps the page fixed so only the card area scrolls */
+html, body {
+    height: 100%;
+    overflow: hidden;
+}
+
+/* Removes the "boxed" feel of Bootstrap containers to use full width */
+.container-fluid-edge {
+    width: 100%;
+    padding-left: 10px;
+    padding-right: 10px;
+}
+
+/* Custom 5-column grid that works WITH Bootstrap cards */
+.row-cols-5-custom {
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    gap: 1rem;
+}
+
+/* Fix for Bootstrap dropdowns turning white */
+.form-select option {
+    background-color: #212529; /* Bootstrap dark gray */
+    color: white;
+}
+
+/* --- THE GLASS LOOK (Optional: Keep your style) --- */
+.card {
+    background: rgba(255, 255, 255, 0.05) !important;
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.1) !important;
+}
+
+/* Ensure images fit the smaller card size */
+.card-img-top {
+    height: 140px;
+    object-fit: cover;
+}
+
+
+/* Prevent full page scroll */
+html, body {
+    height: 100%;
+    overflow: hidden;
+}
+
+/* Allow the cards section to scroll independently */
+.overflow-auto {
+    scrollbar-width: thin; /* Makes scrollbar less bulky */
+}
+
+/* Fix for Bootstrap dropdown visibility in dark mode */
+#categoryFilter option {
+    background-color: #212529;
+    color: white;
+}
+
+/* Ensure container-fluid actually hits the edges */
+.container-fluid {
+    width: 100%;
+    padding-left: 10px !important;
+    padding-right: 10px !important;
+}

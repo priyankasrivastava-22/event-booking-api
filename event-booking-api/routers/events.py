@@ -51,13 +51,13 @@ def create_event(event: schemas.EventCreate, db: Session = Depends(get_db)):
 @router.get("/events")
 def get_events(
     page: int = 1,
-    limit: int = 10,
+    limit: int = 16,
 
     # SEARCH
     title: str = None,
 
     # FILTERS
-    category_id: int = None,
+    category: str = None,
     date: str = None,
     min_price: int = None,
     max_price: int = None,
@@ -71,8 +71,8 @@ def get_events(
         query = query.filter(models.Event.title.ilike(f"%{title}%"))
 
     # FILTER BY CATEGORY (NEW)
-    if category_id:
-        query = query.filter(models.Event.category_id == category_id)
+    if category:
+        query = query.filter(models.Event.category == category)
 
     # FILTER BY DATE
     if date:
