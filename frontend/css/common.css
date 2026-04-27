@@ -357,3 +357,31 @@ html, body {
     height: 140px;
     object-fit: cover;
 }
+
+
+/* ---------------- ANALYTICS DASHBOARD ---------------- */
+
+.analytics-card {
+    padding: 20px;
+    border-radius: 12px;
+    background: rgba(255,255,255,0.05);
+    border: 1px solid rgba(255,255,255,0.1);
+    backdrop-filter: blur(10px);
+}
+
+.analytics-card p {
+    font-size: 0.8rem;
+    color: #aaa;
+    margin-bottom: 5px;
+}
+
+.analytics-card h3 {
+    font-weight: bold;
+    margin: 0;
+}
+
+/* Chart containers */
+canvas {
+    max-height: 300px;
+}
+

@@ -72,89 +72,48 @@
 
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <link rel="stylesheet" href="css/common.css">
 </head>
 
 <body class="d-flex" style="height: 100vh; overflow: hidden; background-color: #0f172a;">
 
     <!-- SIDEBAR -->
-    <nav class="d-flex flex-column flex-shrink-0 p-3 text-white bg-dark border-end border-secondary" style="width: 240px;">
-        <a href="/" class="d-flex align-items-center mb-3 text-white text-decoration-none">
-            <span class="fs-4 fw-bold">Admin Panel</span>
-        </a>
+    <div class="d-flex" style="height:100vh; width:100%;">
 
-        <hr>
+    <!-- SIDEBAR -->
+    <div class="bg-dark text-white p-3 d-flex flex-column" style="width:250px;">
+        <h4 class="mb-4">Admin</h4>
 
-        <ul class="nav nav-pills flex-column mb-auto gap-2">
-            <li><a href="#" class="nav-link active admin-nav" data-section="stats">Dashboard</a></li>
+        <ul class="nav flex-column gap-2">
+            <li><a href="#" class="nav-link text-white admin-nav active" data-section="stats">Dashboard</a></li>
+            <li><a href="#" class="nav-link text-white admin-nav" data-section="analytics">Analytics</a></li>
             <li><a href="#" class="nav-link text-white admin-nav" data-section="users">Users</a></li>
             <li><a href="#" class="nav-link text-white admin-nav" data-section="events">Events</a></li>
             <li><a href="#" class="nav-link text-white admin-nav" data-section="bookings">Bookings</a></li>
         </ul>
 
-        <hr>
+         <!-- EXIT BUTTON -->
+    <button class="btn btn-danger btn-sm mt-auto" onclick="logoutAdmin()">
+        <i class="bi bi-box-arrow-left"></i> Exit Admin
+    </button>
 
-        <button class="btn btn-outline-light btn-sm" onclick="window.location.href='events.html'">
-            Exit Admin
-        </button>
-    </nav>
+    </div>
 
     <!-- MAIN AREA -->
-    <div class="d-flex flex-column flex-grow-1 overflow-hidden">
+    <div class="flex-grow-1 d-flex flex-column">
 
-        <header class="navbar navbar-dark bg-dark px-4 py-3 border-bottom border-secondary">
-            <h5 id="section-title" class="mb-0 text-white">Dashboard Overview</h5>
+        <!-- HEADER -->
+        <div class="dashboard-header px-3">
+            <h4 id="section-title">Dashboard</h4>
             <div id="header-actions"></div>
-        </header>
+        </div>
 
-        <main class="flex-grow-1 d-flex flex-column overflow-hidden">
+        <!-- CONTENT -->
+        <div id="admin-main-view" class="scrollable-content px-3"></div>
 
-            <div class="container-fluid px-4 pt-4">
-                <div class="d-flex justify-content-between align-items-center mb-3">
-
-                    <h4 class="text-white fw-bold mb-0">Event Management</h4>
-
-                    <div class="d-flex gap-2">
-
-                        <div class="input-group input-group-sm" style="width: 250px;">
-                            <span class="input-group-text bg-dark border-secondary text-muted">
-                                <i class="bi bi-search"></i>
-                            </span>
-                            <input type="text" id="adminEventSearch"
-                                   class="form-control bg-dark text-white border-secondary"
-                                   placeholder="Search events...">
-                        </div>
-
-                        <!-- BUTTON (already existing, no change) -->
-                        <button class="btn btn-primary btn-sm px-3" onclick="openCreateEventModal()">
-                            + Add Event
-                        </button>
-
-                    </div>
-                </div>
-            </div>
-
-            <!-- CONTENT -->
-            <div class="flex-grow-1 overflow-auto px-4">
-                <div class="card bg-dark border-secondary shadow">
-                    <div id="admin-main-view" class="table-responsive"></div>
-                </div>
-
-                <div class="d-flex justify-content-between align-items-center mt-3 pb-4">
-                    <span class="text-muted small">
-                        Showing <span id="start-count">1</span> to
-                        <span id="end-count">10</span> of
-                        <span id="total-count">0</span> entries
-                    </span>
-
-                    <nav>
-                        <ul class="pagination pagination-sm mb-0" id="admin-pagination"></ul>
-                    </nav>
-                </div>
-            </div>
-
-        </main>
     </div>
+</div>
 
     <!-- ========================= -->
     <!-- FIX: CREATE EVENT MODAL -->
@@ -241,6 +200,13 @@
         </div>
     </div>
 </div>
+<script>
+    function logoutAdmin() {
+    localStorage.removeItem("token");
+    window.location.href = "login.html";
+}
+</script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
 </body>
 </html>

@@ -482,9 +482,10 @@ async function showSection(section) {
     actions.innerHTML = "";
 
     if (section === 'stats') {
-    title.innerText = "Dashboard Overview";
+    title.innerText = "Analytics Dashboard";
 
-    const stats = await fetchAdminData("/admin/stats");
+    const stats = await fetchAdminData("/stats");
+
 
     mainView.innerHTML = `
         <div class="row g-4">
@@ -526,6 +527,11 @@ async function showSection(section) {
             </p>
         </div>
     `;
+}
+    else if (section === "analytics") {
+    title.innerText = "Analytics Dashboard";
+    await loadAnalytics();
+    return;
 }
 
     else if (section === 'users') {
@@ -669,6 +675,60 @@ function renderEventAdminTable(events) {
     </table>`;
 }
 
+// ---------------- ANALYTICS UI ----------------
+function renderAnalyticsUI(data, revenueData, trendData) {
+    return `
+    <div class="row g-4">
+
+        <!-- CARDS -->
+        <div class="col-md-3">
+            <div class="card analytics-card">
+                <p>Total Revenue</p>
+                <h3>₹${revenueData.total_revenue}</h3>
+            </div>
+        </div>
+
+        <div class="col-md-3">
+            <div class="card analytics-card">
+                <p>Total Bookings</p>
+                <h3>${data.total_bookings}</h3>
+            </div>
+        </div>
+
+        <div class="col-md-3">
+            <div class="card analytics-card">
+                <p>Total Users</p>
+                <h3>${data.total_users}</h3>
+            </div>
+        </div>
+
+        <div class="col-md-3">
+            <div class="card analytics-card">
+                <p>Total Events</p>
+                <h3>${data.total_events}</h3>
+            </div>
+        </div>
+
+        <!-- CHARTS -->
+        <div class="col-md-8">
+            <div class="card p-3">
+                <h6>Revenue Overview</h6>
+                <canvas id="revenueChart"></canvas>
+            </div>
+        </div>
+
+        <div class="col-md-4">
+            <div class="card p-3">
+                <h6>Bookings Distribution</h6>
+                <canvas id="bookingChart"></canvas>
+            </div>
+        </div>
+
+    </div>
+    `;
+}
+
+
 // ---------------- API HELPER ----------------
 async function fetchAdminData(endpoint) {
     const token = getToken();
@@ -683,7 +743,7 @@ async function fetchAdminData(endpoint) {
 }
 
 // =====================================================
-// 🔥 ADDED FUNCTIONS (THIS FIXES YOUR PROBLEM)
+// ADDED FUNCTIONS (THIS FIXES YOUR PROBLEM)
 // =====================================================
 
 // ---------------- DELETE USER ----------------
@@ -893,42 +953,119 @@ document.addEventListener("DOMContentLoaded", () => {
     });
 });
 
-
 async function loadAnalytics() {
-    const stats = await fetchAdminData("/admin/stats");
-    const bookingsTrend = await fetchAdminData("/admin/analytics/bookings-trend");
-    const revenueTrend = await fetchAdminData("/admin/analytics/revenue-trend");
-    const topEvents = await fetchAdminData("/admin/analytics/top-events");
+    const mainView = document.getElementById("admin-main-view");
 
-    document.getElementById("admin-main-view").innerHTML = `
-        <div class="row g-3">
-
-            <div class="col-md-3 card p-3 text-white bg-primary">
-                <h6>Users</h6>
-                <h3>${stats.total_users}</h3>
-            </div>
-
-            <div class="col-md-3 card p-3 text-white bg-success">
-                <h6>Events</h6>
-                <h3>${stats.total_events}</h3>
-            </div>
-
-            <div class="col-md-3 card p-3 text-white bg-info">
-                <h6>Bookings</h6>
-                <h3>${stats.total_bookings}</h3>
-            </div>
-
-            <div class="col-md-3 card p-3 text-white bg-warning">
-                <h6>Revenue</h6>
-                <h3>₹${stats.revenue}</h3>
-            </div>
-        </div>
-
-        <div class="mt-4 card p-3">
-            <h5>Top Events</h5>
-            ${topEvents.map(e => `
-                <div>${e.event} - ${e.bookings}</div>
-            `).join("")}
+    mainView.innerHTML = `
+        <div class="text-center mt-5">
+            <div class="spinner-border text-primary"></div>
         </div>
     `;
+
+    try {
+        const stats = await fetchAdminData("/stats");
+        const revenueTrend = await fetchAdminData("/admin/analytics/revenue-trend");
+        const bookingsTrend = await fetchAdminData("/admin/analytics/bookings-trend");
+        const mostBooked = await fetchAdminData("admin/analytics/most-booked");
+
+        mainView.innerHTML = `
+            <div class="row g-4">
+
+                <!-- TOP CARDS -->
+                <div class="col-md-3">
+                    <div class="card p-3 bg-primary text-white">
+                        <h6>Users</h6>
+                        <h3>${stats.total_users}</h3>
+                    </div>
+                </div>
+
+                <div class="col-md-3">
+                    <div class="card p-3 bg-success text-white">
+                        <h6>Events</h6>
+                        <h3>${stats.total_events}</h3>
+                    </div>
+                </div>
+
+                <div class="col-md-3">
+                    <div class="card p-3 bg-info text-white">
+                        <h6>Bookings</h6>
+                        <h3>${stats.total_bookings}</h3>
+                    </div>
+                </div>
+
+                <div class="col-md-3">
+                    <div class="card p-3 bg-warning text-white">
+                        <h6>Revenue</h6>
+                        <h3>₹${stats.revenue}</h3>
+                    </div>
+                </div>
+
+                <!-- REVENUE CHART -->
+                <div class="col-md-8">
+                    <div class="card p-3">
+                        <h6>Revenue Trend (Last 7 Days)</h6>
+                        <canvas id="revenueChart"></canvas>
+                    </div>
+                </div>
+
+                <!-- BOOKINGS CHART -->
+                <div class="col-md-4">
+                    <div class="card p-3">
+                        <h6>Bookings Trend</h6>
+                        <canvas id="bookingChart"></canvas>
+                    </div>
+                </div>
+
+                <!-- TOP EVENTS -->
+                <div class="col-12 card p-3">
+                    <h5>Top Events</h5>
+                    ${
+                        mostBooked.map(e => `
+                            <div class="d-flex justify-content-between border-bottom py-2">
+                                <span>${e.title}</span>
+                                <span>${e.bookings} bookings</span>
+                            </div>
+                        `).join("")
+                    }
+                </div>
+
+            </div>
+        `;
+
+        // ---------------- CHART 1: REVENUE ----------------
+        const revenueLabels = revenueTrend.map(r => r.date);
+        const revenueData = revenueTrend.map(r => r.revenue);
+
+        new Chart(document.getElementById("revenueChart"), {
+            type: "line",
+            data: {
+                labels: revenueLabels,
+                datasets: [{
+                    label: "Revenue",
+                    data: revenueData,
+                    fill: true,
+                    tension: 0.4
+                }]
+            }
+        });
+
+        // ---------------- CHART 2: BOOKINGS ----------------
+        const bookingLabels = bookingsTrend.map(b => b.date);
+        const bookingData = bookingsTrend.map(b => b.bookings);
+
+        new Chart(document.getElementById("bookingChart"), {
+            type: "bar",
+            data: {
+                labels: bookingLabels,
+                datasets: [{
+                    label: "Bookings",
+                    data: bookingData
+                }]
+            }
+        });
+
+    } catch (err) {
+        console.error(err);
+        mainView.innerHTML = `<div class="text-danger p-3">Failed to load analytics</div>`;
+    }
 }
