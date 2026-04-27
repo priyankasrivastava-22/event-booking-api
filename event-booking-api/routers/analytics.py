@@ -1,6 +1,5 @@
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
-
 import models
 from core.security import get_db, get_current_user
 
@@ -69,3 +68,6 @@ def revenue(db: Session = Depends(get_db), user=Depends(get_current_user)):
             total += b.tickets * event.price
 
     return {"total_revenue": total}
+
+
+

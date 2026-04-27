@@ -1,95 +1,33 @@
-/* ---------------- GLOBAL RESET ---------------- */
+/* =========================================================
+   1. GLOBAL RESET & BASE STYLES
+========================================================= */
+
 html, body {
     margin: 0;
     padding: 0;
+    height: 100%;
+    overflow: hidden;
 }
+
 body {
-  min-height: 100vh;
+    min-height: 100vh;
+    height: 100vh;
 
-  background:
-    linear-gradient(rgba(11,15,20,0.5), rgba(11,15,20,0.5)),
-    url("../images/login-bg.jpg");
+    background:
+        linear-gradient(rgba(11,15,20,0.5), rgba(11,15,20,0.5)),
+        url("../images/login-bg.jpg");
 
-  background-size: cover;
-  background-position: center;
-  background-repeat: no-repeat;
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
 
-  color: white;
-}
+    color: white;
 
-
-/* ---------------- GLOBAL BACKGROUND ---------------- */
-/* subtle animation */
-@keyframes gradientMove {
-    0% { background-position: 0% 50%; }
-    50% { background-position: 100% 50%; }
-    100% { background-position: 0% 50%; }
-}
-
-/* ---------------- GLASS CARD ---------------- */
-.card {
-    background: rgba(255, 255, 255, 0.08);
-    backdrop-filter: blur(12px);
-    border-radius: 16px;
-    border: 1px solid rgba(255,255,255,0.1);
-    transition: all 0.3s ease;
-}
-
-/* hover effect */
-.card:hover {
-    transform: translateY(-6px) scale(1.02);
-    box-shadow: 0 10px 30px rgba(0,0,0,0.4);
-}
-
-/* ---------------- BUTTONS ---------------- */
-.btn {
-    border-radius: 10px;
-    transition: all 0.2s ease;
-}
-
-/* primary button glow */
-.btn-primary {
-    background: linear-gradient(45deg, #6366f1, #3b82f6);
-    border: none;
-}
-
-.btn-primary:hover {
-    transform: scale(1.05);
-    box-shadow: 0 0 15px rgba(99,102,241,0.6);
-}
-
-/* danger button glow */
-.btn-danger:hover {
-    box-shadow: 0 0 10px rgba(255,0,0,0.5);
-}
-
-/* ---------------- INPUTS ---------------- */
-input, select {
-    background: rgba(255,255,255,0.1) !important;
-    border: none !important;
-    color: white !important;
-}
-
-input::placeholder {
-    color: #bbb;
-}
-
-/* ---------------- NAVBAR ---------------- */
-.navbar {
-    background: rgba(255,255,255,0.05) !important;
-    backdrop-filter: blur(10px);
-}
-
-/* ---------------- BADGES ---------------- */
-.badge {
-    font-size: 12px;
-}
-
-/* page fade-in */
-body {
+    display: flex;
     animation: fadeIn 0.6s ease;
 }
 
+/* page fade-in */
 @keyframes fadeIn {
     from {
         opacity: 0;
@@ -101,8 +39,72 @@ body {
     }
 }
 
-/* Fix Dropdown Background and Text visibility */
-.form-select, .dropdown-menu {
+/* subtle animation (unused but kept) */
+@keyframes gradientMove {
+    0% { background-position: 0% 50%; }
+    50% { background-position: 100% 50%; }
+    100% { background-position: 0% 50%; }
+}
+
+
+/* =========================================================
+   2. GLASS UI COMPONENTS (GLOBAL CARDS)
+========================================================= */
+
+.card {
+    background: rgba(255, 255, 255, 0.08);
+    backdrop-filter: blur(12px);
+    border-radius: 16px;
+    border: 1px solid rgba(255,255,255,0.1);
+    transition: all 0.3s ease;
+}
+
+.card:hover {
+    transform: translateY(-6px) scale(1.02);
+    box-shadow: 0 10px 30px rgba(0,0,0,0.4);
+}
+
+
+/* =========================================================
+   3. BUTTONS
+========================================================= */
+
+.btn {
+    border-radius: 10px;
+    transition: all 0.2s ease;
+}
+
+.btn-primary {
+    background: linear-gradient(45deg, #6366f1, #3b82f6);
+    border: none;
+}
+
+.btn-primary:hover {
+    transform: scale(1.05);
+    box-shadow: 0 0 15px rgba(99,102,241,0.6);
+}
+
+.btn-danger:hover {
+    box-shadow: 0 0 10px rgba(255,0,0,0.5);
+}
+
+
+/* =========================================================
+   4. FORM INPUTS / DROPDOWNS
+========================================================= */
+
+input, select {
+    background: rgba(255,255,255,0.1) !important;
+    border: none !important;
+    color: white !important;
+}
+
+input::placeholder {
+    color: #bbb;
+}
+
+.form-select,
+.dropdown-menu {
     background-color: #1a1f2b !important;
     color: white !important;
     border: 1px solid rgba(255,255,255,0.1) !important;
@@ -117,13 +119,46 @@ body {
     background: rgba(99, 102, 241, 0.2) !important;
 }
 
-/* Ensure the category select is scrollable and readable */
-.custom-dropdown {
-    max-height: 300px;
-    overflow-y: auto;
+/* dropdown options */
+#categoryFilter,
+#categoryFilter option,
+.form-select option {
+    background-color: #1a1d29 !important;
+    color: white !important;
 }
 
-/* Pagination Styling */
+
+/* =========================================================
+   5. NAVBAR / NAVIGATION
+========================================================= */
+
+.navbar {
+    background: rgba(255,255,255,0.05) !important;
+    backdrop-filter: blur(10px);
+}
+
+.nav-pills .nav-link.active {
+    background-color: #6366f1 !important;
+}
+
+.nav-link:hover {
+    background: rgba(255, 255, 255, 0.05);
+}
+
+
+/* =========================================================
+   6. BADGES
+========================================================= */
+
+.badge {
+    font-size: 12px;
+}
+
+
+/* =========================================================
+   7. PAGINATION
+========================================================= */
+
 .page-link {
     background: rgba(255,255,255,0.05);
     border: 1px solid rgba(255,255,255,0.1);
@@ -135,88 +170,101 @@ body {
     border-color: #6366f1;
 }
 
-/* Refined Event Card */
-.card {
-    background: rgba(255, 255, 255, 0.05) !important;
-    border: 1px solid rgba(255,255,255,0.08) !important;
+.pagination .page-link {
+    background-color: #1a1d29;
+    border-color: rgba(255, 255, 255, 0.1);
+    color: #ccc;
 }
 
-/* Fix for the Category Dropdown visibility */
-#categoryFilter {
-    background-color: rgba(255, 255, 255, 0.1) !important;
-    color: white !important;
-    border: 1px solid rgba(255, 255, 255, 0.2);
+.pagination .page-item.active .page-link {
+    background-color: #6366f1;
+    border-color: #6366f1;
 }
 
-/* This fixes the options list inside the dropdown */
-#categoryFilter option {
-    background-color: #1a1d29; /* Match your dark theme background */
-    color: white;
+
+/* =========================================================
+   8. TABLE STYLES (ADMIN + BOOKINGS + USERS)
+========================================================= */
+
+.table thead th {
+    background-color: #f8f9fa !important;
+    color: #333 !important;
+    font-weight: 600;
+    text-transform: uppercase;
+    font-size: 0.75rem;
+    letter-spacing: 0.5px;
+    border: none;
 }
 
-/* If the list is too long, ensure it doesn't break the UI */
+.table-dark {
+    background-color: transparent !important;
+}
+
+.table tbody tr {
+    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.table tbody tr:hover {
+    background-color: rgba(255, 255, 255, 0.03) !important;
+}
+
+
+/* =========================================================
+   9. LOGIN / GLOBAL BACKGROUND EFFECTS
+========================================================= */
+
+body {
+    background: linear-gradient(rgba(11,15,20,0.5), rgba(11,15,20,0.5)),
+        url("../images/login-bg.jpg");
+}
+
+
+/* =========================================================
+   10. DROPDOWN FIXES
+========================================================= */
+
 .custom-dropdown {
-    max-height: 200px;
+    max-height: 300px;
     overflow-y: auto;
 }
 
-/* --- LAYOUT OVERRIDES --- */
-
-/* 1. Prevent the whole page from scrolling */
-html, body {
-    height: 100%;
-    overflow: hidden;
+#categoryFilter {
+    background-color: #1a1d29 !important;
+    color: white !important;
 }
 
-/* 2. Main content container - uses 100% width and removes Bootstrap padding */
-.main-dashboard {
-    height: 100vh;
-    display: flex;
-    flex-direction: column;
-    padding: 0 10px; /* Minimal 10px gap from the very edge of the screen */
-}
 
-/* 3. The scrollable area for events */
-.scrollable-content {
-    flex: 1;
-    overflow-y: auto;
-    padding-top: 10px;
-    padding-bottom: 30px;
-}
+/* =========================================================
+   11. EVENT GRID LAYOUT (EVENT PAGE)
+========================================================= */
 
-/* 4. Header Alignment: Available Events (Left) | Filter (Right) */
-.dashboard-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    width: 100%;
-    padding: 15px 0;
-}
-
-/* --- 5-COLUMN GRID SYSTEM --- */
 .event-grid {
     display: grid;
-    grid-template-columns: repeat(5, 1fr); /* Forces exactly 5 columns */
-    gap: 12px; /* Space between cards */
+    grid-template-columns: repeat(5, 1fr);
+    gap: 12px;
     width: 100%;
 }
 
-/* --- SMALLER CARD STYLING --- */
+
+/* =========================================================
+   12. SMALL EVENT CARDS
+========================================================= */
+
 .small-card {
-    min-height: 280px; /* Smaller footprint */
+    min-height: 280px;
 }
 
 .small-card img {
-    height: 130px !important; /* Shorter images */
+    height: 130px !important;
     object-fit: cover;
 }
 
 .small-card .card-body {
-    padding: 10px !important; /* Tighter spacing */
+    padding: 10px !important;
 }
 
 .small-card h6 {
-    font-size: 0.9rem; /* Smaller title */
+    font-size: 0.9rem;
     margin-bottom: 2px;
     white-space: nowrap;
     overflow: hidden;
@@ -224,7 +272,7 @@ html, body {
 }
 
 .small-card p {
-    font-size: 0.75rem; /* Smaller text */
+    font-size: 0.75rem;
     margin-bottom: 8px;
 }
 
@@ -233,80 +281,79 @@ html, body {
     padding: 4px;
 }
 
-/* Ensure dropdown options are visible in dark mode */
-#categoryFilter {
-    background-color: #1a1d29 !important;
-    color: white !important;
-}
 
-#categoryFilter option {
-    background-color: #1a1d29;
-    color: white;
-}
+/* =========================================================
+   13. LAYOUT SYSTEM (FULL SCREEN DASHBOARD CONTROL)
+========================================================= */
 
-
-/* --- BOOTSTRAP COMPATIBLE LAYOUT --- */
-
-/* Keeps the page fixed so only the card area scrolls */
+/* prevent full page scroll */
 html, body {
-    height: 100%;
     overflow: hidden;
 }
 
-/* Removes the "boxed" feel of Bootstrap containers to use full width */
+/* main dashboard layout */
+.main-dashboard {
+    height: 100vh;
+    display: flex;
+    flex-direction: column;
+    padding: 0 10px;
+}
+
+/* scrollable area only */
+.scrollable-content {
+    flex: 1;
+    overflow-y: auto;
+    padding-top: 10px;
+    padding-bottom: 30px;
+}
+
+/* header layout */
+.dashboard-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    width: 100%;
+    padding: 15px 0;
+}
+
+
+/* =========================================================
+   14. BOOTSTRAP OVERRIDES
+========================================================= */
+
+.container-fluid {
+    width: 100%;
+    padding-left: 10px !important;
+    padding-right: 10px !important;
+}
+
 .container-fluid-edge {
     width: 100%;
     padding-left: 10px;
     padding-right: 10px;
 }
 
-/* Custom 5-column grid that works WITH Bootstrap cards */
-.row-cols-5-custom {
-    display: grid;
-    grid-template-columns: repeat(5, 1fr);
-    gap: 1rem;
+
+/* =========================================================
+   15. SCROLL FIXES
+========================================================= */
+
+.overflow-auto {
+    scrollbar-width: thin;
+    scrollbar-color: rgba(255,255,255,0.2) transparent;
 }
 
-/* Fix for Bootstrap dropdowns turning white */
-.form-select option {
-    background-color: #212529; /* Bootstrap dark gray */
-    color: white;
+.flex-grow-1.overflow-auto {
+    height: 100%;
+    overflow-y: auto;
 }
 
-/* --- THE GLASS LOOK (Optional: Keep your style) --- */
-.card {
-    background: rgba(255, 255, 255, 0.05) !important;
-    backdrop-filter: blur(10px);
-    border: 1px solid rgba(255, 255, 255, 0.1) !important;
-}
 
-/* Ensure images fit the smaller card size */
+/* =========================================================
+   16. IMAGES
+========================================================= */
+
 .card-img-top {
     height: 140px;
     object-fit: cover;
-}
-
-
-/* Prevent full page scroll */
-html, body {
-    height: 100%;
-    overflow: hidden;
-}
-
-/* Allow the cards section to scroll independently */
-.overflow-auto {
-    scrollbar-width: thin; /* Makes scrollbar less bulky */
-}
-
-/* Fix for Bootstrap dropdown visibility in dark mode */
-#categoryFilter option {
-    background-color: #212529;
-    color: white;
-}
-
-/* Ensure container-fluid actually hits the edges */
-.container-fluid {
-    width: 100%;
-    padding-left: 10px !important;
-    padding-right: 10px !important;
 }

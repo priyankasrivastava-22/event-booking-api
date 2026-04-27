@@ -133,3 +133,16 @@ def delete_event(event_id: int, db: Session = Depends(get_db)):
     db.delete(event)
     db.commit()
     return {"message": "deleted"}
+
+@router.get("/events")
+def get_events(title: str = None, category: str = None, db: Session = Depends(get_db)):
+
+    query = db.query(models.Event)
+
+    if title:
+        query = query.filter(models.Event.title.contains(title))
+
+    if category:
+        query = query.filter(models.Event.category == category)
+
+    return query.all()
