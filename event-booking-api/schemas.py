@@ -122,3 +122,14 @@ class PaymentResponse(BaseModel):
 class ProfileUpdate(BaseModel):
     full_name: Optional[str] = None
     bio: Optional[str] = None
+
+class EventUpdate(BaseModel):
+    title: Optional[str] = None
+    location: Optional[str] = None
+    total_seats: Optional[int] = None
+    available_seats: Optional[int] = None
+    description: Optional[str] = None
+    date_time: Optional[str] = None
+    price: Optional[int] = None
+    category_id: Optional[int] = None
+
