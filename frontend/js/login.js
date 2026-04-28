@@ -21,26 +21,26 @@ const form = document.getElementById("loginForm");
 form.addEventListener("submit", async (e) => {
   e.preventDefault();
 
-  const identifier = form.querySelectorAll("input")[0].value; // First input (Email/User)
-  const passwordVal = form.querySelectorAll("input")[1].value; // Second input (Password)
+  const identifier = form.querySelectorAll("input")[0].value;
+  const passwordVal = form.querySelectorAll("input")[1].value;
 
-  console.log("Attempting login for:", identifier); // Debugging
+  console.log("Attempting login for:", identifier);
+
+  const params = new URLSearchParams();
+  params.append('username', identifier);
+  params.append('password', passwordVal);
 
   try {
     const res = await fetch("https://event-booking-api-gnww.onrender.com/auth/login", {
       method: "POST",
       headers: {
-        "Content-Type": "application/json",
+        "Content-Type": "application/x-www-form-urlencoded",
       },
-
-      body: JSON.stringify({
-        username: identifier,
-        password: passwordVal
-      }),
+      body: params
     });
 
     if (res.status === 404) {
-        alert("Error 404: API endpoint nahi mila. URL check karein.");
+        alert("Error 404: Endpoint nahi mila.");
         return;
     }
 
@@ -51,7 +51,7 @@ form.addEventListener("submit", async (e) => {
       alert("Login success!");
       window.location.href = "events.html";
     } else {
-      alert(data.error || data.detail || "Login failed");
+      alert(data.detail || "Login failed");
     }
   } catch (err) {
     console.error("Fetch Error:", err);
