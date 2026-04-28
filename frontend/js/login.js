@@ -28,8 +28,8 @@ form.addEventListener("submit", async (e) => {
       headers: {
         "Content-Type": "application/x-www-form-urlencoded",
       },
-      body:  new URLSearchParams({
-       username: email,
+      body: JSON.stringify({
+       identifier: email,
        password: password
      }),
     });

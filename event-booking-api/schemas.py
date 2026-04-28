@@ -46,9 +46,13 @@ class BookingResponse(BaseModel):
 
 class UserCreate(BaseModel):
     username: str
+    email: str
     password: str
     role: str = "user"
 
+class LoginRequest(BaseModel):
+    identifier: str  # username OR email
+    password: str
 
 class UserResponse(BaseModel):
     id: int
@@ -62,7 +66,6 @@ class UserResponse(BaseModel):
 
 class CategoryBase(BaseModel):
     name: str
-
 
 class CategoryResponse(BaseModel):
     id: int

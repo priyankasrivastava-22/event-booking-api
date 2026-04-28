@@ -26,7 +26,8 @@ router = APIRouter()
 def register(request: Request, user: schemas.UserCreate, db: Session = Depends(get_db)):
 
     existing = db.query(models.User).filter(
-        models.User.username == user.username
+        (models.User.username == user.username) |
+        (models.User.email == user.email)
     ).first()
 
     if existing:
@@ -34,6 +35,7 @@ def register(request: Request, user: schemas.UserCreate, db: Session = Depends(g
 
     new_user = models.User(
         username=user.username,
+        email=user.email,
         password=hash_password(user.password),
         role=user.role
     )
@@ -56,7 +58,8 @@ class LoginRequest(BaseModel):
 def login(request: Request, user: LoginRequest, db: Session = Depends(get_db)):
 
     db_user = db.query(models.User).filter(
-        models.User.username == user.username
+        (models.User.username == user.username) |
+    (models.User.email == user.identifier)
     ).first()
 
     if not db_user or not verify_password(user.password, db_user.password):
