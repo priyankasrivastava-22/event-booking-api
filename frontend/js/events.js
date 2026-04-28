@@ -1,6 +1,6 @@
 console.log("JS loaded");
 
-const API_URL = "http://127.0.0.1:8000";
+const API_URL = "https://event-booking-api-gnww.onrender.com";
 
 // --- Helper: Dynamic Image Generator ---
 function getCategoryImage(category) {

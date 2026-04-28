@@ -410,7 +410,7 @@
 //    if (res.ok) alert("Notification sent");
 //}
 
-const API_URL = "http://127.0.0.1:8000";
+const API_URL = "https://event-booking-api-gnww.onrender.com";
 let currentSection = "stats";
 
 // ---------------- AUTH ----------------

@@ -23,7 +23,7 @@ form.addEventListener("submit", async (e) => {
   const password = form.querySelector("input[type='password']").value;
 
   try {
-    const res = await fetch("http://127.0.0.1:8000/login", {
+    const res = await fetch("https://event-booking-api-gnww.onrender.com/login", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
