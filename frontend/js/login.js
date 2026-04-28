@@ -19,7 +19,7 @@ const form = document.getElementById("loginForm");
 form.addEventListener("submit", async (e) => {
   e.preventDefault();
 
-  const email = form.querySelector("input[type='email']").value;
+  const username = form.querySelector("input[type='email']").value;
   const password = form.querySelector("input[type='password']").value;
 
   try {
@@ -29,7 +29,7 @@ form.addEventListener("submit", async (e) => {
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
-       username: email,
+       username: username,
        password: password
      }),
     });
