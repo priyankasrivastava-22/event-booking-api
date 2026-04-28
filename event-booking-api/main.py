@@ -112,11 +112,11 @@ def get_users(db: Session = Depends(get_db)):
     ]
 
 # ---------------- ROUTERS ----------------
-app.include_router(auth.router)
-app.include_router(events.router)
-app.include_router(bookings.router)
-app.include_router(admin.router)
-app.include_router(analytics.router)
-app.include_router(engagement.router)
-app.include_router(profile.router)
-app.include_router(payment.router)
+app.include_router(auth.router, prefix="/auth", tags=["Auth"])
+app.include_router(events.router, prefix="/events", tags=["Events"])
+app.include_router(bookings.router, prefix="/bookings", tags=["Bookings"])
+app.include_router(admin.router, prefix="/admin", tags=["Admin"])
+app.include_router(analytics.router, prefix="/analytics", tags=["Analytics"])
+app.include_router(engagement.router, prefix="/engagement", tags=["Engagement"])
+app.include_router(profile.router, prefix="/profile", tags=["Profile"])
+app.include_router(payment.router, prefix="/payment", tags=["Payment"])
