@@ -26,9 +26,9 @@ form.addEventListener("submit", async (e) => {
     const res = await fetch("https://event-booking-api-gnww.onrender.com/login", {
       method: "POST",
       headers: {
-        "Content-Type": "application/json",
+        "Content-Type": "application/x-www-form-urlencoded",
       },
-      body: JSON.stringify({
+      body:  new URLSearchParams({
        username: email,
        password: password
      }),
