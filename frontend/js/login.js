@@ -1,3 +1,5 @@
+const API_URL = "https://event-booking-api-gnww.onrender.com";
+
 // Function to switch between Login, Register, and Forgot views
 // This stays global so the HTML 'onclick' can find it.
 function showView(viewId) {

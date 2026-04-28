@@ -120,3 +120,12 @@ app.include_router(analytics.router, prefix="/analytics", tags=["Analytics"])
 app.include_router(engagement.router, prefix="/engagement", tags=["Engagement"])
 app.include_router(profile.router, prefix="/profile", tags=["Profile"])
 app.include_router(payment.router, prefix="/payment", tags=["Payment"])
+
+
+@app.get("/")
+async def root():
+    return {
+        "message": "Event Booking API is running!",
+        "docs": "/docs",
+        "status": "success"
+    }
