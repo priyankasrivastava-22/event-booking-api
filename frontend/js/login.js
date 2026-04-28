@@ -19,14 +19,14 @@ const form = document.getElementById("loginForm");
 form.addEventListener("submit", async (e) => {
   e.preventDefault();
 
-  const email = form.querySelector("input[type='email']").value;
+  const username = form.querySelector("input[type='email']").value;
   const password = form.querySelector("input[type='password']").value;
 
   try {
     const res = await fetch("https://event-booking-api-gnww.onrender.com/login", {
       method: "POST",
       headers: {
-        "Content-Type": "application/x-www-form-urlencoded",
+        "Content-Type": "application/json",
       },
       body: JSON.stringify({
        identifier: email,
