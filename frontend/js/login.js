@@ -29,7 +29,7 @@ form.addEventListener("submit", async (e) => {
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
-       identifier: email,
+       username: email,
        password: password
      }),
     });
