@@ -56,29 +56,17 @@ class LoginRequest(BaseModel):
 @router.post("/login")
 def login(request: Request, user: LoginRequest, db: Session = Depends(get_db)):
 
-    # ---------------- FIND USER (username OR email) ----------------
     db_user = db.query(models.User).filter(
         (models.User.username == user.username) |
         (models.User.email == user.username)
     ).first()
 
-    # ---------------- USER NOT FOUND ----------------
     if not db_user:
-        raise HTTPException(status_code=400, detail="Invalid credentials")
+        raise HTTPException(status_code=400, detail="Invalid Email/Username or Password")
 
-    # ---------------- PASSWORD SAFETY CHECK ----------------
-    if not db_user.password:
-        raise HTTPException(status_code=400, detail="Corrupted user data")
-
-    # ---------------- VERIFY PASSWORD ----------------
     if not verify_password(user.password, db_user.password):
-        raise HTTPException(status_code=400, detail="Invalid credentials")
+        raise HTTPException(status_code=400, detail="Invalid Email/Username or Password")
 
-    # ---------------- USER STATUS CHECK (optional safety) ----------------
-    if hasattr(db_user, "is_active") and not db_user.is_active:
-        raise HTTPException(status_code=403, detail="User blocked")
-
-    # ---------------- CREATE TOKEN ----------------
     token = create_token({
         "sub": db_user.username,
         "role": db_user.role
