@@ -14,7 +14,7 @@ if (form) {
     form.addEventListener("submit", async function (e) {
         e.preventDefault();
 
-        const username = form.querySelector("input[type='email'], input[type='text']").value.trim();
+        const username = document.getElementById("loginIdentifier").value.trim();
         const password = form.querySelector("input[type='password']").value.trim();
 
         try {
@@ -30,6 +30,8 @@ if (form) {
             });
 
             const result = await response.json();
+
+            console.log(result);
 
             if (response.ok) {
                 localStorage.setItem("token", result.access_token);
