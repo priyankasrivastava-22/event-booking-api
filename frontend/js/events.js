@@ -86,7 +86,7 @@ async function loadEvents() {
     const search = document.getElementById("searchInput")?.value.trim() || "";
 
     // IMPORTANT: Path is just /events, parameters handle the filtering
-    let url = `${API_URL}/events?limit=16`;
+    let url = `${API_URL}/events/events?limit=16`;
 
     // FIX: Only use the search endpoint if a category is selected or text is typed
 //    if (category !== "" || search !== "") {
