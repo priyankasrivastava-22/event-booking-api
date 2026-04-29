@@ -5,8 +5,7 @@ from sqlalchemy import create_engine, text
 SQLITE_DB = "events.db"
 
 # RENDER POSTGRES URL
-POSTGRES_URL = "postgresql://event_booking_db_tons_user:i2ZnDfPnsrDqBW8nizmwZqi8pfEBW13K@dpg-d7or0fkm0tmc73dah2e0-a.oregon-postgres.render.com/event_booking_db_tons"
-
+POSTGRES_URL = "postgresql://event_booking_db_03hh_user:kpKf86vK3oTeH3jq4S6xAXKUnpFv4DEf@dpg-d7orl8i8qa3s738rf750-a.oregon-postgres.render.com/event_booking_db_03hh"
 # CONNECT SQLITE
 sqlite_conn = sqlite3.connect(SQLITE_DB)
 sqlite_conn.row_factory = sqlite3.Row
