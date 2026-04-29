@@ -13,7 +13,7 @@ async function loadEvent() {
     const id = getEventId();
     const token = localStorage.getItem("token");
 
-    const res = await fetch(`${API_URL}/events/${id}`, {
+    const res = await fetch(`${API_URL}/events/events/${id}`, {
         headers: {
             "Authorization": `Bearer ${token}`
         }
@@ -52,7 +52,7 @@ async function bookEvent() {
         return;
     }
 
-    const res = await fetch(`${API_URL}/book`, {
+    const res = await fetch(`${API_URL}/bookings/book`, {
         method: "POST",
         headers: {
             "Content-Type": "application/json",
