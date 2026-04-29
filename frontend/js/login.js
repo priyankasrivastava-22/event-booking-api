@@ -1,7 +1,6 @@
 const API_URL = "https://event-booking-api-gnww.onrender.com";
 
 // Function to switch between Login, Register, and Forgot views
-// This stays global so the HTML 'onclick' can find it.
 function showView(viewId) {
     const views = document.querySelectorAll(".auth-view");
 
@@ -15,46 +14,80 @@ function showView(viewId) {
     }
 }
 
-// login.js
+// 1. Form selection
 const form = document.getElementById("loginForm");
 
-form.addEventListener("submit", async (e) => {
-  e.preventDefault();
+// 2. Event Listener properly attach
+if (form) {
+    form.addEventListener("submit", async (e) => {
+        e.preventDefault();
 
-  const identifier = form.querySelectorAll("input")[0].value;
-  const passwordVal = form.querySelectorAll("input")[1].value;
+        const identifierInput = form.querySelectorAll("input")[0].value;
+        const passwordInput = form.querySelectorAll("input")[1].value;
 
-  console.log("Attempting login for:", identifier);
+        const loginPayload = {
+            username: identifierInput,
+            password: passwordInput
+        };
 
-  const params = new URLSearchParams();
-  params.append('username', identifier);
-  params.append('password', passwordVal);
+        try {
+            const response = await fetch(`${API_URL}/auth/login`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(loginPayload)
+            });
 
-  try {
-    const res = await fetch("https://event-booking-api-gnww.onrender.com/auth/login", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/x-www-form-urlencoded",
-      },
-      body: params
+            const result = await response.json();
+
+            if (response.ok) {
+                localStorage.setItem('token', result.access_token);
+                alert("Login Successful!");
+                window.location.href = 'events.html';
+            } else {
+                alert("Error: " + (result.detail || "Invalid Username or Password"));
+            }
+        } catch (err) {
+            console.error("Fetch Error:", err);
+            alert("Server connection failed. Please try again later.");
+        }
     });
+}
 
-    if (res.status === 404) {
-        alert("Error 404: Endpoint nahi mila.");
-        return;
+// login.js
+async function handleLogin(e) {
+    e.preventDefault();
+
+    const formData = new FormData(e.target);
+    const data = Object.fromEntries(formData.entries());
+
+    // BACKEND CHECK:
+    const loginPayload = {
+        username: data.username || data.identifier, // Dono try karega
+        password: data.password
+    };
+
+    try {
+        const response = await fetch('https://event-booking-api-gnww.onrender.com/auth/login', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(loginPayload)
+        });
+
+        const result = await response.json();
+
+        if (response.ok) {
+            localStorage.setItem('token', result.access_token);
+            alert("Login Successful!");
+            window.location.href = 'events.html';
+        } else {
+            alert("Error: " + (result.detail || "Invalid Username or Password"));
+        }
+    } catch (err) {
+        console.error("Fetch Error:", err);
+        alert("Server connection failed. Please try again later.");
     }
-
-    const data = await res.json();
-
-    if (res.ok) {
-      localStorage.setItem("token", data.access_token);
-      alert("Login success!");
-      window.location.href = "events.html";
-    } else {
-      alert(data.detail || "Login failed");
-    }
-  } catch (err) {
-    console.error("Fetch Error:", err);
-    alert("Server error or Network issue");
-  }
-});
+}
