@@ -19,7 +19,7 @@ async function loadNotifications() {
     if (!token) return;
 
     try {
-        const res = await fetch(`${API_URL}/my-notifications`, {
+        const res = await fetch(`${API_URL}/engagement/my-notifications`, {
             headers: {
                 "Authorization": `Bearer ${token}`
             }

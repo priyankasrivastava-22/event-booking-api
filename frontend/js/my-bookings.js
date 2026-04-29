@@ -17,7 +17,7 @@ async function loadBookings() {
     if (!token) return;
 
     try {
-        const res = await fetch(`${API_URL}/my-bookings`, {
+        const res = await fetch(`${API_URL}/bookings/my-bookings`, {
             headers: {
                 "Authorization": `Bearer ${token}`
             }
@@ -67,7 +67,7 @@ async function cancelBooking(id) {
     if (!confirm("Are you sure you want to cancel this booking?")) return;
 
     try {
-        const res = await fetch(`${API_URL}/book/${id}`, {
+        const res = await fetch(`${API_URL}/bookings/book/${id}`, {
             method: "DELETE",
             headers: {
                 "Authorization": `Bearer ${token}`

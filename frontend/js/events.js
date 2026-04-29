@@ -52,7 +52,7 @@ function checkAuth() {
 async function loadCategories() {
     const token = localStorage.getItem("token");
     try {
-        const res = await fetch(`${API_URL}/categories`, {
+        const res = await fetch(`${API_URL}/engagement/categories`, {
             headers: { "Authorization": `Bearer ${token}` }
         });
         const categories = await res.json();
@@ -147,7 +147,7 @@ async function loadNotificationCount() {
     const token = localStorage.getItem("token");
     if (!token) return;
     try {
-        const res = await fetch(`${API_URL}/my-notifications`, {
+        const res = await fetch(`${API_URL}/engagement/my-notifications`, {
             headers: { "Authorization": `Bearer ${token}` }
         });
         const data = await res.json();

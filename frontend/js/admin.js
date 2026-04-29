@@ -484,7 +484,7 @@ async function showSection(section) {
     if (section === 'stats') {
     title.innerText = "Analytics Dashboard";
 
-    const stats = await fetchAdminData("/stats");
+    const stats = await fetchAdminData("/analytics/stats");
 
 
     mainView.innerHTML = `
@@ -537,7 +537,7 @@ async function showSection(section) {
     else if (section === 'users') {
         title.innerText = "User Management";
 
-        const users = await fetchAdminData("/admin/users");
+        const users = await fetchAdminData("/admin/admin/users");
 
         mainView.innerHTML = Array.isArray(users)
             ? renderUserTable(users)
@@ -553,7 +553,7 @@ async function showSection(section) {
             </button>
         `;
 
-        const events = await fetchAdminData("/events");
+        const events = await fetchAdminData("/events/events");
 
         mainView.innerHTML = Array.isArray(events)
             ? renderEventAdminTable(events)
@@ -563,7 +563,7 @@ async function showSection(section) {
     else if (section === 'bookings') {
         title.innerText = "All Bookings";
 
-        const bookings = await fetchAdminData("/admin/bookings");
+        const bookings = await fetchAdminData("/admin/admin/bookings");
 
         mainView.innerHTML = Array.isArray(bookings)
             ? renderBookingTable(bookings)
@@ -769,7 +769,7 @@ async function deleteUser(id) {
 async function deleteEvent(id) {
     const token = getToken();
 
-    const res = await fetch(`${API_URL}/admin/events/${id}`, {
+    const res = await fetch(`${API_URL}/admin/admin/events/${id}`, {
         method: "DELETE",
         headers: {
             "Authorization": `Bearer ${token}`
@@ -831,7 +831,7 @@ async function saveEditedEvent() {
         description: document.getElementById("edit_description").value
     };
 
-    const res = await fetch(`${API_URL}/events/${currentEditEventId}`, {
+    const res = await fetch(`${API_URL}/events/events/${currentEditEventId}`, {
         method: "PUT",
         headers: {
             "Content-Type": "application/json",
@@ -856,7 +856,7 @@ async function deleteBooking(id) {
 
     if (!confirm("Cancel this booking?")) return;
 
-    const res = await fetch(`${API_URL}/admin/bookings/${id}`, {
+    const res = await fetch(`${API_URL}/admin/admin/bookings/${id}`, {
         method: "DELETE",
         headers: {
             "Authorization": `Bearer ${token}`
@@ -901,7 +901,7 @@ document.addEventListener("DOMContentLoaded", () => {
         // ---------------- EVENTS SEARCH ----------------
         if (currentSection === "events") {
 
-            const res = await fetch(`${API_URL}/events?title=${query}`, {
+            const res = await fetch(`${API_URL}/events/events?title=${query}`, {
                 headers: {
                     "Authorization": `Bearer ${token}`
                 }
@@ -915,7 +915,7 @@ document.addEventListener("DOMContentLoaded", () => {
         // ---------------- USERS SEARCH ----------------
         else if (currentSection === "users") {
 
-            const res = await fetch(`${API_URL}/admin/users`, {
+            const res = await fetch(`${API_URL}/admin/admin/users`, {
                 headers: {
                     "Authorization": `Bearer ${token}`
                 }
@@ -934,7 +934,7 @@ document.addEventListener("DOMContentLoaded", () => {
         // ---------------- BOOKINGS SEARCH ----------------
         else if (currentSection === "bookings") {
 
-            const res = await fetch(`${API_URL}/admin/bookings`, {
+            const res = await fetch(`${API_URL}/admin/admin/bookings`, {
                 headers: {
                     "Authorization": `Bearer ${token}`
                 }
@@ -963,10 +963,10 @@ async function loadAnalytics() {
     `;
 
     try {
-        const stats = await fetchAdminData("/stats");
-        const revenueTrend = await fetchAdminData("/admin/analytics/revenue-trend");
-        const bookingsTrend = await fetchAdminData("/admin/analytics/bookings-trend");
-        const mostBooked = await fetchAdminData("admin/analytics/most-booked");
+        const stats = await fetchAdminData("/analytics/stats");
+        const revenueTrend = await fetchAdminData("/analytics/admin/analytics/revenue-trend");
+        const bookingsTrend = await fetchAdminData("/analytics/admin/analytics/bookings-trend");
+        const mostBooked = await fetchAdminData("/analytics/admin/analytics/most-booked");
 
         mainView.innerHTML = `
             <div class="row g-4">
