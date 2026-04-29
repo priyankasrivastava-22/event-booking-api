@@ -112,14 +112,14 @@ def get_users(db: Session = Depends(get_db)):
     ]
 
 # ---------------- ROUTERS ----------------
-app.include_router(auth.router, prefix="/auth", tags=["Auth"])
-app.include_router(events.router, prefix="/events", tags=["Events"])
-app.include_router(bookings.router, prefix="/bookings", tags=["Bookings"])
-app.include_router(admin.router, prefix="/admin", tags=["Admin"])
-app.include_router(analytics.router, prefix="/analytics", tags=["Analytics"])
-app.include_router(engagement.router, prefix="/engagement", tags=["Engagement"])
-app.include_router(profile.router, prefix="/profile", tags=["Profile"])
-app.include_router(payment.router, prefix="/payment", tags=["Payment"])
+app.include_router(auth.router, prefix="/api/auth", tags=["Auth"])
+app.include_router(events.router, prefix="/api/events", tags=["Events"])
+app.include_router(bookings.router, prefix="/api/bookings", tags=["Bookings"])
+app.include_router(admin.router, prefix="/api/admin", tags=["Admin"])
+app.include_router(analytics.router, prefix="/api/analytics", tags=["Analytics"])
+app.include_router(engagement.router, prefix="/api/engagement", tags=["Engagement"])
+app.include_router(profile.router, prefix="/api/profile", tags=["Profile"])
+app.include_router(payment.router, prefix="/api/payment", tags=["Payment"])
 
 
 @app.get("/")
