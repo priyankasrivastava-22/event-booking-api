@@ -410,7 +410,7 @@
 //    if (res.ok) alert("Notification sent");
 //}
 
-const API_URL = "https://event-booking-api-gnww.onrender.com";
+const API_URL = "https://event-booking-api-gnww.onrender.com/api";
 let currentSection = "stats";
 
 // ---------------- AUTH ----------------

@@ -1,4 +1,4 @@
-const API_URL = "https://event-booking-api-gnww.onrender.com";
+const API_URL = "https://event-booking-api-gnww.onrender.com/api";
 
 let eventData = null;
 
