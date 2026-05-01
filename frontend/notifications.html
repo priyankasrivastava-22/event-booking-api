@@ -1,47 +1,200 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+    <!-- Defines document character encoding -->
     <meta charset="UTF-8">
-    <title>Notifications</title>
 
+    <!-- Makes page responsive on mobile devices -->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <!-- Sets browser tab title -->
+    <title>Notifications | Event Booking</title>
+
+    <!-- Loads Bootstrap CSS framework -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+
+    <!-- Loads Bootstrap icons library -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+
+    <!-- Loads shared custom stylesheet -->
     <link rel="stylesheet" href="css/common.css">
 
     <style>
-        .card {
-            background: rgba(255,255,255,0.08);
-            border-radius: 15px;
+        /* Page specific layout styling */
+        html, body {
+            height: auto !important;
+            overflow-y: auto !important; /* Enables full page vertical scrolling */
+            background-attachment: fixed;
+        }
+
+        /* Navbar glass effect styling */
+        .navbar {
+            background: rgba(10, 15, 30, 0.95) !important;
             backdrop-filter: blur(10px);
-            border: none;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        /* Main container width and spacing */
+        .notification-container-main {
+            max-width: 1000px;
+            margin: 40px auto;
+            padding: 0 15px;
+        }
+
+        /* Notification list wrapper glassmorphism design */
+        .notification-wrapper {
+            background: rgba(15, 23, 42, 0.8) !important;
+            backdrop-filter: blur(15px);
+            border-radius: 20px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            box-shadow: 0 20px 40px rgba(0,0,0,0.4);
+            overflow: hidden;
+        }
+
+        /* Single notification row layout */
+        .notification-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 25px 35px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+            transition: all 0.3s ease;
+            text-decoration: none;
             color: white;
         }
 
-        .notification {
-            border-bottom: 1px solid rgba(255,255,255,0.1);
-            padding: 10px 0;
+        /* Hover animation for notification row */
+        .notification-item:hover {
+            background: rgba(255, 255, 255, 0.03);
+            padding-left: 40px;
         }
 
-        .time {
-            font-size: 12px;
-            color: #aaa;
+        /* Removes border from last item */
+        .notification-item:last-child {
+            border-bottom: none;
+        }
+
+        /* Notification message text style */
+        .notif-text {
+            font-size: 1.05rem;
+            font-weight: 500;
+            color: #e2e8f0;
+            margin: 0;
+        }
+
+        /* Notification timestamp style */
+        .notif-time {
+            font-size: 0.85rem;
+            color: #64748b;
+            white-space: nowrap;
+        }
+
+        /* Custom scrollbar width */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        /* Scrollbar track background */
+        ::-webkit-scrollbar-track {
+            background: #0f172a;
+        }
+
+        /* Scrollbar thumb style */
+        ::-webkit-scrollbar-thumb {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
         }
     </style>
 </head>
+
 <body>
 
-<div class="container mt-4">
+<!-- Top navigation bar -->
+<nav class="navbar navbar-dark px-4 sticky-top">
 
-    <div class="d-flex justify-content-between align-items-center mb-4">
-        <h3>Notifications</h3>
-        <button class="btn btn-secondary" onclick="goBack()">← Back</button>
+    <!-- Website brand name -->
+    <span class="navbar-brand fw-bold">EVENT BOOKING</span>
+
+    <!-- Right side navbar controls -->
+    <div class="d-flex gap-3 align-items-center">
+
+        <!-- Search notifications input box -->
+        <div class="position-relative d-none d-md-block">
+            <input type="text" id="searchInput" class="form-control form-control-sm text-white"
+                   placeholder="Search notifications..."
+                   style="width: 250px; background: rgba(255,255,255,0.1) !important; border: 1px solid rgba(255,255,255,0.2) !important; padding-left: 35px;">
+
+            <!-- Search icon inside input -->
+            <i class="bi bi-search position-absolute top-50 start-0 translate-middle-y ms-2 text-muted small"></i>
+        </div>
+
+        <!-- Browser back button -->
+        <button class="btn btn-sm" onclick="history.back()"
+                style="background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.1); color: white; width: 38px; height: 38px;">
+            <i class="bi bi-arrow-left"></i>
+        </button>
+
+        <!-- Notification bell with count badge -->
+        <button class="btn btn-outline-light btn-sm position-relative" style="width: 38px; height: 38px;">
+            <i class="bi bi-bell-fill"></i>
+
+            <!-- Dynamic unread notification count -->
+            <span id="notifCount" class="badge rounded-pill bg-danger position-absolute top-0 start-100 translate-middle">0</span>
+        </button>
+
+        <!-- Profile dropdown menu -->
+        <div class="dropdown">
+            <button class="btn btn-primary btn-sm dropdown-toggle d-flex align-items-center gap-2"
+                    type="button" data-bs-toggle="dropdown">
+                <i class="bi bi-person-circle"></i>
+                <span class="d-none d-sm-inline">Profile</span>
+            </button>
+
+            <!-- Dropdown content -->
+            <ul class="dropdown-menu dropdown-menu-end shadow-lg p-3"
+                style="min-width: 220px; background: rgba(15, 23, 42, 0.98); border: 1px solid rgba(255,255,255,0.1);">
+
+                <!-- Logged in label -->
+                <li class="text-white small mb-1 opacity-75">LOGGED IN AS</li>
+
+                <!-- Dynamic username -->
+                <li class="text-white fw-bold mb-2" id="nav-username">User Name</li>
+
+                <li><hr class="dropdown-divider border-secondary"></li>
+
+                <!-- My bookings page link -->
+                <li><a class="dropdown-item text-white small" href="my-bookings.html">My Bookings</a></li>
+
+                <!-- Logout action -->
+                <li><a class="dropdown-item text-danger small mt-2" href="#" onclick="logout()">Logout</a></li>
+            </ul>
+        </div>
+    </div>
+</nav>
+
+<!-- Main notifications section -->
+<div class="container-fluid px-md-5 mt-5">
+
+    <!-- Page heading -->
+    <div class="header-section mb-4 px-3">
+        <h2 class="fw-bold text-white mb-1">Notifications</h2>
+
+        <!-- Subtitle text -->
+        <p class="text-muted">You have new updates regarding your event bookings.</p>
     </div>
 
-    <div class="card p-3" id="notificationContainer">
-        <!-- notifications will load here -->
-    </div>
+    <!-- Dynamic notification list container -->
+    <div class="notification-wrapper mx-3" id="notificationContainer">
 
+        <!-- Notifications will be inserted here using JavaScript -->
+
+    </div>
 </div>
 
+<!-- Loads Bootstrap JavaScript bundle -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
+<!-- Loads notifications page logic -->
 <script src="js/notifications.js"></script>
 
 </body>

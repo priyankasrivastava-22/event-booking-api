@@ -1,56 +1,28 @@
 /* =========================================================
-   1. GLOBAL RESET & BASE STYLES
+   1. GLOBAL RESET & BASE STYLES (Common for All Pages)
 ========================================================= */
-
 html, body {
     margin: 0;
     padding: 0;
-    height: 100%;
-    overflow: hidden;
+    min-height: 100vh;
+    overflow-x: hidden;
 }
 
 body {
-    min-height: 100vh;
-    height: 100vh;
-
     background:
-        linear-gradient(rgba(11,15,20,0.5), rgba(11,15,20,0.5)),
+        linear-gradient(rgba(11,15,20,0.7), rgba(11,15,20,0.7)),
         url("../images/login-bg.jpg");
-
     background-size: cover;
     background-position: center;
     background-repeat: no-repeat;
-
+    background-attachment: fixed;
     color: white;
-
-    display: flex;
-    animation: fadeIn 0.6s ease;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
 }
-
-/* page fade-in */
-@keyframes fadeIn {
-    from {
-        opacity: 0;
-        transform: translateY(10px);
-    }
-    to {
-        opacity: 1;
-        transform: translateY(0);
-    }
-}
-
-/* subtle animation (unused but kept) */
-@keyframes gradientMove {
-    0% { background-position: 0% 50%; }
-    50% { background-position: 100% 50%; }
-    100% { background-position: 0% 50%; }
-}
-
 
 /* =========================================================
-   2. GLASS UI COMPONENTS (GLOBAL CARDS)
+   2. GLASS UI COMPONENTS (Shared Cards)
 ========================================================= */
-
 .card {
     background: rgba(255, 255, 255, 0.08);
     backdrop-filter: blur(12px);
@@ -59,16 +31,9 @@ body {
     transition: all 0.3s ease;
 }
 
-.card:hover {
-    transform: translateY(-6px) scale(1.02);
-    box-shadow: 0 10px 30px rgba(0,0,0,0.4);
-}
-
-
 /* =========================================================
-   3. BUTTONS
+   3. SHARED BUTTONS
 ========================================================= */
-
 .btn {
     border-radius: 10px;
     transition: all 0.2s ease;
@@ -80,308 +45,71 @@ body {
 }
 
 .btn-primary:hover {
-    transform: scale(1.05);
-    box-shadow: 0 0 15px rgba(99,102,241,0.6);
+    transform: scale(1.02);
+    box-shadow: 0 0 15px rgba(99,102,241,0.5);
 }
-
-.btn-danger:hover {
-    box-shadow: 0 0 10px rgba(255,0,0,0.5);
-}
-
 
 /* =========================================================
-   4. FORM INPUTS / DROPDOWNS
+   4. SHARED FORMS & INPUTS
 ========================================================= */
-
-input, select {
+input, select, textarea {
     background: rgba(255,255,255,0.1) !important;
-    border: none !important;
+    border: 1px solid rgba(255,255,255,0.2) !important;
     color: white !important;
+    border-radius: 8px;
 }
 
 input::placeholder {
     color: #bbb;
 }
 
-.form-select,
-.dropdown-menu {
-    background-color: #1a1f2b !important;
-    color: white !important;
-    border: 1px solid rgba(255,255,255,0.1) !important;
-}
-
-.dropdown-item {
-    color: white !important;
-    transition: background 0.2s;
-}
-
-.dropdown-item:hover {
-    background: rgba(99, 102, 241, 0.2) !important;
-}
-
-/* dropdown options */
-#categoryFilter,
-#categoryFilter option,
-.form-select option {
-    background-color: #1a1d29 !important;
-    color: white !important;
-}
-
-
 /* =========================================================
-   5. NAVBAR / NAVIGATION
+   5. NAVBAR & NAVIGATION
 ========================================================= */
-
 .navbar {
-    background: rgba(255,255,255,0.05) !important;
+    background: rgba(10, 15, 30, 0.8) !important;
     backdrop-filter: blur(10px);
 }
 
-.nav-pills .nav-link.active {
-    background-color: #6366f1 !important;
+.nav-link {
+    color: rgba(255,255,255,0.8) !important;
 }
 
 .nav-link:hover {
-    background: rgba(255, 255, 255, 0.05);
+    color: #fff !important;
 }
-
 
 /* =========================================================
-   6. BADGES
+   6. LAYOUT SYSTEM (Main Containers)
 ========================================================= */
-
-.badge {
-    font-size: 12px;
-}
-
-
-/* =========================================================
-   7. PAGINATION
-========================================================= */
-
-.page-link {
-    background: rgba(255,255,255,0.05);
-    border: 1px solid rgba(255,255,255,0.1);
-    color: white;
-}
-
-.page-item.active .page-link {
-    background: #6366f1;
-    border-color: #6366f1;
-}
-
-.pagination .page-link {
-    background-color: #1a1d29;
-    border-color: rgba(255, 255, 255, 0.1);
-    color: #ccc;
-}
-
-.pagination .page-item.active .page-link {
-    background-color: #6366f1;
-    border-color: #6366f1;
-}
-
-
-/* =========================================================
-   8. TABLE STYLES (ADMIN + BOOKINGS + USERS)
-========================================================= */
-
-.table thead th {
-    background-color: #f8f9fa !important;
-    color: #333 !important;
-    font-weight: 600;
-    text-transform: uppercase;
-    font-size: 0.75rem;
-    letter-spacing: 0.5px;
-    border: none;
-}
-
-.table-dark {
-    background-color: transparent !important;
-}
-
-.table tbody tr {
-    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
-}
-
-.table tbody tr:hover {
-    background-color: rgba(255, 255, 255, 0.03) !important;
-}
-
-
-/* =========================================================
-   9. LOGIN / GLOBAL BACKGROUND EFFECTS
-========================================================= */
-
-body {
-    background: linear-gradient(rgba(11,15,20,0.5), rgba(11,15,20,0.5)),
-        url("../images/login-bg.jpg");
-}
-
-
-/* =========================================================
-   10. DROPDOWN FIXES
-========================================================= */
-
-.custom-dropdown {
-    max-height: 300px;
-    overflow-y: auto;
-}
-
-#categoryFilter {
-    background-color: #1a1d29 !important;
-    color: white !important;
-}
-
-
-/* =========================================================
-   11. EVENT GRID LAYOUT (EVENT PAGE)
-========================================================= */
-
-.event-grid {
-    display: grid;
-    grid-template-columns: repeat(5, 1fr);
-    gap: 12px;
-    width: 100%;
-}
-
-
-/* =========================================================
-   12. SMALL EVENT CARDS
-========================================================= */
-
-.small-card {
-    min-height: 280px;
-}
-
-.small-card img {
-    height: 130px !important;
-    object-fit: cover;
-}
-
-.small-card .card-body {
-    padding: 10px !important;
-}
-
-.small-card h6 {
-    font-size: 0.9rem;
-    margin-bottom: 2px;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-}
-
-.small-card p {
-    font-size: 0.75rem;
-    margin-bottom: 8px;
-}
-
-.small-card .btn-sm {
-    font-size: 0.7rem;
-    padding: 4px;
-}
-
-
-/* =========================================================
-   13. LAYOUT SYSTEM (FULL SCREEN DASHBOARD CONTROL)
-========================================================= */
-
-/* prevent full page scroll */
-html, body {
-    overflow: hidden;
-}
-
-/* main dashboard layout */
 .main-dashboard {
-    height: 100vh;
+    min-height: 100vh;
     display: flex;
     flex-direction: column;
-    padding: 0 10px;
 }
 
-/* scrollable area only */
-.scrollable-content {
+/* Isse content hamesha navbar ke niche se shuru hoga */
+.content-wrapper {
+    padding-top: 80px;
     flex: 1;
-    overflow-y: auto;
-    padding-top: 10px;
-    padding-bottom: 30px;
 }
-
-/* header layout */
-.dashboard-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    width: 100%;
-    padding: 15px 0;
-}
-
 
 /* =========================================================
-   14. BOOTSTRAP OVERRIDES
+   7. UTILITIES
 ========================================================= */
-
-.container-fluid {
-    width: 100%;
-    padding-left: 10px !important;
-    padding-right: 10px !important;
+.text-muted {
+    color: #94a3b8 !important;
 }
 
-.container-fluid-edge {
-    width: 100%;
-    padding-left: 10px;
-    padding-right: 10px;
+.shadow-lg {
+    box-shadow: 0 10px 30px rgba(0,0,0,0.4) !important;
 }
 
-
-/* =========================================================
-   15. SCROLL FIXES
-========================================================= */
-
-.overflow-auto {
-    scrollbar-width: thin;
-    scrollbar-color: rgba(255,255,255,0.2) transparent;
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
 }
 
-.flex-grow-1.overflow-auto {
-    height: 100%;
-    overflow-y: auto;
+.animate-fade {
+    animation: fadeIn 0.5s ease forwards;
 }
-
-
-/* =========================================================
-   16. IMAGES
-========================================================= */
-
-.card-img-top {
-    height: 140px;
-    object-fit: cover;
-}
-
-
-/* ---------------- ANALYTICS DASHBOARD ---------------- */
-
-.analytics-card {
-    padding: 20px;
-    border-radius: 12px;
-    background: rgba(255,255,255,0.05);
-    border: 1px solid rgba(255,255,255,0.1);
-    backdrop-filter: blur(10px);
-}
-
-.analytics-card p {
-    font-size: 0.8rem;
-    color: #aaa;
-    margin-bottom: 5px;
-}
-
-.analytics-card h3 {
-    font-weight: bold;
-    margin: 0;
-}
-
-/* Chart containers */
-canvas {
-    max-height: 300px;
-}
-

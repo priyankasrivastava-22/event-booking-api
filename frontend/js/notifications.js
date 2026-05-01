@@ -44,20 +44,21 @@ async function loadNotifications() {
 
 // ---------------- RENDER ----------------
 function renderNotifications(notifications) {
-    const container = document.getElementById("notificationContainer"); // ✅ FIXED
+    const container = document.getElementById("notificationContainer");
 
     container.innerHTML = "";
 
     if (!notifications || notifications.length === 0) {
-        container.innerHTML = "<p class='text-center'>No notifications yet</p>";
+        container.innerHTML = "<p class='text-center text-white p-4'>No notifications yet</p>";
         return;
     }
 
     notifications.forEach(n => {
+        // FIXED: Added 'notification-item', 'notif-text', and 'notif-time' classes
         const item = `
-            <div class="notification">
-                <p>${n.message}</p>
-                <div class="time">
+            <div class="notification-item">
+                <p class="notif-text">${n.message}</p>
+                <div class="notif-time">
                     ${new Date(n.created_at).toLocaleString()}
                 </div>
             </div>

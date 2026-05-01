@@ -1,24 +1,109 @@
-.card {
-    border-radius: 12px;
-    transition: 0.2s ease;
+/* =========================================================
+   PREMIUM NOTIFICATIONS LAYOUT
+========================================================= */
+
+/* 1. CONTAINER WIDTH */
+.notification-container-main {
+    max-width: 96% !important; /* Screen width cover karne ke liye */
+    margin: 40px auto !important;
 }
 
-.card:hover {
-    transform: translateY(-3px);
+/* 2. WRAPPER */
+.notification-wrapper {
+    background: rgba(15, 23, 42, 0.85) !important;
+    backdrop-filter: blur(15px);
+    border-radius: 20px;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    box-shadow: 0 20px 40px rgba(0,0,0,0.4);
+    overflow: hidden;
 }
 
-h2 {
-    font-weight: 600;
+/* 3. INDIVIDUAL ITEM (The Alignment Fix) */
+.notification-item {
+    display: flex !important;
+    flex-direction: row !important; /* Horizontal alignment */
+    justify-content: space-between !important; /* Text left, Time right */
+    align-items: center !important;
+
+    /* GAP FROM BORDERS: Isse text border se door hat jayega */
+    padding: 25px 60px !important;
+
+    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+    transition: all 0.3s ease;
 }
 
-.notification {
-    display: flex;
-    gap: 12px;
-    padding: 14px;
-    border-radius: 10px;
-    transition: 0.2s;
+.notification-item:hover {
+    background: rgba(255, 255, 255, 0.05);
+    padding-left: 70px !important; /* Hover effect */
 }
 
-.notification:hover {
-    background: rgba(255,255,255,0.06);
+.notification-item:last-child {
+    border-bottom: none;
 }
+
+/* 4. TEXT (One Line Fix) */
+.notif-text {
+    color: #e2e8f0;
+    font-size: 1.05rem;
+    font-weight: 500;
+    margin: 0 !important;
+
+    /* Force single line */
+    white-space: nowrap !important;
+    overflow: hidden;
+    text-overflow: ellipsis;
+
+    flex: 1; /* Pura space lega */
+}
+
+/* 5. TIME */
+.notif-time {
+    font-size: 0.85rem;
+    color: #94a3b8;
+    white-space: nowrap !important;
+    margin-left: 50px !important; /* Space between message and time */
+    flex-shrink: 0;
+}
+
+/* ... (Aapka purana code yahan tak rahega) ... */
+
+/* 6. BOOTSTRAP PROFILE BUTTON ALIGNMENT (New Addition) */
+
+/* Button ka blue background aur padding khatam karne ke liye */
+.dropdown .btn-profile-nav {
+    padding: 0 !important;
+    border: none !important;
+    background: transparent !important;
+    width: 38px !important;  /* Matches back & bell icon */
+    height: 38px !important;
+    display: flex !important;
+    align-items: center;
+    justify-content: center;
+}
+
+/* Image ko perfect circle mein fit karne ke liye */
+.profile-img-container {
+    width: 38px;
+    height: 38px;
+    border-radius: 50% !important;
+    overflow: hidden;
+    border: 1px solid rgba(255, 255, 255, 0.2); /* Subtle border like icons */
+}
+
+.profile-img-container img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+/* Dropdown arrow hide karne ke liye */
+.hide-caret::after {
+    display: none !important;
+}
+
+/* Hover effect match karne ke liye */
+.btn-profile-nav:hover {
+    opacity: 0.8;
+}
+
+

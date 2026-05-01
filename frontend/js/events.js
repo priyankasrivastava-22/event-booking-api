@@ -131,7 +131,7 @@ async function loadEvents() {
                         <span class="fw-bold text-primary" style="font-size: 0.85rem;">₹${event.price}</span>
                         <span class="badge bg-secondary" style="font-size: 0.6rem;">${event.category}</span>
                     </div>
-                    <button class="btn btn-primary btn-sm w-100" style="font-size: 0.75rem;" onclick="viewEvent(${event.id})">Details</button>
+                    <button class="btn btn-primary btn-sm w-100" style="font-size: 0.75rem;" onclick="viewEvent(${event.id}, '${imageUrl}')">Details</button>
                 </div>
             </div>
         </div>`;
@@ -164,8 +164,9 @@ function logout() {
     window.location.href = "login.html";
 }
 
-function viewEvent(id) {
-    window.location.href = `event-details.html?id=${id}`;
+function viewEvent(id, img) {
+     window.location.href = `event-details.html?id=${id}&img=${encodeURIComponent(img)}`;
+
 }
 
 // ---------------- INIT ----------------
