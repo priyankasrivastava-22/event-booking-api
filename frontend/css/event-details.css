@@ -1,65 +1,131 @@
-body {
-    color: white;
+/* ====================== ALIGNED & COMPACT UI =====================*/
+
+html, body {
+    height: 100vh !important;
+    margin: 0;
+    padding: 0;
+    overflow: hidden !important;
+    font-family: 'Inter', sans-serif;
 }
 
-.card {
-    background: rgba(255,255,255,0.08);
+.event-wrapper {
+    max-width: 1200px;
+    width: 95%;
+    height: calc(100vh - 90px); /* Navbar space */
+    margin: 5px auto 0 auto !important;
+    display: flex;
+    flex-direction: column;
+}
+
+/* GRID SYSTEM */
+.event-grid {
+    display: grid;
+    grid-template-columns: 1fr 1.2fr;
+    gap: 20px;
+    flex: 1;
+    min-height: 0; /* Align columns to same height */
+    align-items: stretch; /* Yeh ensure karega ki dono side ki height same ho */
+}
+
+/* LEFT SIDE */
+.event-grid > div:first-child {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+}
+
+.event-image {
+    width: 100%;
+    max-height: 320px; /* Pic ko bada kiya */
+    object-fit: cover;
     border-radius: 15px;
-    backdrop-filter: blur(10px);
-    border: none;
+    flex-shrink: 0;
 }
 
-input {
-    background: #1a2238 !important;
+/* Description Box (Iska bottom align rahega) */
+.event-grid div:first-child .card {
+    margin-top: 15px;
+    background: rgba(30, 41, 59, 0.9) !important;
+    padding: 15px;
+    flex: 1; /* Yeh niche tak stretch hoga */
+    overflow-y: auto;
+    border: 1px solid rgba(255,255,255,0.1);
+}
+
+/* RIGHT SIDE */
+.event-grid div:nth-child(2) {
+    display: flex;
+    flex-direction: column;
+    height: 100%; /* Height full rakhi taaki left side se match kare */
+    gap: 15px;
+}
+
+/* Cards visibility and spacing */
+.event-grid .card {
+    background: rgba(30, 41, 59, 0.95) !important;
+    padding: 15px !important;
+    border: 1px solid rgba(255,255,255,0.1);
+    margin-bottom: 0 !important;
+}
+
+/* Aakhri card (Booking) ko stretch kiya taaki niche wla border match kare */
+.event-grid div:nth-child(2) .card:last-child {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    justify-content: center; /* Content center mein rahega per border niche touch karega */
+}
+
+/* =========================================================
+   TEXT VISIBILITY (FORCED WHITE)
+========================================================= */
+
+#title {
+    font-size: 1.8rem;
+    color: #ffffff !important;
+    font-weight: 700;
+    margin: 0;
+}
+
+h5, label, .label, .mt-3, #total {
+    color: #ffffff !important;
+    opacity: 1 !important;
+}
+
+.info-box {
+    display: flex;
+    justify-content: space-between;
+    padding: 8px 0;
+    border-bottom: 1px solid rgba(255,255,255,0.1);
+}
+
+.info-box .label { color: #cbd5e1 !important; }
+.info-box .value { color: #ffffff !important; font-weight: 600; }
+
+.price {
+    font-size: 1.6rem;
+    font-weight: 800;
+    color: #38bdf8;
+}
+
+#quantity {
+    background: #0f172a !important;
     color: white !important;
+    border: 1px solid #334155 !important;
 }
 
-        body {
-            color: white;
-            font-family: 'Segoe UI', sans-serif;
-        }
+#description {
+    color: #e2e8f0 !important;
+    font-size: 0.95rem;
+}
 
-        .card {
-            background: rgba(255,255,255,0.08);
-            border-radius: 15px;
-            backdrop-filter: blur(10px);
-            border: none;
-            color: white;
-        }
+/* Book Now Button */
+.btn-primary {
+    padding: 12px !important;
+    font-weight: 700;
+    margin-top: auto; /* Button ko card mein thoda niche push karne ke liye */
+}
 
-        h2 {
-            font-weight: bold;
-        }
-
-        p {
-            color: #ddd;
-        }
-
-        span {
-            color: #fff;
-            font-weight: 500;
-        }
-
-        .btn-primary {
-            background: linear-gradient(45deg, #6a11cb, #2575fc);
-            border: none;
-        }
-
-        .btn-primary:hover {
-            opacity: 0.9;
-        }
-
-        input {
-            background: #1a2238 !important;
-            border: none !important;
-            color: white !important;
-        }
-
-        input:focus {
-            outline: none;
-            box-shadow: none;
-        }
-
-        #message {
-            font-weight: 500;
-        }
+/* Scrollbar Style */
+.card::-webkit-scrollbar { width: 4px; }
+.card::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.2); border-radius: 10px; }

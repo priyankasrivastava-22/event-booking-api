@@ -1,41 +1,114 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+    <!-- Sets character encoding -->
     <meta charset="UTF-8">
+
+    <!-- Sets page title -->
     <title>My Bookings</title>
 
+    <!-- Loads Bootstrap CSS framework -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+
+    <!-- Loads common shared stylesheet -->
     <link rel="stylesheet" href="css/common.css">
 </head>
-<body>
 
-<!-- NAVBAR -->
-<nav class="navbar navbar-dark px-4">
-    <span class="navbar-brand">My Bookings</span>
+<!-- Full height page layout with hidden outer scroll -->
+<body class="d-flex flex-column" style="height: 100vh; overflow: hidden;">
 
-    <div class="d-flex gap-2">
-        <button class="btn btn-outline-light btn-sm"
-            onclick="window.location.href='events.html'">
-            Back to Events
+<!-- Top navigation bar -->
+<nav class="navbar navbar-dark px-4 sticky-top">
+
+    <!-- Website logo / brand name -->
+    <span class="navbar-brand fw-bold">EVENT BOOKING</span>
+
+    <!-- Right side navbar controls -->
+    <div class="d-flex gap-3 align-items-center">
+
+        <!-- Search input for filtering bookings/events -->
+        <input type="text"
+               id="searchInput"
+               class="form-control form-control-sm border-0 bg-dark text-white"
+               placeholder="Search events..."
+               style="width: 200px; background: rgba(255,255,255,0.1) !important;">
+
+        <!-- Navigation buttons section -->
+        <div class="d-flex gap-2">
+
+            <!-- Redirects user back to events page -->
+            <button class="btn btn-outline-light btn-sm"
+                    onclick="window.location.href='events.html'">
+                Back to Events
+            </button>
+
+        </div>
+
+        <!-- Notifications button with unread count -->
+        <button class="btn btn-outline-light btn-sm position-relative"
+                onclick="window.location.href='notifications.html'">
+
+            <!-- Bell icon -->
+            <i class="bi bi-bell"></i>
+
+            <!-- Dynamic notification count badge -->
+            <span id="notifCount"
+                  class="badge rounded-pill bg-danger position-absolute top-0 start-100 translate-middle">
+                0
+            </span>
         </button>
 
-        <button class="btn btn-outline-light btn-sm" onclick="logout()">
-            Logout
-        </button>
-    </div>
+        <!-- User profile dropdown -->
+        <div class="dropdown">
+
+            <!-- Profile dropdown toggle button -->
+            <button class="btn btn-primary btn-sm dropdown-toggle d-flex align-items-center gap-2"
+                    type="button"
+                    id="profileDropdown"
+                    data-bs-toggle="dropdown">
+
+                <i class="bi bi-person-circle"></i> Profile
+            </button>
+
+            <!-- Dropdown menu content -->
+            <ul class="dropdown-menu dropdown-menu-end shadow-lg p-3"
+                style="min-width: 220px; background: rgba(20, 25, 40, 0.95); backdrop-filter: blur(10px); border: 1px solid rgba(255,255,255,0.1);">
+
+                <!-- Logged in label -->
+                <li class="text-white small mb-1 opacity-75">LOGGED IN AS</li>
+
+                <!-- Dynamic username -->
+                <li class="text-white fw-bold mb-2" id="nav-username">Loading...</li>
+
+                <!-- Divider line -->
+                <li><hr class="dropdown-divider border-secondary"></li>
+
+                <!-- Redirect to bookings page -->
+                <li><a class="dropdown-item text-white small" href="my-bookings.html">My Bookings</a></li>
+
+                <!-- Logout action -->
+                <li><a class="dropdown-item text-danger small mt-2" href="#" onclick="logout()">Logout</a></li>
+            </ul>
+        </div>
+
 </nav>
 
-<!-- CONTENT -->
+<!-- Main page content -->
 <div class="container mt-4">
 
+    <!-- Section heading -->
     <h3 class="mb-4">Your Bookings</h3>
 
+    <!-- Dynamic bookings cards container -->
     <div id="bookingsContainer" class="row">
-        <!-- Bookings will load here -->
+
+        <!-- Booking data will load here using JavaScript -->
+
     </div>
 
 </div>
 
+<!-- Loads bookings page JavaScript -->
 <script src="js/my-bookings.js"></script>
 
 </body>

@@ -208,11 +208,12 @@ Event Booking System
 
 ## Screenshots 
 
-#### Login Page
+### Login Page
 >Secure authentication system with JWT-based login and role detection.
 
 ![Login Page](assets/screenshots/login.png)
 
+### Events Page
 >List of all events happening across the country
 
 ![Events Page](assets/screenshots/event.png)
