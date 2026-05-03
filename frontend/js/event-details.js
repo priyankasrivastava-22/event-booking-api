@@ -1,7 +1,8 @@
+// event-details.js
+
 const API_URL = "https://event-booking-api-gnww.onrender.com/api";
 let eventData = null;
 
-// 1. URL se ID aur Image nikalne ke liye
 function getParams() {
     const params = new URLSearchParams(window.location.search);
     return {
@@ -10,17 +11,16 @@ function getParams() {
     };
 }
 
-// 2. Load Event Details
 async function loadEvent() {
     const { id, img } = getParams();
     const token = localStorage.getItem("token");
 
-    // Pehle hi image set kar dete hain jo URL se aayi hai
     const eventImgElement = document.getElementById("eventImage");
+
     if (img) {
         eventImgElement.src = decodeURIComponent(img);
     } else {
-        eventImgElement.src = "https://images.unsplash.com/photo-1492684223066-81342ee5ff30?w=800"; // Default image
+        eventImgElement.src = "https://images.unsplash.com/photo-1492684223066-81342ee5ff30?w=800";
     }
 
     try {
@@ -33,7 +33,6 @@ async function loadEvent() {
         const data = await res.json();
         eventData = data;
 
-        // UI Update
         document.getElementById("title").innerText = data.title;
         document.getElementById("description").innerText = data.description;
         document.getElementById("location").innerText = data.location;
@@ -42,23 +41,23 @@ async function loadEvent() {
         document.getElementById("seats").innerText = data.available_seats;
 
         updateTotal();
+        loadUser();
+        loadNotificationCount();
+        checkFavourite();
+
     } catch (err) {
-        console.error("Error loading event:", err);
         showMessage("Failed to load event details.", "danger");
     }
 }
 
-// 3. Price Calculation
 function updateTotal() {
     const qtyInput = document.getElementById("quantity");
     if (!eventData || !qtyInput) return;
 
     const qty = parseInt(qtyInput.value) || 1;
-    const total = qty * eventData.price;
-    document.getElementById("total").innerText = total;
+    document.getElementById("total").innerText = qty * eventData.price;
 }
 
-// 4. Booking Logic
 async function bookEvent() {
     const token = localStorage.getItem("token");
     const { id } = getParams();
@@ -76,36 +75,115 @@ async function bookEvent() {
                 "Content-Type": "application/json",
                 "Authorization": `Bearer ${token}`
             },
-            body: JSON.stringify({ event_id: parseInt(id), tickets: qty })
+            body: JSON.stringify({
+                event_id: parseInt(id),
+                tickets: qty
+            })
         });
 
         const data = await res.json();
 
         if (res.ok) {
             showMessage("Booking successful! Redirecting...", "success");
-            setTimeout(() => { window.location.href = "my-bookings.html"; }, 2000);
+            setTimeout(() => {
+                window.location.href = "my-bookings.html";
+            }, 2000);
         } else {
             showMessage(data.detail || "Booking failed", "danger");
         }
-    } catch (err) {
+
+    } catch {
         showMessage("Connection error", "danger");
     }
 }
 
 function showMessage(msg, type) {
     const el = document.getElementById("message");
-    if (el) {
-        el.innerText = msg;
-        el.className = `mt-2 text-${type} fw-bold`;
-    }
+    el.innerText = msg;
+    el.className = `mt-2 text-${type} fw-bold`;
 }
 
 function goBack() {
     window.location.href = "events.html";
 }
 
-// Listeners
-document.getElementById("quantity")?.addEventListener("input", updateTotal);
+function logout() {
+    localStorage.removeItem("token");
+    window.location.href = "login.html";
+}
 
-// Initialize
+function loadUser() {
+    const token = localStorage.getItem("token");
+    if (!token) return;
+
+    try {
+        const payload = JSON.parse(atob(token.split(".")[1]));
+        document.getElementById("nav-username").innerText = payload.sub || "User";
+    } catch {}
+}
+
+async function loadNotificationCount() {
+    const token = localStorage.getItem("token");
+    if (!token) return;
+
+    try {
+        const res = await fetch(`${API_URL}/engagement/my-notifications`, {
+            headers: { "Authorization": `Bearer ${token}` }
+        });
+
+        const data = await res.json();
+        const badge = document.getElementById("notifCount");
+
+        const count = Array.isArray(data) ? data.length : 0;
+        badge.innerText = count;
+        badge.style.display = count ? "inline-block" : "none";
+
+    } catch {}
+}
+
+function toggleFavourite() {
+    const { id } = getParams();
+
+    let favs = JSON.parse(localStorage.getItem("favourites")) || [];
+
+    if (favs.includes(id)) {
+        favs = favs.filter(x => x !== id);
+    } else {
+        favs.push(id);
+    }
+
+    localStorage.setItem("favourites", JSON.stringify(favs));
+    checkFavourite();
+}
+
+function checkFavourite() {
+    const { id } = getParams();
+
+    const favs = JSON.parse(localStorage.getItem("favourites")) || [];
+    const icon = document.getElementById("favIcon");
+
+    if (favs.includes(id)) {
+        icon.className = "bi bi-heart-fill text-danger";
+    } else {
+        icon.className = "bi bi-heart";
+    }
+}
+
+async function shareEvent() {
+    const url = window.location.href;
+    const title = document.getElementById("title").innerText || "Event";
+
+    if (navigator.share) {
+        await navigator.share({
+            title: title,
+            text: "Check this event",
+            url: url
+        });
+    } else {
+        await navigator.clipboard.writeText(url);
+        alert("Event link copied");
+    }
+}
+
+document.getElementById("quantity")?.addEventListener("input", updateTotal);
 document.addEventListener("DOMContentLoaded", loadEvent);

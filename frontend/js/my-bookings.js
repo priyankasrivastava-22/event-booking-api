@@ -1,13 +1,17 @@
+// my-bookings.js
+
 const API_URL = "https://event-booking-api-gnww.onrender.com/api";
 
 // ---------------- AUTH ----------------
 function getToken() {
     const token = localStorage.getItem("token");
+
     if (!token) {
         alert("Please login first");
         window.location.href = "login.html";
         return null;
     }
+
     return token;
 }
 
@@ -24,20 +28,25 @@ async function loadBookings() {
         });
 
         const data = await res.json();
-        console.log("Bookings:", data);
 
         const container = document.getElementById("bookingsContainer");
+        if (!container) return;
+
         container.innerHTML = "";
 
         if (!data || data.length === 0) {
-            container.innerHTML = "<p>No bookings yet</p>";
+            container.innerHTML = `
+                <div class="col-12 text-center text-white py-5">
+                    <h5>No bookings yet</h5>
+                </div>
+            `;
             return;
         }
 
         data.forEach(b => {
             const card = `
                 <div class="col-md-4 mb-4">
-                    <div class="card p-3 text-white">
+                    <div class="card p-3 text-white h-100">
                         <h5>${b.event.title}</h5>
                         <p>Date: ${b.event.date_time}</p>
                         <p>Location: ${b.event.location}</p>
@@ -51,6 +60,7 @@ async function loadBookings() {
                     </div>
                 </div>
             `;
+
             container.innerHTML += card;
         });
 
@@ -78,7 +88,7 @@ async function cancelBooking(id) {
 
         if (res.ok) {
             alert("Booking cancelled");
-            loadBookings(); // refresh list
+            loadBookings();
         } else {
             alert(data.detail);
         }
@@ -86,12 +96,6 @@ async function cancelBooking(id) {
     } catch (err) {
         console.error(err);
     }
-}
-
-// ---------------- LOGOUT ----------------
-function logout() {
-    localStorage.removeItem("token");
-    window.location.href = "login.html";
 }
 
 // ---------------- INIT ----------------

@@ -129,3 +129,34 @@ h5, label, .label, .mt-3, #total {
 /* Scrollbar Style */
 .card::-webkit-scrollbar { width: 4px; }
 .card::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.2); border-radius: 10px; }
+
+/* Add in event-details.css bottom */
+
+.nav-icon-btn{
+    width:38px;
+    height:38px;
+    border-radius:8px;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+}
+
+/* Add / Replace in event-details.css */
+
+.nav-icon-btn{
+    width:38px;
+    height:38px;
+    border-radius:8px;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    padding:0;
+}
+
+.profile-btn-fix::after{
+    display:none !important;
+}
+
+.profile-btn-fix i{
+    font-size:16px;
+}

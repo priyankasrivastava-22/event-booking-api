@@ -1,9 +1,22 @@
+/* my-bookings.css */
+
 body {
-    background: #0f172a;
     color: white;
 }
 
 .card {
     background: rgba(255,255,255,0.08);
-    border-radius: 12px;
+    border-radius: 14px;
+    border: none;
+    backdrop-filter: blur(10px);
+    transition: 0.3s;
+}
+
+.card:hover {
+    transform: translateY(-5px);
+}
+
+.card p {
+    margin-bottom: 8px;
+    color: #cbd5e1;
 }
