@@ -1,4 +1,32 @@
 .navbar {
-    background: rgba(0,0,0,0.5);
-    backdrop-filter: blur(10px);
+    background: rgba(10,15,30,0.82);
+    backdrop-filter: blur(12px);
+}
+
+/* Common Icon Buttons */
+.nav-icon-btn{
+    width:38px;
+    height:38px;
+    border-radius:10px;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    padding:0;
+    background: rgba(255,255,255,0.08) !important;
+    border:1px solid rgba(255,255,255,0.08) !important;
+    color:#ffffff !important;
+    transition:0.25s ease;
+}
+
+.nav-icon-btn:hover{
+    background: rgba(255,255,255,0.14) !important;
+    transform: translateY(-1px);
+}
+
+.profile-btn-fix::after{
+    display:none !important;
+}
+
+.dropdown-menu{
+    border-radius:12px;
 }

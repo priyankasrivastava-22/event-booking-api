@@ -20,3 +20,24 @@ body {
     backdrop-filter: blur(10px);
 }
 
+/* Category Dropdown */
+.custom-dropdown {
+    background: rgba(255,255,255,0.08);
+    border: 1px solid rgba(255,255,255,0.12);
+    color: #ffffff;
+    backdrop-filter: blur(10px);
+    border-radius: 10px;
+    padding: 10px 14px;
+}
+
+.custom-dropdown:focus {
+    background: rgba(255,255,255,0.10);
+    color: #ffffff;
+    border-color: rgba(255,255,255,0.25);
+    box-shadow: none;
+}
+
+.custom-dropdown option {
+    background: #111827;
+    color: #ffffff;
+}
