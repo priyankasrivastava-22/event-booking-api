@@ -15,7 +15,7 @@ from models import User
 from database import SessionLocal
 from sqlalchemy.orm import Session
 from fastapi import Depends
-
+from sqlalchemy import text
 from database import engine
 import models
 
@@ -129,3 +129,9 @@ async def root():
         "docs": "/docs",
         "status": "success"
     }
+
+
+@app.get("/warmup")
+def warmup(db: Session = Depends(get_db)):
+    db.execute(text("SELECT 1"))
+    return {"status": "awake"}
