@@ -37,7 +37,11 @@ def register(request: Request, user: schemas.UserCreate, db: Session = Depends(g
         username=user.username,
         email=user.email,
         password=hash_password(user.password),
-        role=user.role
+        role="user",
+        is_active = True,
+        is_verified = False,
+        full_name="",
+        bio=""
     )
 
     db.add(new_user)
@@ -102,7 +106,6 @@ def debug_db(db: Session = Depends(get_db)):
         "bookings": db.query(models.Booking).count()
     }
 
-
 @router.get("/all-bookings")
 def all_bookings(db: Session = Depends(get_db)):
     return db.query(models.Booking).all()
@@ -110,10 +113,3 @@ def all_bookings(db: Session = Depends(get_db)):
 @router.get("/debug-user/{username}")
 def debug(username: str, db: Session = Depends(get_db)):
     return db.query(models.User).filter(models.User.username == username).first()
-
-@router.get("/reset-db")
-def reset(db: Session = Depends(get_db)):
-    db.query(models.User).delete()
-    db.commit()
-    return {"message": "DB cleared"}
-
