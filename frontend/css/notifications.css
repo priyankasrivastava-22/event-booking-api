@@ -106,4 +106,43 @@
     opacity: 0.8;
 }
 
+/* Replace mt-5 effect with tighter spacing */
+.container-fluid.px-md-5.mt-5 {
+    margin-top: 12px !important;
+    padding-top: 0 !important;
+}
 
+/* Header section tighter top spacing */
+.header-section {
+    margin-top: 0 !important;
+    padding-top: 0 !important;
+    margin-left: -28px !important;
+}
+
+/* =========================================================
+   STICKY FOOTER FIX FOR NOTIFICATIONS PAGE
+   Footer bottom pe rahe even if no notifications
+========================================================= */
+
+/* Full page height layout */
+html,
+body {
+    height: 100%;
+}
+
+/* Body as vertical flex layout */
+body {
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+}
+
+/* Main page content takes remaining space */
+.container-fluid.px-md-5 {
+    flex: 1;
+}
+
+/* Footer always pushed to bottom */
+#footer-placeholder {
+    margin-top: auto;
+}
