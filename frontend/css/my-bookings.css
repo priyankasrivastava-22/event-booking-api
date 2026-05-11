@@ -1,9 +1,11 @@
-/* my-bookings.css */
+/* My Bookings Page */
 
+/* Body text color */
 body {
     color: white;
 }
 
+/* Booking card style */
 .card {
     background: rgba(255,255,255,0.08);
     border-radius: 14px;
@@ -12,11 +14,45 @@ body {
     transition: 0.3s;
 }
 
+/* Card hover lift effect */
 .card:hover {
     transform: translateY(-5px);
 }
 
+/* Card paragraph text */
 .card p {
     margin-bottom: 8px;
     color: #cbd5e1;
+}
+
+/* Move heading left */
+.container.mt-4 .d-flex.align-items-center.gap-3.mb-4 {
+    margin-left: -65px !important;
+}
+
+/* Reduce top gap */
+.container.mt-4 {
+    margin-top: 12px !important;
+    padding-top: 0 !important;
+}
+
+/* Heading font size */
+.container.mt-4 h3 {
+    font-size: 1.20rem !important;
+    font-weight: 400;
+}
+
+/* Back button style */
+.booking-back-btn {
+    background: transparent;
+    border: none;
+    color: white;
+    font-size: 1.4rem;
+    padding: 0;
+    cursor: pointer;
+}
+
+/* Back button hover */
+.booking-back-btn:hover {
+    opacity: .75;
 }

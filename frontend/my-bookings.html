@@ -1,20 +1,20 @@
-<!-- my-bookings.html -->
+<!-- My Bookings Page -->
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <!-- Sets character encoding -->
+    <!-- Character encoding -->
     <meta charset="UTF-8">
 
-    <!-- Sets page title -->
+    <!-- Browser title -->
     <title>My Bookings</title>
 
-    <!-- Loads Bootstrap CSS framework -->
+    <!-- Bootstrap CSS -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
 
-    <!-- Loads Bootstrap Icons -->
+    <!-- Bootstrap Icons -->
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
 
-    <!-- Shared CSS -->
+    <!-- Shared styles -->
     <link rel="stylesheet" href="css/footer.css">
     <link rel="stylesheet" href="css/common.css">
     <link rel="stylesheet" href="css/navbar.css">
@@ -23,29 +23,39 @@
 
 <body class="d-flex flex-column" style="height:100vh; overflow:hidden;">
 
-<!-- Common Navbar Inject -->
+<!-- Navbar loads here -->
 <div id="navbar-container"></div>
 
-<!-- Main Content -->
+<!-- Scrollable page content -->
 <main class="flex-grow-1 overflow-auto">
 
+    <!-- Main container -->
     <div class="container mt-4">
 
-        <!-- Heading -->
-        <div class="d-flex justify-content-between align-items-center mb-4">
+        <!-- Page heading -->
+        <div class="d-flex align-items-center gap-3 mb-4">
+
+            <!-- Back button -->
+            <button type="button" id="backBtn" class="booking-back-btn">
+                <i class="bi bi-chevron-left"></i>
+            </button>
+
+            <!-- Title text -->
             <div>
                 <h3 class="mb-1">Your Bookings</h3>
                 <p class="text-muted mb-0">Manage your booked events here.</p>
             </div>
+
         </div>
 
-        <!-- Dynamic Cards -->
+        <!-- Booking cards render here -->
         <div id="bookingsContainer" class="row"></div>
 
     </div>
 
 </main>
 
+<!-- Footer loads here -->
 <div id="footer-placeholder"></div>
 <script src="js/footer.js"></script>
 

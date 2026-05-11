@@ -1,8 +1,8 @@
-// my-bookings.js
+/* MY BOOKINGS PAGE SCRIPT */
 
 const API_URL = "https://event-booking-api-gnww.onrender.com/api";
 
-// ---------------- AUTH ----------------
+/* Check login token */
 function getToken() {
     const token = localStorage.getItem("token");
 
@@ -15,7 +15,7 @@ function getToken() {
     return token;
 }
 
-// ---------------- LOAD BOOKINGS ----------------
+/* Load all bookings */
 async function loadBookings() {
     const token = getToken();
     if (!token) return;
@@ -27,13 +27,32 @@ async function loadBookings() {
             }
         });
 
-        const data = await res.json();
+        /* Handle expired session */
+        if (res.status === 401) {
+            alert("Session expired. Please login again.");
+            localStorage.removeItem("token");
+            window.location.href = "login.html";
+            return;
+        }
 
         const container = document.getElementById("bookingsContainer");
         if (!container) return;
 
         container.innerHTML = "";
 
+        /* Handle failed response */
+        if (!res.ok) {
+            container.innerHTML = `
+                <div class="col-12 text-center text-white py-5">
+                    <h5>Unable to load bookings</h5>
+                </div>
+            `;
+            return;
+        }
+
+        const data = await res.json();
+
+        /* Show empty state */
         if (!data || data.length === 0) {
             container.innerHTML = `
                 <div class="col-12 text-center text-white py-5">
@@ -43,6 +62,7 @@ async function loadBookings() {
             return;
         }
 
+        /* Render booking cards */
         data.forEach(b => {
             const card = `
                 <div class="col-md-4 mb-4">
@@ -66,10 +86,20 @@ async function loadBookings() {
 
     } catch (err) {
         console.error(err);
+
+        const container = document.getElementById("bookingsContainer");
+
+        if (container) {
+            container.innerHTML = `
+                <div class="col-12 text-center text-white py-5">
+                    <h5>No bookings yet</h5>
+                </div>
+            `;
+        }
     }
 }
 
-// ---------------- CANCEL BOOKING ----------------
+/* Cancel selected booking */
 async function cancelBooking(id) {
     const token = getToken();
     if (!token) return;
@@ -90,7 +120,7 @@ async function cancelBooking(id) {
             alert("Booking cancelled");
             loadBookings();
         } else {
-            alert(data.detail);
+            alert(data.detail || "Unable to cancel booking");
         }
 
     } catch (err) {
@@ -98,5 +128,18 @@ async function cancelBooking(id) {
     }
 }
 
-// ---------------- INIT ----------------
-document.addEventListener("DOMContentLoaded", loadBookings);
+/* Run page scripts */
+document.addEventListener("DOMContentLoaded", function () {
+
+    loadBookings();
+
+    const backBtn = document.getElementById("backBtn");
+
+    /* Back button action */
+    if (backBtn) {
+        backBtn.addEventListener("click", function () {
+            window.location.href = "events.html";
+        });
+    }
+
+});
