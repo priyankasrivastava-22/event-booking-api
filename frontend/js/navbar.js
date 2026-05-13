@@ -79,6 +79,7 @@ function setupNavbar() {
     loadNotificationCount();
     bindSearchForEventsPage();
     setupPageButtons();
+    setupAdminProfileOption();
     setInterval(loadNotificationCount, 5000);
 }
 
@@ -105,4 +106,21 @@ function setupPageButtons() {
 
         rightSide.prepend(backBtn);
     }
+}
+
+function setupAdminProfileOption() {
+    const user = getUserFromToken();
+
+    if (!user || user.role !== "admin") return;
+
+    const profileMenu = document.getElementById("profileMenu");
+
+    if (!profileMenu) return;
+
+    const adminLink = document.createElement("a");
+    adminLink.href = "admin.html";
+    adminLink.className = "dropdown-item text-white small py-2";
+    adminLink.innerHTML = '<i class="bi bi-shield-lock-fill me-2"></i>Admin Panel';
+
+    profileMenu.prepend(adminLink);
 }

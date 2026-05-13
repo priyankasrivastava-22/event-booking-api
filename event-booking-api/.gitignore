@@ -1,14 +1,35 @@
-# Virtual environment
-.venv/
+    # Virtual environment
+    .venv/
+    venv
 
-# Python cache
-__pycache__/
+    # IDE
+.idea/
+.vscode/
+
+    # Python cache
+    __pycache__/
+    *.pyc
+
+    # Database
+    *.db
+    .DS_Store
+
+    # Env file
+    .env
+    .idea/
+
+event-booking-api/.venv/
+event-booking-api/.idea/
+event-booking-api/__pycache__/
+event-booking-api/*.db
+event-booking-api/.env
+
+**/__pycache__/
 *.pyc
 
-# Database
-*.db
-.DS_Store
-
-# Env file
+.venv/
 .env
-.idea/
+events.db
+*.db
+__pycache__/
+*.pyc

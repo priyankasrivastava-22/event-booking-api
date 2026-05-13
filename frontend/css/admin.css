@@ -1,0 +1,271 @@
+/* 1. ROOT */
+:root{
+    --bg:#0f172a;
+    --panel:#111827;
+    --panel2:#1e293b;
+    --text:#f8fafc;
+    --muted:#94a3b8;
+    --border:rgba(255,255,255,.06);
+    --primary:#2563eb;
+    --danger:#dc2626;
+}
+
+/* 2. LAYOUT */
+html{font-size:16px;}
+
+body{
+    margin:0;
+    padding:0;
+    background:var(--bg);
+    color:var(--text);
+    font-size:.95rem;
+    overflow:hidden;
+}
+
+.bg-dark{
+    background:var(--panel)!important;
+    width:15rem!important;
+    border-right:1px solid var(--border);
+}
+
+.bg-dark h4{
+    font-size:1.35rem;
+    font-weight:700;
+}
+
+.admin-nav{
+    padding:.7rem .9rem!important;
+    border-radius:.7rem;
+    transition:.2s;
+}
+
+.admin-nav:hover{
+    background:rgba(255,255,255,.05);
+}
+
+.admin-nav.active{
+    background:var(--primary);
+}
+
+.dashboard-header{
+    height:4rem;
+    background:var(--panel);
+    border-bottom:1px solid var(--border);
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+}
+
+.dashboard-header h4{
+    margin:0;
+    font-size:1.1rem;
+    font-weight:700;
+}
+
+.scrollable-content{
+    height:calc(100vh - 4rem);
+    overflow-y:auto;
+    padding:1rem!important;
+    background:var(--bg);
+}
+
+/* 3. COMPONENTS */
+.card{
+    background:var(--panel)!important;
+    border:1px solid var(--border)!important;
+    border-radius:1rem!important;
+    color:#fff;
+}
+
+.table{
+    margin:0;
+    font-size:.88rem;
+}
+
+.table thead th{
+    color:var(--muted);
+    font-size:.78rem;
+    text-transform:uppercase;
+    border-bottom:1px solid var(--border);
+}
+
+.table td{
+    border-color:rgba(255,255,255,.03);
+    vertical-align:middle;
+}
+
+.table-hover tbody tr:hover{
+    background:rgba(255,255,255,.03);
+}
+
+.btn{
+    border-radius:.6rem!important;
+    font-size:.82rem;
+}
+
+input,select,textarea{
+    background:var(--panel2)!important;
+    border:1px solid var(--border)!important;
+    color:#fff!important;
+}
+
+/* 4. DASHBOARD */
+.stats-page .mini-stat{
+    padding:1rem;
+}
+
+.stats-page .mini-stat h6{
+    font-size:.78rem;
+    margin-bottom:.4rem;
+    color:#dbeafe;
+}
+
+.stats-page .mini-stat h3{
+    margin:0;
+    font-size:1.55rem;
+}
+
+/* 5. ANALYTICS */
+/* Analytics UI */
+
+.analytics-page .metric-card{
+    background: linear-gradient(135deg,#111827,#1e293b) !important;
+    border:1px solid rgba(59,130,246,.25) !important;
+    box-shadow:0 0 0.6rem rgba(59,130,246,.08);
+}
+
+.analytics-page .metric-card small{
+    color:#94a3b8;
+    font-size:.8rem;
+    display:block;
+    margin-bottom:.35rem;
+    letter-spacing:.03rem;
+}
+
+.analytics-page .metric-card h4{
+    color:#ffffff;
+    font-size:1.45rem;
+    font-weight:700;
+    margin:0;
+}
+
+/* Give each metric neon identity */
+
+.analytics-page .col-md-3:nth-child(1) .metric-card h4{
+    color:#22d3ee;   /* cyan */
+}
+
+.analytics-page .col-md-3:nth-child(2) .metric-card h4{
+    color:#a78bfa;   /* violet */
+}
+
+.analytics-page .col-md-3:nth-child(3) .metric-card h4{
+    color:#4ade80;   /* green */
+}
+
+.analytics-page .col-md-3:nth-child(4) .metric-card h4{
+    color:#f59e0b;   /* amber */
+}
+
+/* Chart cards */
+
+.analytics-page .chart-card{
+    background:linear-gradient(135deg,#111827,#172033) !important;
+    border:1px solid rgba(255,255,255,.06) !important;
+}
+
+.analytics-page .chart-card h6{
+    color:#e2e8f0;
+    font-size:.92rem;
+    font-weight:600;
+    margin-bottom:1rem;
+}
+
+/* Top Events */
+
+.analytics-page .card:last-child{
+    background:linear-gradient(135deg,#111827,#172033)!important;
+}
+
+.analytics-page .card:last-child h6{
+    color:#ffffff;
+    font-weight:700;
+}
+
+.analytics-page .card:last-child span:first-child{
+    color:#cbd5e1;
+}
+
+.analytics-page .card:last-child span:last-child{
+    color:#22d3ee;
+    font-weight:600;
+}
+
+/* 6. USERS */
+.users-page .table-wrapper{
+    width:100%;
+    overflow-x:auto;
+    border-radius:1rem;
+}
+
+.users-page .card{
+    padding:.5rem;
+}
+
+/* 7. EVENTS */
+.events-page .table-wrapper{
+    width:100%;
+    overflow-x:auto;
+    border-radius:1rem;
+}
+
+.events-page .card{
+    padding:.5rem;
+}
+
+/* 8. BOOKINGS */
+.bookings-page .table-wrapper{
+    width:100%;
+    overflow-x:auto;
+    border-radius:1rem;
+}
+
+.bookings-page .card{
+    padding:.5rem;
+}
+
+/* 9. SCROLLBAR */
+::-webkit-scrollbar{
+    width:7px;
+}
+
+::-webkit-scrollbar-thumb{
+    background:#334155;
+    border-radius:10px;
+}
+
+/* 10. RESPONSIVE */
+@media(max-width:992px){
+    .bg-dark{
+        width:13rem!important;
+    }
+
+    html{
+        font-size:15px;
+    }
+
+    .analytics-page .col-md-8,
+    .analytics-page .col-md-4{
+        width:100%;
+    }
+}
+
+@media(max-width:768px){
+    body{
+        overflow:auto;
+    }
+
+    .scrollable-content{
+        height:auto;
+    }
+}

@@ -410,21 +410,35 @@
 //    if (res.ok) alert("Notification sent");
 //}
 
-const API_URL = "https://event-booking-api-gnww.onrender.com/api";
+const API_URL =
+    window.location.hostname === "localhost" ||
+    window.location.hostname === "127.0.0.1"
+        ? "http://127.0.0.1:8000/api"
+        : "https://event-booking-api-gnww.onrender.com/api";
+
 let currentSection = "stats";
 
-// ---------------- AUTH ----------------
+/* ===================================================
+   PERFORMANCE CACHE + STATE
+=================================================== */
+const sectionCache = {};
+let loadingSection = false;
+
+/* ===================================================
+   AUTH
+=================================================== */
 function getToken() {
     const token = localStorage.getItem("token");
+
     if (!token) {
         alert("Login required");
         window.location.href = "login.html";
         return null;
     }
+
     return token;
 }
 
-// Decode JWT payload (frontend only usage)
 function getUserFromToken() {
     const token = localStorage.getItem("token");
     if (!token) return null;
@@ -436,7 +450,6 @@ function getUserFromToken() {
     }
 }
 
-// Restrict admin access
 function protectAdminPage() {
     const user = getUserFromToken();
 
@@ -446,132 +459,192 @@ function protectAdminPage() {
     }
 }
 
-// ---------------- DASHBOARD NAVIGATION ----------------
+/* ===================================================
+   INIT
+=================================================== */
 document.addEventListener("DOMContentLoaded", () => {
     protectAdminPage();
 
-    document.querySelectorAll('.admin-nav').forEach(link => {
-        link.addEventListener('click', (e) => {
+    document.querySelectorAll(".admin-nav").forEach(link => {
+        link.addEventListener("click", (e) => {
             e.preventDefault();
 
-            document.querySelectorAll('.admin-nav')
-                .forEach(l => l.classList.remove('active'));
+            if (loadingSection) return;
 
-            link.classList.add('active');
+            document.querySelectorAll(".admin-nav")
+                .forEach(l => l.classList.remove("active"));
 
-            const section = link.getAttribute('data-section');
+            link.classList.add("active");
+
+            const section = link.dataset.section;
             showSection(section);
         });
     });
 
-    showSection('stats');
+    bindSearch();
+    showSection("stats");
 });
 
-// ---------------- MAIN SECTION HANDLER ----------------
-async function showSection(section) {
+/* ===================================================
+   HELPERS
+=================================================== */
+function showLoader() {
+    document.getElementById("admin-main-view").innerHTML = `
+        <div class="text-center py-5">
+            <div class="spinner-border text-light"></div>
+            <div class="mt-2 text-muted small">Loading...</div>
+        </div>
+    `;
+}
+
+function setHeader(titleText, actionsHTML = "") {
+    document.getElementById("section-title").innerText = titleText;
+    document.getElementById("header-actions").innerHTML = actionsHTML;
+}
+
+function renderMain(html) {
+    document.getElementById("admin-main-view").innerHTML = html;
+}
+
+/* ===================================================
+   MAIN SECTION HANDLER
+=================================================== */
+async function showSection(section, forceRefresh = false) {
     currentSection = section;
-    const mainView = document.getElementById('admin-main-view');
-    const title = document.getElementById('section-title');
-    const actions = document.getElementById('header-actions');
+    loadingSection = true;
 
-    mainView.innerHTML = `
-        <div class="text-center mt-5">
-            <div class="spinner-border text-primary"></div>
-        </div>
-    `;
-    actions.innerHTML = "";
+    if (!forceRefresh && sectionCache[section]) {
+        renderMain(sectionCache[section]);
+        setTitleBySection(section);
+        loadingSection = false;
 
-    if (section === 'stats') {
-    title.innerText = "Analytics Dashboard";
-
-    const stats = await fetchAdminData("/analytics/stats");
-
-
-    mainView.innerHTML = `
-        <div class="row g-4">
-
-            <div class="col-md-3">
-                <div class="card p-4 text-white bg-primary">
-                    <h6>Total Users</h6>
-                    <h3>${stats.total_users}</h3>
-                </div>
-            </div>
-
-            <div class="col-md-3">
-                <div class="card p-4 text-white bg-success">
-                    <h6>Active Events</h6>
-                    <h3>${stats.total_events}</h3>
-                </div>
-            </div>
-
-            <div class="col-md-3">
-                <div class="card p-4 text-white bg-info">
-                    <h6>Bookings</h6>
-                    <h3>${stats.total_bookings}</h3>
-                </div>
-            </div>
-
-            <div class="col-md-3">
-                <div class="card p-4 text-white bg-warning">
-                    <h6>Revenue</h6>
-                    <h3>₹${stats.revenue}</h3>
-                </div>
-            </div>
-
-        </div>
-
-        <div class="mt-4 p-4 card">
-            <h5>Recent Activity</h5>
-            <p class="text-muted">
-                System analytics loaded successfully from backend.
-            </p>
-        </div>
-    `;
-}
-    else if (section === "analytics") {
-    title.innerText = "Analytics Dashboard";
-    await loadAnalytics();
-    return;
-}
-
-    else if (section === 'users') {
-        title.innerText = "User Management";
-
-        const users = await fetchAdminData("/admin/admin/users");
-
-        mainView.innerHTML = Array.isArray(users)
-            ? renderUserTable(users)
-            : `<div class="text-danger p-3">Failed to load users</div>`;
+        if (section === "analytics") renderAnalyticsCharts();
+        return;
     }
 
-    else if (section === 'events') {
-        title.innerText = "Event Management";
+    showLoader();
 
-        actions.innerHTML = `
-            <button class="btn btn-primary btn-sm" onclick="openCreateEventModal()">
-                + Create Event
-            </button>
-        `;
+    try {
+        if (section === "stats") {
+            setHeader("Analytics Dashboard");
 
-        const events = await fetchAdminData("/events/events");
+            const stats = await fetchAdminData("/analytics/stats");
 
-        mainView.innerHTML = Array.isArray(events)
-            ? renderEventAdminTable(events)
-            : `<div class="text-danger p-3">Failed to load events</div>`;
+            const html = `
+                <div class="row g-4">
+                    <div class="col-md-3">
+                        <div class="card p-4 text-white bg-primary">
+                            <h6>Total Users</h6>
+                            <h3>${stats.total_users}</h3>
+                        </div>
+                    </div>
+
+                    <div class="col-md-3">
+                        <div class="card p-4 text-white bg-success">
+                            <h6>Active Events</h6>
+                            <h3>${stats.total_events}</h3>
+                        </div>
+                    </div>
+
+                    <div class="col-md-3">
+                        <div class="card p-4 text-white bg-info">
+                            <h6>Bookings</h6>
+                            <h3>${stats.total_bookings}</h3>
+                        </div>
+                    </div>
+
+                    <div class="col-md-3">
+                        <div class="card p-4 text-white bg-warning">
+                            <h6>Revenue</h6>
+                            <h3>₹${stats.revenue}</h3>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card p-4 mt-4">
+                    <h5>Recent Activity</h5>
+                    <p class="text-muted mb-0">
+                        Dashboard loaded successfully.
+                    </p>
+                </div>
+            `;
+
+            sectionCache[section] = html;
+            renderMain(html);
+        }
+
+        else if (section === "analytics") {
+            setHeader("Advanced Analytics");
+            await loadAnalytics(forceRefresh);
+        }
+
+        else if (section === "users") {
+            setHeader("User Management");
+
+            const users = await fetchAdminData("admin/users");
+            const html = renderUserTable(users);
+
+            sectionCache[section] = html;
+            renderMain(html);
+        }
+
+        else if (section === "events") {
+            setHeader(
+                "Event Management",
+                `
+                <button class="btn btn-primary btn-sm"
+                    onclick="openCreateEventModal()">
+                    + Create Event
+                </button>
+                `
+            );
+
+            const events = await fetchAdminData("/events/events");
+            const html = renderEventAdminTable(events);
+
+            sectionCache[section] = html;
+            renderMain(html);
+        }
+
+        else if (section === "bookings") {
+            setHeader("All Bookings");
+
+            const bookings = await fetchAdminData("admin/bookings");
+            const html = renderBookingTable(bookings);
+
+            sectionCache[section] = html;
+            renderMain(html);
+        }
+
+    } catch (err) {
+        console.error(err);
+        renderMain(`
+            <div class="alert alert-danger">
+                Failed to load section.
+            </div>
+        `);
     }
 
-    else if (section === 'bookings') {
-        title.innerText = "All Bookings";
-
-        const bookings = await fetchAdminData("/admin/admin/bookings");
-
-        mainView.innerHTML = Array.isArray(bookings)
-            ? renderBookingTable(bookings)
-            : `<div class="text-danger p-3">Failed to load bookings</div>`;
-    }
+    loadingSection = false;
 }
 
-// ---------------- USER TABLE ----------------
+function setTitleBySection(section) {
+    if (section === "stats") setHeader("Analytics Dashboard");
+    if (section === "analytics") setHeader("Advanced Analytics");
+    if (section === "users") setHeader("User Management");
+    if (section === "events") {
+        setHeader(
+            "Event Management",
+            `<button class="btn btn-primary btn-sm"
+                onclick="openCreateEventModal()">+ Create Event</button>`
+        );
+    }
+    if (section === "bookings") setHeader("All Bookings");
+}
+
+/* ===================================================
+   TABLES
+=================================================== */
 function renderUserTable(users) {
     return `
     <div class="card bg-dark border-secondary">
@@ -597,13 +670,12 @@ function renderUserTable(users) {
                         </button>
                     </td>
                 </tr>
-                `).join('')}
+                `).join("")}
             </tbody>
         </table>
     </div>`;
 }
 
-// ---------------- BOOKING TABLE ----------------
 function renderBookingTable(bookings) {
     return `
     <div class="card bg-dark border-secondary">
@@ -621,8 +693,8 @@ function renderBookingTable(bookings) {
                 ${bookings.map(b => `
                 <tr>
                     <td>${b.id}</td>
-                    <td>${b.user_name || 'User ' + b.user_id}</td>
-                    <td>${b.event_title || 'Event ' + b.event_id}</td>
+                    <td>${b.user_name || ("User " + b.user_id)}</td>
+                    <td>${b.event_title || ("Event " + b.event_id)}</td>
                     <td>${new Date().toLocaleDateString()}</td>
                     <td>
                         <button class="btn btn-sm btn-outline-danger"
@@ -631,336 +703,121 @@ function renderBookingTable(bookings) {
                         </button>
                     </td>
                 </tr>
-                `).join('')}
+                `).join("")}
             </tbody>
         </table>
     </div>`;
 }
 
-// ---------------- EVENT TABLE ----------------
 function renderEventAdminTable(events) {
     const displayEvents = events.slice(0, 10);
 
     return `
-    <table class="table table-dark table-hover align-middle mb-0">
-        <thead class="table-light text-dark">
-            <tr>
-                <th>#</th>
-                <th>Event Name</th>
-                <th>Location</th>
-                <th>Category</th>
-                <th>Price</th>
-                <th>Seats</th>
-                <th>Date</th>
-                <th>Actions</th>
-            </tr>
-        </thead>
-        <tbody>
-            ${displayEvents.map((e, index) => `
-            <tr>
-                <td>${index + 1}</td>
-                <td>${e.title}</td>
-                <td>${e.location}</td>
-                <td>${e.category || 'General'}</td>
-                <td>₹${e.price}</td>
-                <td>${e.available_seats}/${e.total_seats}</td>
-                <td>${e.date_time}</td>
-                <td>
-                    <button onclick="editEvent(${e.id})">Edit</button>
-                    <button onclick="deleteEvent(${e.id})">Delete</button>
-                </td>
-            </tr>
-            `).join('')}
-        </tbody>
-    </table>`;
+    <div class="card bg-dark border-secondary">
+        <table class="table table-dark table-hover mb-0">
+            <thead>
+                <tr>
+                    <th>#</th>
+                    <th>Event</th>
+                    <th>Location</th>
+                    <th>Category</th>
+                    <th>Price</th>
+                    <th>Seats</th>
+                    <th>Date</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+
+            <tbody>
+                ${displayEvents.map((e, i) => `
+                <tr>
+                    <td>${i + 1}</td>
+                    <td>${e.title}</td>
+                    <td>${e.location}</td>
+                    <td>${e.category || "General"}</td>
+                    <td>₹${e.price}</td>
+                    <td>${e.available_seats}/${e.total_seats}</td>
+                    <td>${e.date_time}</td>
+                    <td>
+                        <button onclick="editEvent(${e.id})">Edit</button>
+                        <button onclick="deleteEvent(${e.id})">Delete</button>
+                    </td>
+                </tr>
+                `).join("")}
+            </tbody>
+        </table>
+    </div>`;
 }
 
-// ---------------- ANALYTICS UI ----------------
-function renderAnalyticsUI(data, revenueData, trendData) {
-    return `
-    <div class="row g-4">
-
-        <!-- CARDS -->
-        <div class="col-md-3">
-            <div class="card analytics-card">
-                <p>Total Revenue</p>
-                <h3>₹${revenueData.total_revenue}</h3>
-            </div>
-        </div>
-
-        <div class="col-md-3">
-            <div class="card analytics-card">
-                <p>Total Bookings</p>
-                <h3>${data.total_bookings}</h3>
-            </div>
-        </div>
-
-        <div class="col-md-3">
-            <div class="card analytics-card">
-                <p>Total Users</p>
-                <h3>${data.total_users}</h3>
-            </div>
-        </div>
-
-        <div class="col-md-3">
-            <div class="card analytics-card">
-                <p>Total Events</p>
-                <h3>${data.total_events}</h3>
-            </div>
-        </div>
-
-        <!-- CHARTS -->
-        <div class="col-md-8">
-            <div class="card p-3">
-                <h6>Revenue Overview</h6>
-                <canvas id="revenueChart"></canvas>
-            </div>
-        </div>
-
-        <div class="col-md-4">
-            <div class="card p-3">
-                <h6>Bookings Distribution</h6>
-                <canvas id="bookingChart"></canvas>
-            </div>
-        </div>
-
-    </div>
-    `;
-}
-
-
-// ---------------- API HELPER ----------------
+/* ===================================================
+   API
+=================================================== */
 async function fetchAdminData(endpoint) {
     const token = getToken();
 
     const res = await fetch(`${API_URL}${endpoint}`, {
         headers: {
-            "Authorization": `Bearer ${token}`
+            Authorization: `Bearer ${token}`
         }
     });
 
     return await res.json();
 }
 
-// =====================================================
-// ADDED FUNCTIONS (THIS FIXES YOUR PROBLEM)
-// =====================================================
+/* ===================================================
+   SEARCH
+=================================================== */
+function bindSearch() {
+    const search = document.getElementById("adminEventSearch");
+    if (!search) return;
 
-// ---------------- DELETE USER ----------------
-async function deleteUser(id) {
-    const token = getToken();
+    search.addEventListener("input", () => {
+        const q = search.value.toLowerCase();
 
-    const res = await fetch(`${API_URL}/admin/users/${id}`, {
-        method: "DELETE",
-        headers: {
-            "Authorization": `Bearer ${token}`
+        if (!sectionCache[currentSection]) return;
+
+        if (currentSection === "users") {
+            fetchAdminData("/admin/admin/users").then(data => {
+                const filtered = data.filter(u =>
+                    u.username.toLowerCase().includes(q)
+                );
+                renderMain(renderUserTable(filtered));
+            });
         }
-    });
 
-    if (res.ok) {
-        alert("User deleted");
-        showSection("users");
-    } else {
-        alert("Failed to delete user");
-    }
-}
-
-// ---------------- DELETE EVENT ----------------
-async function deleteEvent(id) {
-    const token = getToken();
-
-    const res = await fetch(`${API_URL}/admin/admin/events/${id}`, {
-        method: "DELETE",
-        headers: {
-            "Authorization": `Bearer ${token}`
-        }
-    });
-
-    if (res.ok) {
-        alert("Event deleted");
-        showSection("events");
-    } else {
-        alert("Failed to delete event");
-    }
-}
-
-// ---------------- EDIT EVENT (basic placeholder) ----------------
-let currentEditEventId = null;
-
-// Open modal and prefill data
-async function editEvent(id) {
-    const token = getToken();
-
-    const res = await fetch(`${API_URL}/events`, {
-        headers: {
-            "Authorization": `Bearer ${token}`
-        }
-    });
-
-    const events = await res.json();
-    const event = events.find(e => e.id === id);
-
-    if (!event) {
-        alert("Event not found");
-        return;
-    }
-
-    currentEditEventId = id;
-
-    document.getElementById("edit_title").value = event.title || "";
-    document.getElementById("edit_location").value = event.location || "";
-    document.getElementById("edit_price").value = event.price || 0;
-    document.getElementById("edit_seats").value = event.total_seats || 0;
-    document.getElementById("edit_date").value = event.date_time || "";
-    document.getElementById("edit_description").value = event.description || "";
-
-    const modal = new bootstrap.Modal(document.getElementById("editEventModal"));
-    modal.show();
-}
-
-// Save edited event
-async function saveEditedEvent() {
-    const token = getToken();
-
-    const body = {
-        title: document.getElementById("edit_title").value,
-        location: document.getElementById("edit_location").value,
-        price: parseInt(document.getElementById("edit_price").value),
-        total_seats: parseInt(document.getElementById("edit_seats").value),
-        date_time: document.getElementById("edit_date").value,
-        description: document.getElementById("edit_description").value
-    };
-
-    const res = await fetch(`${API_URL}/events/events/${currentEditEventId}`, {
-        method: "PUT",
-        headers: {
-            "Content-Type": "application/json",
-            "Authorization": `Bearer ${token}`
-        },
-        body: JSON.stringify(body)
-    });
-
-    if (res.ok) {
-        alert("Event updated successfully");
-        bootstrap.Modal.getInstance(document.getElementById("editEventModal")).hide();
-        showSection("events");
-    } else {
-        alert("Update failed");
-    }
-}
-
-// -------------------- DELETE BOOKING ---------------------
-// ---------------- CANCEL BOOKING (ADMIN) ----------------
-async function deleteBooking(id) {
-    const token = getToken();
-
-    if (!confirm("Cancel this booking?")) return;
-
-    const res = await fetch(`${API_URL}/admin/admin/bookings/${id}`, {
-        method: "DELETE",
-        headers: {
-            "Authorization": `Bearer ${token}`
-        }
-    });
-
-    if (res.ok) {
-        alert("Booking cancelled successfully");
-
-        // refresh bookings table
-        showSection("bookings");
-    } else {
-        const err = await res.text();
-        console.error(err);
-        alert("Failed to cancel booking");
-    }
-}
-
-// ---------------- CREATE EVENT MODAL OPEN ----------------
-function openCreateEventModal() {
-    const modal = document.getElementById("createEventModal");
-
-    if (!modal) {
-        alert("Create Event modal not found in HTML");
-        return;
-    }
-
-    modal.style.display = "block";
-}
-
-
-// ---------------- EVENT SEARCH ----------------
-document.addEventListener("DOMContentLoaded", () => {
-    const searchInput = document.getElementById("adminEventSearch");
-
-    if (!searchInput) return;
-
-    searchInput.addEventListener("input", async (e) => {
-        const query = e.target.value;
-        const token = getToken();
-
-        // ---------------- EVENTS SEARCH ----------------
         if (currentSection === "events") {
-
-            const res = await fetch(`${API_URL}/events/events?title=${query}`, {
-                headers: {
-                    "Authorization": `Bearer ${token}`
-                }
+            fetchAdminData(`/events/events?title=${q}`).then(data => {
+                renderMain(renderEventAdminTable(data));
             });
-
-            const data = await res.json();
-            document.getElementById("admin-main-view").innerHTML =
-                renderEventAdminTable(data);
         }
 
-        // ---------------- USERS SEARCH ----------------
-        else if (currentSection === "users") {
-
-            const res = await fetch(`${API_URL}/admin/admin/users`, {
-                headers: {
-                    "Authorization": `Bearer ${token}`
-                }
+        if (currentSection === "bookings") {
+            fetchAdminData("admin/bookings").then(data => {
+                const filtered = data.filter(b =>
+                    (b.user_name || "").toLowerCase().includes(q) ||
+                    (b.event_title || "").toLowerCase().includes(q)
+                );
+                renderMain(renderBookingTable(filtered));
             });
-
-            let data = await res.json();
-
-            data = data.filter(u =>
-                u.username.toLowerCase().includes(query.toLowerCase())
-            );
-
-            document.getElementById("admin-main-view").innerHTML =
-                renderUserTable(data);
-        }
-
-        // ---------------- BOOKINGS SEARCH ----------------
-        else if (currentSection === "bookings") {
-
-            const res = await fetch(`${API_URL}/admin/admin/bookings`, {
-                headers: {
-                    "Authorization": `Bearer ${token}`
-                }
-            });
-
-            let data = await res.json();
-
-            data = data.filter(b =>
-                (b.user_name || "").toLowerCase().includes(query.toLowerCase()) ||
-                (b.event_title || "").toLowerCase().includes(query.toLowerCase())
-            );
-
-            document.getElementById("admin-main-view").innerHTML =
-                renderBookingTable(data);
         }
     });
-});
+}
 
-async function loadAnalytics() {
-    const mainView = document.getElementById("admin-main-view");
+/* ===================================================
+   ANALYTICS
+=================================================== */
+let analyticsData = null;
 
-    mainView.innerHTML = `
-        <div class="text-center mt-5">
-            <div class="spinner-border text-primary"></div>
-        </div>
-    `;
+async function loadAnalytics(forceRefresh = false) {
+    const main = document.getElementById("admin-main-view");
+
+    if (analyticsData && !forceRefresh) {
+        main.innerHTML = analyticsData.html;
+        renderAnalyticsCharts();
+        return;
+    }
+
+    showLoader();
 
     try {
         const stats = await fetchAdminData("/analytics/stats");
@@ -968,104 +825,136 @@ async function loadAnalytics() {
         const bookingsTrend = await fetchAdminData("/analytics/admin/analytics/bookings-trend");
         const mostBooked = await fetchAdminData("/analytics/admin/analytics/most-booked");
 
-        mainView.innerHTML = `
-            <div class="row g-4">
+        const html = `
+        <div class="analytics-page">
 
-                <!-- TOP CARDS -->
+            <div class="row g-3 mb-3">
+
                 <div class="col-md-3">
-                    <div class="card p-3 bg-primary text-white">
-                        <h6>Users</h6>
-                        <h3>${stats.total_users}</h3>
+                    <div class="card p-3 metric-card">
+                        <small>Users</small>
+                        <h4>${stats.total_users}</h4>
                     </div>
                 </div>
 
                 <div class="col-md-3">
-                    <div class="card p-3 bg-success text-white">
-                        <h6>Events</h6>
-                        <h3>${stats.total_events}</h3>
+                    <div class="card p-3 metric-card">
+                        <small>Events</small>
+                        <h4>${stats.total_events}</h4>
                     </div>
                 </div>
 
                 <div class="col-md-3">
-                    <div class="card p-3 bg-info text-white">
-                        <h6>Bookings</h6>
-                        <h3>${stats.total_bookings}</h3>
+                    <div class="card p-3 metric-card">
+                        <small>Bookings</small>
+                        <h4>${stats.total_bookings}</h4>
                     </div>
                 </div>
 
                 <div class="col-md-3">
-                    <div class="card p-3 bg-warning text-white">
-                        <h6>Revenue</h6>
-                        <h3>₹${stats.revenue}</h3>
+                    <div class="card p-3 metric-card">
+                        <small>Revenue</small>
+                        <h4>₹${stats.revenue}</h4>
                     </div>
                 </div>
 
-                <!-- REVENUE CHART -->
-                <div class="col-md-8">
-                    <div class="card p-3">
-                        <h6>Revenue Trend (Last 7 Days)</h6>
+            </div>
+
+            <div class="row g-3 mb-3">
+
+                <div class="col-lg-6">
+                    <div class="card p-3 chart-card">
+                        <h6>Revenue Trend</h6>
                         <canvas id="revenueChart"></canvas>
                     </div>
                 </div>
 
-                <!-- BOOKINGS CHART -->
-                <div class="col-md-4">
-                    <div class="card p-3">
+                <div class="col-lg-6">
+                    <div class="card p-3 chart-card">
                         <h6>Bookings Trend</h6>
                         <canvas id="bookingChart"></canvas>
                     </div>
                 </div>
 
-                <!-- TOP EVENTS -->
-                <div class="col-12 card p-3">
-                    <h5>Top Events</h5>
-                    ${
-                        mostBooked.map(e => `
-                            <div class="d-flex justify-content-between border-bottom py-2">
-                                <span>${e.title}</span>
-                                <span>${e.bookings} bookings</span>
-                            </div>
-                        `).join("")
-                    }
+            </div>
+
+            <div class="row g-3 mb-3">
+
+                <div class="col-lg-6">
+                    <div class="card p-3 chart-card">
+                        <h6>User Growth</h6>
+                        <canvas id="userChart"></canvas>
+                    </div>
+                </div>
+
+                <div class="col-lg-6">
+                    <div class="card p-3 chart-card">
+                        <h6>Top Events Share</h6>
+                        <canvas id="eventPieChart"></canvas>
+                    </div>
                 </div>
 
             </div>
-        `;
 
-        // ---------------- CHART 1: REVENUE ----------------
-        const revenueLabels = revenueTrend.map(r => r.date);
-        const revenueData = revenueTrend.map(r => r.revenue);
+            <div class="card p-3">
+                <h6 class="mb-3">Top Events</h6>
 
-        new Chart(document.getElementById("revenueChart"), {
-            type: "line",
-            data: {
-                labels: revenueLabels,
-                datasets: [{
-                    label: "Revenue",
-                    data: revenueData,
-                    fill: true,
-                    tension: 0.4
-                }]
-            }
-        });
+                ${mostBooked.map(e => `
+                    <div class="d-flex justify-content-between py-2 border-bottom border-secondary">
+                        <span>${e.title}</span>
+                        <span>${e.bookings}</span>
+                    </div>
+                `).join("")}
+            </div>
 
-        // ---------------- CHART 2: BOOKINGS ----------------
-        const bookingLabels = bookingsTrend.map(b => b.date);
-        const bookingData = bookingsTrend.map(b => b.bookings);
+        </div>`;
 
-        new Chart(document.getElementById("bookingChart"), {
-            type: "bar",
-            data: {
-                labels: bookingLabels,
-                datasets: [{
-                    label: "Bookings",
-                    data: bookingData
-                }]
-            }
-        });
+        analyticsData = {
+            html,
+            revenueTrend,
+            bookingsTrend,
+            mostBooked
+        };
+
+        sectionCache.analytics = html;
+        main.innerHTML = html;
+
+        renderAnalyticsCharts();
 
     } catch (err) {
         console.error(err);
-        mainView.innerHTML = `<div class="text-danger p-3">Failed to load analytics</div>`;
+        main.innerHTML = `<div class="text-danger">Failed to load analytics</div>`;
     }
+}
+
+function renderAnalyticsCharts() {
+    if (!analyticsData) return;
+
+    const rev = document.getElementById("revenueChart");
+    const book = document.getElementById("bookingChart");
+
+    if (!rev || !book) return;
+
+    new Chart(rev, {
+        type: "line",
+        data: {
+            labels: analyticsData.revenueTrend.map(i => i.date),
+            datasets: [{
+                label: "Revenue",
+                data: analyticsData.revenueTrend.map(i => i.revenue),
+                tension: 0.4
+            }]
+        }
+    });
+
+    new Chart(book, {
+        type: "bar",
+        data: {
+            labels: analyticsData.bookingsTrend.map(i => i.date),
+            datasets: [{
+                label: "Bookings",
+                data: analyticsData.bookingsTrend.map(i => i.bookings)
+            }]
+        }
+    });
 }

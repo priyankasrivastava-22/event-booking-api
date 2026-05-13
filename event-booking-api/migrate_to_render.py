@@ -1,11 +1,16 @@
 import sqlite3
+import os
+from dotenv import load_dotenv
 from sqlalchemy import create_engine, text
+
+load_dotenv()
+
 
 # LOCAL SQLITE FILE
 SQLITE_DB = "events.db"
 
 # RENDER POSTGRES URL
-POSTGRES_URL = "postgresql://event_booking_db_03hh_user:kpKf86vK3oTeH3jq4S6xAXKUnpFv4DEf@dpg-d7orl8i8qa3s738rf750-a.oregon-postgres.render.com/event_booking_db_03hh"
+POSTGRES_URL = os.getenv("DATABASE_URL")
 # CONNECT SQLITE
 sqlite_conn = sqlite3.connect(SQLITE_DB)
 sqlite_conn.row_factory = sqlite3.Row

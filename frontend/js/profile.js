@@ -39,9 +39,22 @@ async function loadProfile() {
         document.getElementById("role").innerText = data.role;
         document.getElementById("bookings").innerText = data.bookings;
 
+        showAdminButton(data.role);
+
     } catch (err) {
         console.error(err);
     }
+}
+
+function showAdminButton(role) {
+    if (role !== "admin") return;
+
+    document.getElementById("adminBtnContainer").innerHTML = `
+        <button class="btn btn-warning"
+            onclick="window.location.href='admin.html'">
+            Admin Panel
+        </button>
+    `;
 }
 
 // ---------------- LOGOUT ----------------
