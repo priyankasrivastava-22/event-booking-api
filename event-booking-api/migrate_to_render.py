@@ -5,7 +5,6 @@ from sqlalchemy import create_engine, text
 
 load_dotenv()
 
-
 # LOCAL SQLITE FILE
 SQLITE_DB = "events.db"
 
@@ -68,3 +67,5 @@ with engine.begin() as conn:
             print(f"Skipped {table}: {e}")
 
 print("Migration completed.")
+
+print("DB URL =", POSTGRES_URL)

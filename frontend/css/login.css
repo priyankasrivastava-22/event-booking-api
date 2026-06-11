@@ -1,90 +1,711 @@
-/* Fix the card width so it's not too tiny */
-.login-card {
-  width: 100%;
-  max-width: 420px; /* Changed from 200px to allow space for text */
-  padding: 40px;
-  border-radius: 24px;
-  background: rgba(20, 25, 50, 0.5); /* Semi-transparent dark */
-  backdrop-filter: blur(20px); /* The 'Glass' effect */
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  box-shadow: 0 20px 40px rgba(0,0,0,0.4);
-}
 
-/* Custom styling for inputs with icons */
-.input-group-custom {
-  position: relative;
-  display: flex;
-  align-items: center;
-}
+    /* ==========================================================================
+       1. GLOBAL THEME SETTINGS & SCROLLBAR
+       ========================================================================== */
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+    body {
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      background-color: #03050d;
+      color: #ffffff;
+      overflow-x: hidden;
+      overflow-y: scroll;
+    }
 
-.input-group-custom i {
+    /* Premium custom scrollbar */
+    ::-webkit-scrollbar { width: 8px; }
+    ::-webkit-scrollbar-track { background: #03050d; }
+    ::-webkit-scrollbar-thumb { background: #1e293b; border-radius: 10px; }
+    ::-webkit-scrollbar-thumb:hover { background: #3b82f6; }
+
+    /* Container alignment padding override */
+    .custom-container {
+      max-width: 100%;
+      margin: 0 auto;
+      padding: 0 40px;
+    }
+
+    /* ==========================================================================
+       2. HERO CONTAINER & GLOW ACCENTS (TOP LAYER)
+       ========================================================================== */
+    .hero-master-engine {
+      position: relative;
+      width: 100%;
+      min-height: auto;
+      background-color: #03050d;
+      overflow: hidden;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.03);
+    }
+    .canvas-grid-overlay {
+      position: absolute;
+      inset: 0;
+      background-image:
+        linear-gradient(rgba(255, 255, 255, 0.01) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255, 255, 255, 0.01) 1px, transparent 1px);
+      background-size: 40px 40px;
+      mask-image: radial-gradient(circle at 35% 50%, black 40%, transparent 85%);
+      -webkit-mask-image: radial-gradient(circle at 35% 50%, black 40%, transparent 85%);
+      z-index: 1;
+      pointer-events: none;
+    }
+    .ambient-glow {
+      position: absolute; border-radius: 50%; filter: blur(100px); z-index: 0; pointer-events: none;
+    }
+    .purple-blur { top: 5%; left: 20%; width: 500px; height: 500px; background: radial-gradient(circle, rgba(147, 51, 234, 0.2) 0%, transparent 70%); }
+    .blue-blur { bottom: 10%; left: 5%; width: 400px; height: 400px; background: radial-gradient(circle, rgba(6, 182, 212, 0.15) 0%, transparent 70%); }
+    .pink-blur { top: 25%; right: -5%; width: 450px; height: 450px; background: radial-gradient(circle, rgba(236, 72, 153, 0.12) 0%, transparent 70%); }
+
+    /* WORKSPACE CONTENT LAYOUT */
+    .hero-body-content { position: relative; padding-top: 30px; z-index: 10; }
+    .left-promo-zone { position: relative; min-height: 650px; padding-top: 20px; }
+    .right-auth-zone { display: flex; justify-content: flex-end; align-items: flex-start; padding-top: 10px; }
+
+    /* GLOWING REVOLVING PORTAL MATRIX */
+    .cosmic-vortex-portal {
+    position: absolute;
+    bottom: -150px; /* Thoda neeche shift kiya center effect ke liye */
+    left: 5%;
+    width: 600px;
+    height: 600px;
+    perspective: 1000px;
+    transform-style: preserve-3d;
+    z-index: 2;
+    pointer-events: none;
+        display:none;
+    will-change: transform;}
+
+.vortex-ring {
   position: absolute;
-  left: 15px;
-  color: #6366f1;
+  top: 50%;
+  left: 50%;
+  border-radius: 50%;
+  /* Zameen par litane ke liye rotateX aur center ke liye translate */
+  transform: translate(-50%, -50%) rotateX(75deg);
+  transform-style: preserve-3d;
+      will-change: transform;
+
 }
 
-.input-group-custom input {
-  padding-left: 45px !important; /* Make room for the icon */
-  height: 50px;
-  border-radius: 12px;
+/* Neon Glow & Spin Animations added */
+.ring-outer {
+  width: 540px; height: 540px;
+  border: 2px solid rgba(0, 242, 254, 0.4);
+  box-shadow: 0 0 40px rgba(0, 242, 254, 0.2), inset 0 0 40px rgba(0, 242, 254, 0.2);
+  animation: none !important;
+}
+.ring-mid {
+  width: 370px; height: 370px;
+  border: 2px dashed rgba(147, 51, 234, 0.6);
+  box-shadow: 0 0 30px rgba(147, 51, 234, 0.3);
+  animation: none !important;
+}
+.ring-inner {
+  width: 210px; height: 210px;
+  border: 2px solid rgba(236, 72, 153, 0.6);
+  box-shadow: 0 0 40px rgba(236, 72, 153, 0.4), inset 0 0 20px rgba(236, 72, 153, 0.3);
+  animation: none !important;}
+
+/* THE GLITTERS / SPARKS */
+.glitter-particle {
+  position: absolute;
+  width: 4px;
+  height: 4px;
+  background: white;
+  border-radius: 50%;
+  box-shadow: 0 0 10px 2px #fff, 0 0 20px 5px #00f2fe;
+}
+.g-1 { top: 20%; left: 30%;   animation: none !important; }
+.g-2 { top: 70%; right: 20%;  animation: none !important; box-shadow: 0 0 10px 2px #fff, 0 0 20px 5px #ec4899; }
+.g-3 { bottom: 10%; left: 50%;   animation: none !important; }
+
+/* ANIMATION KEYFRAMES */
+@keyframes spinRing {
+  0% { transform: translate(-50%, -50%) rotateX(75deg) rotateZ(0deg); }
+  100% { transform: translate(-50%, -50%) rotateX(75deg) rotateZ(360deg); }
+}
+@keyframes spinRingReverse {
+  0% { transform: translate(-50%, -50%) rotateX(75deg) rotateZ(360deg); }
+  100% { transform: translate(-50%, -50%) rotateX(75deg) rotateZ(0deg); }
+}
+@keyframes floatGlit {
+  0% { transform: translateY(0) scale(1); opacity: 0.5; }
+  100% { transform: translateY(-20px) scale(1.5); opacity: 1; }
 }
 
-/* Button Styling */
-.login-btn {
-  background: linear-gradient(45deg, #6366f1, #3b82f6);
-  color: white;
-  font-weight: bold;
-  height: 50px;
-  border-radius: 12px;
-  border: none;
+    /* FLOATING COMPOSITION LABELS */
+    .typography-headers { position: absolute; top: 5%; left: 0; z-index: 15; }
+    .neon-badge { font-size: 0.72rem; font-weight: 800; color: #00f2fe; letter-spacing: 3px; display: block; margin-bottom: 12px; }
+    .giant-title { font-size: 3rem; line-height: 1.12; font-weight: 800; color: #ffffff; }
+    .gradient-word { background: linear-gradient(135deg, #bf5af2 0%, #ec4899 80%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+    .hero-desc { font-size: 0.92rem; color: rgba(255, 255, 255, 0.5); margin-top: 12px; max-width: 420px; }
+    .pill-row { display: flex; gap: 10px; margin-top: 25px; }
+    .feat-pill { font-size: 0.72rem; color: rgba(255,255,255,0.7); background: rgba(255,255,255,0.03); padding: 5px 12px; border-radius: 30px; border: 1px solid rgba(255,255,255,0.06); }
+
+    /* CARD STACK ARTWORK */
+    .cards-artwork-container { position: absolute; width: 480px; height: 400px; bottom: 2%; left: 60%; z-index: 10; }
+    .floating-card { position: absolute; background: rgba(7, 11, 24, 0.85); border: 1px solid rgba(255, 255, 255, 0.07); border-radius: 12px; padding: 6px; backdrop-filter: blur(12px); box-shadow: 0 20px 40px rgba(0,0,0,0.5); transition: none !important; }
+    .floating-card:hover { transform: none !important; z-index: 30; }
+    .media-box { width: 100%; height: 76px; border-radius: 8px; margin-bottom: 6px; position: relative; }
+    .live-lbl { position: absolute; top: 5px; right: 5px; background: #ef4444; font-size: 0.52rem; padding: 1px 5px; border-radius: 4px; font-weight: 800; }
+
+    .bg-music { background: linear-gradient(180deg, transparent, rgba(0,0,0,0.7)), linear-gradient(45deg, #7928ca, #ff007f); }
+    .bg-tech { background: linear-gradient(180deg, transparent, rgba(0,0,0,0.7)), linear-gradient(135deg, #0052d4, #4364f7); }
+    .bg-comedy { background: linear-gradient(180deg, transparent, rgba(0,0,0,0.7)), linear-gradient(45deg, #f12711, #f5af19); }
+    .bg-sunset { background: linear-gradient(180deg, transparent, rgba(0,0,0,0.7)), linear-gradient(45deg, #11998e, #38ef7d); }
+
+    .card-meta .t1 { font-size: 0.75rem; font-weight: 700; color: white; display: block; }
+    .card-meta .t2 { font-size: 0.6rem; color: #64748b; }
+    .p-row { display: flex; justify-content: space-between; align-items: center; margin-top: 4px; }
+    .p-lbl { font-size: 0.72rem; font-weight: 800; }
+    .b-btn { font-size: 0.55rem; background: #2563eb; color: white; padding: 2px 8px; border-radius: 5px; font-weight: 700; }
+
+    .spot-music  { width: 135px; top: 0; right: 10px; border-color: rgba(236,72,153,0.3); }
+    .spot-tech   { width: 135px; top: 90px; left: -20px; border-color: rgba(6,182,212,0.25); }
+    .spot-comedy { width: 135px; bottom: 30px; left: 110px; border-color: rgba(245,158,11,0.25); }
+    .spot-sunset { width: 135px; bottom: 50px; right: -10px; border-color: rgba(34,197,94,0.25); }
+
+    .center-ticket { width: 120px; top: 50px; left: 150px; transform: rotate(-10deg); background: rgba(13, 9, 32, 0.95); border: 1.5px dashed #9333ea; box-shadow: 0 0 20px rgba(147, 51, 234, 0.3); z-index: 12; padding: 12px 8px; text-align: center; }
+    .t-stub { font-size: 0.55rem; color: #c084fc; font-weight: 800; letter-spacing: 1px; }
+    .t-title { font-size: 0.8rem; font-weight: 800; margin: 3px 0; }
+    .t-qr { color: #a855f7; font-size: 1.5rem; display: block; margin-top: 4px; }
+
+    /* AUTH CARD HUB */
+
+
+
+    .hexa-logo { width: 40px; height: 40px; background: linear-gradient(135deg, #6366f1, #00f2fe); clip-path: polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%); margin: 0 auto 10px auto; }
+    .inp-container { position: relative; margin-bottom: 14px; }
+    .inp-icon-l { position: absolute; top: 50%; left: 14px; transform: translateY(-50%); color: #475569; font-size: 0.9rem; }
+    .inp-icon-r { position: absolute; top: 50%; right: 14px; transform: translateY(-50%); color: #475569; font-size: 0.9rem; }
+    .glass-input { background: #0a0e1a !important; border: 1px solid #1e293b !important; color: white !important; height: 46px; padding-left: 40px !important; padding-right: 40px !important; border-radius: 10px; font-size: 0.82rem; }
+    .glass-input:focus { border-color: #6366f1 !important; box-shadow: 0 0 10px rgba(99,102,241,0.2) !important; }
+
+    .util-row { font-size: 0.78rem; margin-bottom: 20px; display: flex; justify-content: space-between; align-items: center; color: rgba(255,255,255,0.5); }
+    .gradient-btn { background: linear-gradient(90deg, #3b82f6, #6366f1, #d946ef); color: white !important; font-weight: 600; font-size: 0.88rem; height: 44px; width: 100%; border-radius: 10px; border: none; display: flex; align-items: center; justify-content: center; margin-bottom: 12px; }
+    .btn-arrow-box { background: white; color: #6366f1; width: 18px; height: 18px; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin-left: auto; font-size: 0.9rem; }
+    .demo-btn { background: rgba(255,255,255,0.02); border: 1px solid rgba(255,255,255,0.06); color: #94a3b8; font-size: 0.8rem; height: 38px; width: 100%; border-radius: 10px; margin-bottom: 16px; }
+
+    .divider-row { display: flex; align-items: center; margin-bottom: 15px; }
+    .divider-row::before, .divider-row::after { content: ''; flex: 1; border-bottom: 1px solid rgba(255,255,255,0.06); }
+    .divider-row span { font-size: 0.7rem; color: rgba(255,255,255,0.35); padding: 0 8px; }
+
+    .social-grid { display: flex; justify-content: space-between; gap: 8px; margin-bottom: 20px; }
+    .social-tile { background: #0a0e1a; border: 1px solid #1e293b; flex: 1; height: 38px; border-radius: 10px; color: white; display: flex; align-items: center; justify-content: center; }
+
+    /* ==========================================================================
+       3. FEATURES HORIZONTAL BAR SECTION
+       ========================================================================== */
+    .features-strip-section { padding: 40px 0 20px 0; background: #03050d; }
+    .feature-strip-card {
+      background: rgba(255, 255, 255, 0.01); border: 1px solid rgba(255, 255, 255, 0.04);
+      border-radius: 14px; padding: 20px; height: 100%; display: flex; align-items: flex-start; gap: 15px;
+    }
+    .f-icon-box {
+      width: 42px; height: 42px; border-radius: 10px; background: rgba(59, 130, 246, 0.08);
+      border: 1px solid rgba(59, 130, 246, 0.2); display: flex; align-items: center; justify-content: center;
+      color: #3b82f6; font-size: 1.2rem; flex-shrink: 0;
+    }
+    .f-icon-box.purple { background: rgba(168, 85, 247, 0.08); border-color: rgba(168, 85, 247, 0.2); color: #a855f7; }
+    .f-icon-box.orange { background: rgba(249, 115, 22, 0.08); border-color: rgba(249, 115, 22, 0.2); color: #f97316; }
+    .f-icon-box.cyan { background: rgba(6, 182, 212, 0.08); border-color: rgba(6, 182, 212, 0.2); color: #06b6d4; }
+
+    .f-title { font-size: 0.88rem; font-weight: 700; color: white; margin-bottom: 4px; }
+    .f-desc { font-size: 0.75rem; color: #64748b; line-height: 1.4; }
+
+    /* ==========================================================================
+       4. COUNTER COUNTS BLOCK ROW
+       ========================================================================== */
+    .stats-counter-strip {
+      background: rgba(255,255,255,0.01); border: 1px solid rgba(255,255,255,0.03);
+      border-radius: 14px; padding: 10px 10px !important; margin: 20px 0 60px 0;
+    }
+    .stat-node { display: flex; align-items: center; justify-content: center; gap: 4px; }
+    .stat-ico { font-size: 1rem !important; color: #6366f1; }
+    .stat-num { font-size: 1rem !important; font-weight: 800; color: white; display: block; line-height: 1; }
+    .stat-lbl { font-size: 0.85rem !important; color: #64748b; }
+    .stat-pipe { width: 1px; height: 30px; background: rgba(255,255,255,0.06); margin: 0 auto; }
+
+    /* ==========================================================================
+       5. CONTENT SECTIONS UTILITY HEADINGS
+       ========================================================================== */
+    .section-header-block { display: flex; justify-content: space-between; align-items: flex-end; margin-bottom: 25px; }
+    .section-headline { font-size: 1.45rem; font-weight: 700; color: white; }
+    .view-all-link { font-size: 0.82rem; color: #00f2fe; text-decoration: none; font-weight: 600; }
+    .view-all-link:hover { text-decoration: underline; }
+
+    /* CATEGORIES GRID */
+    .category-box-node {
+      background: rgba(255,255,255,0.01); border: 1px solid rgba(255,255,255,0.04);
+      border-radius: 14px; padding: 22px 10px; text-align: center; height: auto; transition: none !important; cursor: pointer;
+    }
+    .category-box-node:hover { background: rgba(99, 102, 241, 0.05); height: auto ; border-color: rgba(99,102,241,0.3); transform: none !important; }
+    .cat-ico-frame { font-size: 1.7rem; margin-bottom: 10px; display: inline-block; }
+    .cat-title { font-size: 0.82rem; font-weight: 600; color: rgba(255,255,255,0.8); }
+
+    /* Colors variants for category icons from screenshots */
+    .c-blue { color: #3b82f6; } .c-green { color: #22c55e; } .c-orange { color: #f59e0b; }
+    .c-red { color: #ef4444; } .c-purple { color: #a855f7; } .c-cyan { color: #06b6d4; }
+    .c-pink { color: #ec4899; } .c-teal { color: #14b8a6; }
+
+    /* ==========================================================================
+       6. POPULAR EVENTS HUB LAYOUT
+       ========================================================================== */
+    .events-grid-space { padding: 50px 0; }
+    .event-card-container {
+      background: #0b0f19; border: 1px solid rgba(255,255,255,0.05); border-radius: 16px;
+      overflow: hidden; height: 100%; transition: none !important;
+    }
+    .event-card-container:hover { transform: none !important; box-shadow: 0 15px 30px rgba(0,0,0,0.4); border-color: rgba(255,255,255,0.1); }
+    .event-thumbnail-box { width: 100%; height: 160px; position: relative; background-size: cover; background-position: center; }
+
+    .date-badge-box {
+      position: absolute; top: 12px; left: 12px; background: rgba(11, 15, 25, 0.85);
+      border: 1px solid rgba(255,255,255,0.1); border-radius: 8px; width: 42px; height: 46px;
+      display: flex; flex-direction: column; align-items: center; justify-content: center; backdrop-filter: blur(4px);
+    }
+    .date-badge-box .d-num { font-size: 0.95rem; font-weight: 800; color: #3b82f6; line-height: 1; }
+    .date-badge-box .d-mon { font-size: 0.58rem; font-weight: 700; color: rgba(255,255,255,0.6); text-transform: uppercase; }
+
+    .event-info-wrapper { padding: 16px; }
+    .ev-title { font-size: 0.95rem; font-weight: 700; color: white; margin-bottom: 4px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .ev-loc { font-size: 0.75rem; color: #64748b; margin-bottom: 12px; display: block; }
+
+    .rating-row { display: flex; align-items: center; gap: 4px; font-size: 0.75rem; color: #f59e0b; margin-bottom: 14px; }
+    .rating-count { color: #64748b; margin-left: 2px; }
+
+    .buy-trigger-row { display: flex; justify-content: space-between; align-items: center; border-top: 1px solid rgba(255,255,255,0.04); padding-top: 12px; }
+    .ev-price { font-size: 0.95rem; font-weight: 800; color: white; }
+    .ev-price span { font-size: 0.7rem; font-weight: 400; color: #64748b; }
+    .ev-action-btn { background: #2563eb; color: white; font-size: 0.75rem; font-weight: 600; padding: 6px 14px; border-radius: 8px; border: none; }
+    .ev-action-btn.green { background: #10b981; }
+    .ev-action-btn.orange { background: #f97316; }
+
+    /* Placeholder Gradient Artworks instead of missing imgs */
+    .art-arijit { background: linear-gradient(135deg, #1e1b4b, #311042), radial-gradient(circle, #4f46e5, transparent); }
+    .art-cricket { background: linear-gradient(135deg, #064e3b, #022c22), radial-gradient(circle, #10b981, transparent); }
+    .art-opera { background: linear-gradient(135deg, #4c1d95, #1e1b4b), radial-gradient(circle, #8b5cf6, transparent); }
+    .art-sunburn { background: linear-gradient(135deg, #831843, #4c0519), radial-gradient(circle, #ec4899, transparent); }
+
+    /* ==========================================================================
+       7. OFFERS BLOCKS SECTION
+       ========================================================================== */
+    .offers-grid-space { padding: 10px 0 50px 0; }
+    .offer-box-card {
+      border-radius: 16px; padding: 20px; height: 100%; position: relative; overflow: hidden;
+      display: flex; flex-direction: column; justify-content: space-between; min-height: 140px;
+    }
+    .o-flat-blue   { background: linear-gradient(135deg, #1e1b4b 0%, #0f172a 100%); border: 1px solid rgba(59, 130, 246, 0.15); }
+    .o-wknd-teal   { background: linear-gradient(135deg, #064e3b 0%, #0f172a 100%); border: 1px solid rgba(20, 184, 166, 0.15); }
+    .o-group-gold  { background: linear-gradient(135deg, #451a03 0%, #0f172a 100%); border: 1px solid rgba(245, 158, 11, 0.15); }
+    .o-bank-navy   { background: linear-gradient(135deg, #172554 0%, #0f172a 100%); border: 1px solid rgba(99, 102, 241, 0.15); }
+
+    .o-lbl { font-size: 0.72rem; color: #94a3b8; font-weight: 500; }
+    .o-main-title { font-size: 1.3rem; font-weight: 800; margin: 4px 0; }
+    .text-blue-glow { color: #38bdf8; } .text-teal-glow { color: #2dd4bf; } .text-gold-glow { color: #fbbf24; }
+    .o-sub { font-size: 0.72rem; color: #64748b; }
+    .o-code { font-size: 0.68rem; color: #a7f3d0; font-family: monospace; background: rgba(16, 185, 129, 0.1); padding: 2px 6px; border-radius: 4px; display: inline-block; margin-top: 8px; }
+
+    .o-graphic-icon { position: absolute; bottom: 10px; right: 15px; font-size: 3rem; opacity: 0.12; color: white; }
+
+    /* ==========================================================================
+       8. NEWSLETTER HUB BANNER MAP
+       ========================================================================== */
+    .newsletter-row-banner {
+      background: linear-gradient(135deg, #0d1224 0%, #070a14 100%);
+      border: 1px solid rgba(255,255,255,0.04); border-radius: 20px;
+      padding: 35px 40px; margin: 40px 0 60px 0; position: relative; overflow: hidden;
+    }
+    .news-title { font-size: 1.5rem; font-weight: 800; color: white; margin-bottom: 4px; }
+    .news-sub { font-size: 0.82rem; color: #64748b; }
+    .news-input-box { max-width: 450px; display: flex; gap: 10px; height: 44px; }
+    .news-field { background: #060913; border: 1px solid #1e293b; border-radius: 10px; color: white; padding: 0 16px; flex: 1; font-size: 0.82rem; }
+    .news-field:focus { outline: none; border-color: #6366f1; }
+    .news-btn { background: #7c3aed; color: white; font-size: 0.82rem; font-weight: 600; padding: 0 22px; border-radius: 10px; border: none; }
+
+    .news-bg-crystals { position: absolute; right: 5%; top: 50%; transform: translateY(-50%); font-size: 4rem; color: #7c3aed; opacity: 0.15; pointer-events: none; }
+
+    /* ==========================================================================
+       9. MASTER FOOTER END DECK
+       ========================================================================== */
+    .master-footer-node { background: #020408; border-top: 1px solid rgba(255,255,255,0.03); padding: 60px 0 25px 0; }
+    .footer-desc-txt { font-size: 0.78rem; color: #64748b; line-height: 1.5; margin: 15px 0; max-width: 260px; }
+    .footer-social-deck { display: flex; gap: 12px; }
+    .f-social-ico { width: 30px; height: 30px; border-radius: 50%; background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.06); display: flex; align-items: center; justify-content: center; color: #94a3b8; text-decoration: none; font-size: 0.85rem; }
+    .f-social-ico:hover { background: white; color: black; }
+
+    .f-col-heading { font-size: 0.85rem; font-weight: 700; color: white; margin-bottom: 18px; text-transform: uppercase; letter-spacing: 0.5px; }
+    .f-links-list { list-style: none; padding: 0; margin: 0; }
+    .f-links-list li { margin-bottom: 10px; }
+    .f-anchor { font-size: 0.78rem; color: #64748b; text-decoration: none; transition: none !important; }
+    .f-anchor:hover { color: white; }
+
+    .app-download-btn { background: #0b0f19; border: 1px solid rgba(255,255,255,0.06); border-radius: 8px; padding: 6px 12px; display: flex; align-items: center; gap: 10px; text-decoration: none; margin-bottom: 10px; width: 140px; }
+    .app-download-btn i { font-size: 1.3rem; color: white; }
+    .app-btn-lbl { font-size: 0.52rem; color: #64748b; display: block; text-transform: uppercase; line-height: 1px; margin-top: 4px; }
+    .app-btn-main { font-size: 0.75rem; color: white; font-weight: 700; }
+
+    .footer-base-line { border-top: 1px solid rgba(255,255,255,0.04); margin-top: 40px; padding-top: 20px; display: flex; justify-content: space-between; align-items: center; font-size: 0.75rem; color: #64748b; }
+    .payment-gateways-row { display: flex; align-items: center; gap: 14px; font-size: 1.1rem; color: #94a3b8; }
+
+    /* RESPONSIVE RESPONSIVENESS MEDIA QUERIES */
+    @media (max-width: 991.98px) {
+      .center-links { display: none; }
+      .right-auth-zone { justify-content: center; margin-top: 40px; }
+      .cards-artwork-container { position: absolute; left: 46%; bottom: auto; margin: 40px auto; width:300px; height:260px; top:120px; }
+      .stat-pipe { display: none; }
+      .stat-node { margin-bottom: 15px;  gap: 6px !important; }
+      .footer-base-line { flex-direction: column; gap: 15px; text-align: center; }
+    }
+
+    /* AUTH CARD HUB (UPDATED FOR GLASSMORPHISM) */
+.premium-login-card {
+  position: relative;
+  width: 100%;
+  max-width: 400px;
+  /* Solid color hata kar rgba use kiya hai transparent glass ke liye */
+  background: rgba(10, 14, 26, 0.45);
+  backdrop-filter: blur(24px);
+  -webkit-backdrop-filter: blur(24px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 20px;
+  padding: 40px 32px;
+  box-shadow: 0 30px 60px rgba(0,0,0,0.6);
+  z-index: 10;
 }
 
-.social-btn {
-  background: rgba(255,255,255,0.05);
-  border: 1px solid rgba(255,255,255,0.1);
-  color: white;
-  border-radius: 12px;
+/* Gradient Glowing Border (Figma jaisa) */
+.premium-login-card::before {
+  content: '';
+  position: absolute;
+  inset: -1px;
+  border-radius: 21px;
+  background: linear-gradient(135deg, rgba(236, 72, 153, 0.5), transparent 40%, rgba(0, 242, 254, 0.5));
+  z-index: -1;
 }
 
-/* Animation for switching views */
-.auth-view {
-  animation: fadeIn 0.3s ease-in-out;
+/* Glow behind the card */
+.premium-login-card::after {
+  content: '';
+  position: absolute;
+  inset: -4px;
+  border-radius: 24px;
+  background: linear-gradient(135deg, #ec4899, #6366f1, #00f2fe);
+  z-index: -2;
+  filter: blur(25px);
+  opacity: 0.25;
 }
 
-@keyframes fadeIn {
-  from { opacity: 0; transform: translateY(5px); }
-  to { opacity: 1; transform: translateY(0); }
+/* Button Glow Hover Update */
+.gradient-btn:hover {
+  box-shadow: 0 0 20px rgba(99, 102, 241, 0.6);
+  transform: translateY(-2px);
+  transition: all 0.3s ease;
+  cursor: pointer;
 }
 
+/* =========================================================
+   STABLE GRID & EQUAL CARD HEIGHTS
+   ========================================================= */
 
-/* login.css updates */
+/* 1. Grid layout jisme saare cards barabar vertical height ke rahenge */
+.event-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 24px;
+    align-items: stretch; /* Isse saare cards automatic equal height ke ho jayenge */
+}
 
-.hero-section {
-    min-height: 100vh;
+/* 2. Main Card Styling - Fully Locked */
+.card {
     display: flex;
     flex-direction: column;
-    justify-content: space-between; /* Pushes content to top and bottom */
+    height: 100%; /* Pure row ki height fill karega */
+    background: rgba(255, 255, 255, 0.08);
+    backdrop-filter: blur(12px);
+    border-radius: 16px;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    overflow: hidden; /* Card se bahar content nahi bhagega */
+    transition: none !important;
+    backface-visibility: hidden; /* Hover par text shaking/blur ko roktaa hai */
 }
 
-.hero-text-top h1 {
-    font-size: 6rem;
-    line-height: 1.1;
-    text-shadow: 0 4px 10px rgba(0,0,0,0.3);
+/* Hover effect ko smooth aur bounded rakhne ke liye */
+.card:hover {
+    transform: none !important; /* Scale ki jagah sff lift use karein taaki font size na bigde */
+    box-shadow: 0 12px 30px rgba(0, 242, 254, 0.2);
 }
 
-.stats-container {
-    background: rgba(255, 255, 255, 0);
-    border-radius: 20px;
-    padding: 20px;
-    border: 1px solid rgba(255, 255, 255, 0);
-}
-
-/* Ensure the login card remains clean and centered  */
-.login-card {
+/* 3. Image Sizing - Fixed and Stable */
+.card-img-top, .event-image {
     width: 100%;
-    max-width: 420px;
-    padding: 40px;
-    background: rgba(20, 25, 50, 0.5);
-    backdrop-filter: blur(20px);
-    border-radius: 24px;
+    height: 200px; /* Fixed height for absolute consistency */
+    object-fit: cover;
+    aspect-ratio: 16 / 9;
+}
+
+/* 4. Title Truncation  */
+.event-title {
+    font-size: 1.25rem;
+    font-weight: 700;
+    margin-bottom: 10px;
+
+    /* Text truncate filter*/
+    display: -webkit-box;
+    -webkit-line-clamp: 1;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+/* 5. Description/Details Truncation */
+.event-desc {
+    font-size: 0.95rem;
+    color: #cbd5e1;
+    margin-bottom: 15px;
+
+    /* Max 2 lines limitation */
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+/* 6. Info Details Container */
+.event-details-box {
+    flex-grow: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+/* 7. The "Book" Button - Strict Bottom Alignment */
+.btn-book {
+    margin-top: auto; /* Pushes button to the very bottom of the card edge to edge */
+    width: 100%;
+    padding: 12px;
+    border-radius: 12px;
+    background: linear-gradient(135deg, #6366f1, #3b82f6);
+    color: white;
+    border: none;
+    font-weight: 600;
+    cursor: pointer;
+}
+
+/* ====BROWSE BY CATEGORIES GRID STABILIZER==== */
+
+/* Main Category Grid Framework */
+.category-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+    gap: 24px;
+    padding: 20px 0;
+    width: 100%;
+}
+
+/* Individual Category Card Stabilization */
+.category-card {
+    background: rgba(255, 255, 255, 0.04);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    backdrop-filter: blur(12px);
+    border-radius: 16px;
+    padding: 25px 20px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    min-height: 140px; /* Fixed height taaki saare dappe ek barabar rahein */
+    transition: none !important;
+    cursor: pointer;
+}
+
+/* Smooth Hover Effect Without Jitter/Shifting */
+.category-card:hover {
+    background: rgba(255, 255, 255, 0.08);
+    border-color: rgba(59, 130, 246, 0.5); /* Soft premium blue border hint */
+    transform: translateY(-5px); /* Simple up shift, no scaling jitter */
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.3);
+}
+
+/* Category Icon Stabilization */
+.category-card .icon-wrapper {
+    font-size: 2rem; /* Icon size standard fixation */
+    margin-bottom: 15px; /* Text se consistent gap */
+    color: #3b82f6; /* Premium Accent Color */
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 45px; /* Height block fixed */
+}
+
+/* Category Text Hierarchy */
+.category-card .category-title {
+    font-size: 1rem;
+    font-weight: 600;
+    color: #ffffff;
+    margin: 0;
+    letter-spacing: 0.5px;
+    white-space: nowrap; /* Text multiple lines me break hoke box bigade nahi */
+    overflow: hidden;
+    text-overflow: ellipsis; /* Agar text bada ho toh standard '...' lag jaye */
+    width: 100%;
+}
+
+.hero-brand{
+    display:flex;
+    align-items:center;
+    justify-content:flex-start;
+    gap:12px;
+    margin-bottom:50px;
+    position: relative;
+    z-index: 20;
+}
+
+.hero-brand .brand-text{
+    font-size:1.4rem;
+    font-weight:800;
+    letter-spacing:2px;
+    color:white;
+}
+
+.hero-brand .brand-cube-3d{
+    width:26px;
+    height:26px;
+}
+
+.eventora-logo{
+    width: 180px;
+    height: auto;
+    display: block;
+    object-fit: contain;
+
+    opacity: 0.9;
+
+    filter:
+        brightness(0.85)
+        drop-shadow(0 0 8px rgba(0,242,254,.15))
+        drop-shadow(0 0 15px rgba(168,85,247,.15));
+}
+
+.footer-logo{
+    width: 220px;
+    height: auto;
+    object-fit: contain;
+    display:block;
+    filter:
+        drop-shadow(0 0 10px rgba(0,242,254,.15))
+        drop-shadow(0 0 20px rgba(168,85,247,.15));
+}
+
+/* ==========================
+   NAVBAR
+========================== */
+
+.replica-navbar{
+    position: relative;
+    z-index: 100;
+    padding: 10px 0;
+
+    background: transparent;
+
+    border-bottom: none !important;
+    box-shadow: none !important;
+}
+
+.navbar-brand-custom{
+    display:flex;
+    align-items:center;
+    gap:0px;
+    text-decoration:none;
+    margin-left:0;
+    padding-left:0;
+}
+
+.navbar-logo{
+    width:auto;
+    height:52px;
+    margin:0;
+    object-fit:contain;
+    filter:brightness(0.9);
+    display:block;
+}
+
+.navbar-brand-text{
+    font-size:1.15rem;
+    font-weight:800;
+    color:white;
+    letter-spacing:1px;
+    margin-left:-2px;
+
+}
+
+.right-actions{
+    display:flex;
+    align-items:center;
+    gap:25px;
+}
+
+.nav-link-custom{
+    color:rgba(255,255,255,0.75);
+    text-decoration:none;
+    font-weight:600;
+    transition: none !important;
+}
+
+.nav-link-custom:hover{
+    color:#00e5ff;
+}
+
+.btn-signup{
+    border:none;
+    padding:10px 18px;
+    border-radius:12px;
+
+    background:linear-gradient(
+        135deg,
+        #4f46e5,
+        #a855f7
+    );
+
+    color:white;
+    font-weight:600;
+}
+
+/* ==========================
+   LOGIN LOGO
+========================== */
+
+.login-logo{
+    width:110px;
+    height:auto;
+
+    display:block;
+    margin:0 auto 20px auto;
+
+    opacity:0.9;
+    filter:brightness(0.9);
+}
+
+.stats-counter-strip .row{
+    flex-wrap: nowrap !important;
+    justify-content: center !important;
+    gap: 2px;
+
+}
+.stat-node{
+    justify-content:center;
+}
+
+.stat-num{
+    font-size: 1rem !important;
+}
+
+
+.stat-node{
+    width: fit-content;
+    margin: 0 auto;
 }

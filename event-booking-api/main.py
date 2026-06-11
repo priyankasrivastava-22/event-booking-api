@@ -100,16 +100,6 @@ def get_db():
     finally:
         db.close()
 
-@app.get("/debug/users")
-def get_users(db: Session = Depends(get_db)):
-    users = db.query(User).all()
-    return [
-        {
-            "username": u.username,
-            "password": u.password
-        }
-        for u in users
-    ]
 
 # ---------------- ROUTERS ----------------
 app.include_router(auth.router, prefix="/api/auth", tags=["Auth"])

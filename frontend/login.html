@@ -3,124 +3,499 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Event Book - Login</title>
+  <title>Eventora - Book. Experience. Celebrate.</title>
 
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
   <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons/font/bootstrap-icons.css" rel="stylesheet">
-
-  <link rel="stylesheet" href="css/footer.css">
   <link rel="stylesheet" href="css/login.css">
-  <link rel="stylesheet" href="css/common.css">
-</head>
 
+</head>
 <body>
 
-<div class="container-fluid vh-100">
-  <div class="row h-100">
+  <header class="hero-master-engine">
+    <div class="canvas-grid-overlay"></div>
+    <div class="ambient-glow purple-blur"></div>
+    <div class="ambient-glow blue-blur"></div>
+    <div class="ambient-glow pink-blur"></div>
 
-    <div class="col-lg-7 d-none d-lg-flex flex-column justify-content-between hero-section py-5 px-5">
+    <nav class="replica-navbar">
+    <div class="custom-container d-flex justify-content-between align-items-center">
 
-      <div class="hero-text-top mt-5">
-        <h1 class="display-3 fw-bold">Every Event<br>Lives Here</h1>
-        <p class="fs-4 opacity-75">Book. Celebrate. Remember.</p>
-      </div>
+        <a href="#" class="navbar-brand-custom">
+            <img src="images/logos/logo.png"
+                 alt="Eventora Logo"
+                 class="navbar-logo">
 
-      <div class="stats-container mb-5">
-        <div class="row text-center">
-            <div class="col-3">
-                <h4 class="fw-bold">25K+</h4>
-                <p class="small opacity-75">Events</p>
-            </div>
-            <div class="col-3">
-                <h4 class="fw-bold">50K+</h4>
-                <p class="small opacity-75">Users</p>
-            </div>
-            <div class="col-3">
-                <h4 class="fw-bold">100+</h4>
-                <p class="small opacity-75">Cities</p>
-            </div>
-            <div class="col-3">
-                <h4 class="fw-bold">4.9★</h4>
-                <p class="small opacity-75">Rating</p>
-            </div>
+            <span class="navbar-brand-text">
+                EVENTORA
+            </span>
+        </a>
+
+        <div class="right-actions">
+            <a href="#" class="nav-link-custom">Events</a>
+            <a href="#" class="nav-link-custom">Categories</a>
+            <a href="#" class="nav-link-custom">Contact</a>
+
+            <button class="btn-signup">
+                Sign Up
+            </button>
         </div>
-      </div>
+
     </div>
+</nav>
 
-    <div class="col-lg-5 d-flex align-items-center justify-content-center login-section">
+    <div class="custom-container hero-body-content">
+      <div class="row align-items-start">
 
-      <div class="login-card p-4">
+        <div class="col-lg-7 left-promo-zone">
 
-        <div class="text-center mb-4">
-          <h3 class="logo fw-bold">EVENT BOOK</h3>
-        </div>
-
-        <div id="loginView" class="auth-view">
-          <h5 class="text-center">Welcome Back</h5>
-          <p class="text-muted text-center mb-4">Log in to continue</p>
-
-          <form id="loginForm">
-            <div class="mb-3 input-group-custom">
-              <i class="bi bi-envelope"></i>
-                <input type="text" class="form-control" id="loginIdentifier" placeholder="Enter Email or Username" required></div>
-            <div class="mb-3 input-group-custom">
-              <i class="bi bi-lock"></i>
-              <input type="password" id="loginPassword" class="form-control" placeholder="Password" required></div>
-
-            <div class="d-flex justify-content-between mb-4 small">
-              <label><input type="checkbox"> Remember me</label>
-              <a href="#" onclick="showView('forgotView')" class="text-decoration-none forgot">Forgot?</a>
+          <div class="cosmic-vortex-portal">
+            <div class="vortex-ring ring-outer">
+              <div class="glitter-particle g-1"></div>
             </div>
+    <div class="vortex-ring ring-mid">
+        <div class="glitter-particle g-2"></div>
+    </div>
+    <div class="vortex-ring ring-inner">
+        <div class="glitter-particle g-3"></div>
+    </div>
+  </div>
 
-            <button type="submit" class="btn login-btn w-100 mb-3">LOG IN →</button>
-          </form>
-
-          <button type="button" class="btn btn-outline-light w-100 mt-2" onclick="fillDemoLogin()">Use Demo Account</button>
-
-          <div class="divider text-center my-3">or continue with</div>
-          <div class="d-flex gap-2 mb-4">
-            <button class="btn social-btn w-50">Google</button>
-            <button class="btn social-btn w-50">Apple</button>
+          <div class="typography-headers">
+            <span class="neon-badge">DISCOVER. BOOK. ENJOY.</span>
+            <h1 class="giant-title">Your Next<br>Big Experience<br><span class="gradient-word">Starts Here!</span></h1>
+            <p class="hero-desc">Discover, book and enjoy unforgettable events across multiple hubs.</p>
+            <div class="pill-row">
+              <span class="feat-pill"><i class="bi bi-play-circle-fill text-primary me-1"></i> Live Events</span>
+              <span class="feat-pill"><i class="bi bi-lightning-charge-fill text-warning me-1"></i> Easy Booking</span>
+              <span class="feat-pill"><i class="bi bi-shield-check text-success"></i> Secure Payment</span>
+            </div>
           </div>
 
-          <div class="text-center mt-3">
-            New here? <a href="#" onclick="showView('registerView')" class="text-decoration-none">Create account</a>
+          <div class="cards-artwork-container">
+            <div class="floating-card center-ticket">
+              <span class="t-stub">ADMIT ONE</span>
+              <h6 class="t-title">EVENT TICKET</h6>
+              <div style="border-bottom:1px dashed rgba(255,255,255,0.15); margin:6px 0;"></div>
+              <i class="bi bi-qr-code-scan t-qr"></i>
+            </div>
+            <div class="floating-card spot-music">
+              <div class="media-box bg-music"><span class="live-lbl">Live</span></div>
+              <div class="card-meta">
+                <span class="t1">Music Festival</span>
+                <span class="t2"><i class="bi bi-geo-alt-fill"></i> Mumbai, India</span>
+                <div class="p-row"><span class="p-lbl">₹1299</span><span class="b-btn">Book Now</span></div>
+              </div>
+            </div>
+            <div class="floating-card spot-tech">
+              <div class="media-box bg-tech"></div>
+              <div class="card-meta">
+                <span class="t1">Tech Summit 2025</span>
+                <span class="t2"><i class="bi bi-geo-alt-fill"></i> Bengaluru</span>
+                <div class="p-row"><span class="p-lbl">₹2499</span><span class="b-btn">Book Now</span></div>
+              </div>
+            </div>
+            <div class="floating-card spot-comedy">
+              <div class="media-box bg-comedy"></div>
+              <div class="card-meta">
+                <span class="t1">Comedy Night</span>
+                <span class="t2"><i class="bi bi-geo-alt-fill"></i> Delhi, India</span>
+                <div class="p-row"><span class="p-lbl">₹799</span><span class="b-btn" style="background:#f97316;">Book Now</span></div>
+              </div>
+            </div>
+            <div class="floating-card spot-sunset">
+              <div class="media-box bg-sunset"></div>
+              <div class="card-meta">
+                <span class="t1">Sunset Festival</span>
+                <span class="t2"><i class="bi bi-geo-alt-fill"></i> Goa, India</span>
+                <div class="p-row"><span class="p-lbl">₹999</span><span class="b-btn">Book Now</span></div>
+              </div>
+            </div>
           </div>
         </div>
 
-        <div id="registerView" class="auth-view d-none">
-          <h5 class="text-center">Create Account</h5>
-          <p class="text-muted text-center mb-4">Join our community</p>
-          <form id="registerForm">
-            <div class="mb-3"><input type="text" id="regUsername" class="form-control" placeholder="Username" required></div>
-            <div class="mb-3"><input type="email" id="regEmail" class="form-control" placeholder="Email" required></div>
-            <div class="mb-3"><input type="password" id="regPassword" class="form-control" placeholder="Password" required></div>
-            <button type="submit" class="btn login-btn w-100">REGISTER</button>
-          </form>
-          <div class="text-center mt-4">
-            Already have an account? <a href="#" onclick="showView('loginView')" class="text-decoration-none">Login</a>
-          </div>
-        </div>
+        <div class="col-lg-5 right-auth-zone">
+  <div class="premium-login-card">
 
-        <div id="forgotView" class="auth-view d-none">
-          <h5 class="text-center">Reset Password</h5>
-          <p class="text-muted text-center mb-4">Enter your email to receive a link</p>
-          <form id="forgotForm">
-            <div class="mb-3"><input type="email" class="form-control" placeholder="Email address" required></div>
-            <button class="btn login-btn w-100">SEND LINK</button>
-          </form>
-          <div class="text-center mt-4">
-            <a href="#" onclick="showView('loginView')" class="text-decoration-none">Back to Login</a>
-          </div>
-        </div>
+<div class="text-center mb-4">
 
-      </div> </div>
+    <img src="images/logos/logo.png"
+         alt="Eventora"
+         class="login-logo">
+
+    <h3 class="font-weight-bold text-white mb-1">
+        Welcome Back! 👋
+    </h3>
+
+    <p style="font-size: 0.8rem; color: #94a3b8;">
+        Login to continue your journey
+    </p>
+
+</div>
+
+    <form id="loginForm">
+      <div class="inp-container">
+        <i class="inp-icon-l bi bi-envelope"></i>
+        <input type="text" id="loginIdentifier" class="form-control glass-input" placeholder="Email or Phone number">
+        <i class="inp-icon-r bi bi-person"></i>
+      </div>
+
+      <div class="inp-container">
+        <i class="inp-icon-l bi bi-lock"></i>
+        <input type="password" id="loginPassword" class="form-control" placeholder="Password" required>
+        <i class="inp-icon-r bi bi-eye-slash" style="cursor:pointer;" onclick="togglePassword()"></i>
+      </div>
+
+      <div class="util-row">
+        <div>
+          <input type="checkbox" id="rememberMe" style="accent-color: #6366f1;">
+          <label for="rememberMe" style="margin-left: 5px; cursor: pointer;">Remember me</label>
+        </div>
+        <a href="#" style="color: rgba(255,255,255,0.7); text-decoration: none;">Forgot Password?</a>
+      </div>
+
+      <button type="submit" class="gradient-btn">
+        Login
+        <span class="btn-arrow-box"><i class="bi bi-arrow-right"></i></span>
+      </button>
+
+      <div class="divider-row">
+        <span>Or continue with</span>
+      </div>
+
+      <div class="social-grid">
+        <a href="#" class="social-tile"><img src="https://img.icons8.com/color/20/google-logo.png" alt="Google"></a>
+        <a href="#" class="social-tile"><i class="bi bi-apple text-white" style="font-size: 1.1rem;"></i></a>
+        <a href="#" class="social-tile"><i class="bi bi-facebook" style="color: #1877F2; font-size: 1.1rem;"></i></a>
+        <a href="#" class="social-tile"><i class="bi bi-telephone text-success" style="font-size: 1.1rem;"></i></a>
+      </div>
+
+      <div class="text-center mt-3" style="font-size: 0.8rem; color: #94a3b8;">
+        New here? <a href="#" style="color: #00f2fe; text-decoration: none; font-weight: bold;">Create an account</a>
+      </div>
+    </form>
+
   </div>
 </div>
 
-<div id="footer-placeholder"></div>
-<script src="js/footer.js"></script>
+      </div>
+    </div>
+  </header>
 
-<script src="js/login.js"></script>
+  <section class="features-strip-section">
+    <div class="custom-container">
+      <div class="row g-3">
+        <div class="col-lg-3 col-sm-6">
+          <div class="feature-strip-card">
+            <div class="f-icon-box"><i class="bi bi-calendar-event"></i></div>
+            <div>
+              <h6 class="f-title">Thousands of Events</h6>
+              <p class="f-desc">Live concerts, sports, comedy shows, tech fests & more daily.</p>
+            </div>
+          </div>
+        </div>
+        <div class="col-lg-3 col-sm-6">
+          <div class="feature-strip-card">
+            <div class="f-icon-box purple"><i class="bi bi-building"></i></div>
+            <div>
+              <h6 class="f-title">Top Venues Across India</h6>
+              <p class="f-desc">Find the best premium event spots and places all in one unified zone.</p>
+            </div>
+          </div>
+        </div>
+        <div class="col-lg-3 col-sm-6">
+          <div class="feature-strip-card">
+            <div class="f-icon-box orange"><i class="bi bi-tags"></i></div>
+            <div>
+              <h6 class="f-title">Best Deals & Offers</h6>
+              <p class="f-desc">Save flat maximum cash on premium bookings with zero extra taxes.</p>
+            </div>
+          </div>
+        </div>
+        <div class="col-lg-3 col-sm-6">
+          <div class="feature-strip-card">
+            <div class="f-icon-box cyan"><i class="bi bi-shield-lock"></i></div>
+            <div>
+              <h6 class="f-title">Secure & Easy Bookings</h6>
+              <p class="f-desc">Fast, reliable transaction servers ensuring seamless gateways.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="stats-counter-strip">
+        <div class="row align-items-center">
+<!--          <div class="col-md-2 col-sm-4"><div class="stat-node"><i class="bi bi-people stat-ico"></i><div><span class="stat-num">25K+</span><span class="stat-lbl">Happy Users</span></div></div></div>-->
+<!--          <div class="col-md-1 d-none d-md-block"><div class="stat-pipe"></div></div>-->
+          <div class="col-md-2 col-sm-4"><div class="stat-node"><i class="bi bi-ticket-perforated stat-ico" style="color:#a855f7;"></i><div><span class="stat-num">5000+</span><span class="stat-lbl">Events</span></div></div></div>
+          <div class="col-md-1 d-none d-md-block"><div class="stat-pipe"></div></div>
+          <div class="col-md-2 col-sm-4"><div class="stat-node"><i class="bi bi-map stat-ico" style="color:#f97316;"></i><div><span class="stat-num">150+</span><span class="stat-lbl">Cities</span></div></div></div>
+          <div class="col-md-1 d-none d-md-block"><div class="stat-pipe"></div></div>
+          <div class="col-md-2 col-sm-6"><div class="stat-node"><i class="bi bi-star stat-ico" style="color:#eab308;"></i><div><span class="stat-num">4.8★</span><span class="stat-lbl">User Rating</span></div></div></div>
+          <div class="col-md-1 d-none d-md-block"><div class="stat-pipe"></div></div>
+          <div class="col-md-2 col-sm-6"><div class="stat-node"><i class="bi bi-shield-check stat-ico" style="color:#10b981;"></i><div><span class="stat-num">100%</span><span class="stat-lbl">Secure Gateway</span></div></div></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="py-4">
+    <div class="custom-container">
+      <div class="section-header-block">
+        <h3 class="section-headline">Browse by Categories</h3>
+        <a href="#" class="view-all-link">View All</a>
+      </div>
+      <div class="row g-3">
+        <div class="col-xl-1-5 col-lg-3 col-sm-4 col-6"><div class="category-box-node"><i class="bi bi-music-note-beamed cat-ico-frame c-blue"></i><div class="cat-title">Concerts</div></div></div>
+        <div class="col-xl-1-5 col-lg-3 col-sm-4 col-6"><div class="category-box-node"><i class="bi bi-trophy cat-ico-frame c-green"></i><div class="cat-title">Sports</div></div></div>
+        <div class="col-xl-1-5 col-lg-3 col-sm-4 col-6"><div class="category-box-node"><i class="bi bi-brightness-high cat-ico-frame c-orange"></i><div class="cat-title">Festivals</div></div></div>
+        <div class="col-xl-1-5 col-lg-3 col-sm-4 col-6"><div class="category-box-node"><i class="bi bi-emoji-laughing cat-ico-frame c-red"></i><div class="cat-title">Comedy</div></div></div>
+        <div class="col-xl-1-5 col-lg-3 col-sm-4 col-6"><div class="category-box-node"><i class="bi bi-masks cat-ico-frame c-purple"></i><div class="cat-title">Theater</div></div></div>
+        <div class="col-xl-1-5 col-lg-3 col-sm-4 col-6"><div class="category-box-node"><i class="bi bi-mortarboard cat-ico-frame c-cyan"></i><div class="cat-title">Workshops</div></div></div>
+        <div class="col-xl-1-5 col-lg-3 col-sm-4 col-6"><div class="category-box-node"><i class="bi bi-cup-straw cat-ico-frame c-pink"></i><div class="cat-title">Parties</div></div></div>
+        <div class="col-xl-1-5 col-lg-3 col-sm-4 col-6"><div class="category-box-node"><i class="bi bi-palette cat-ico-frame c-teal"></i><div class="cat-title">Exhibitions</div></div></div>
+      </div>
+    </div>
+  </section>
+
+  <section class="events-grid-space">
+    <div class="custom-container">
+      <div class="section-header-block">
+        <h3 class="section-headline">Popular Events</h3>
+        <a href="#" class="view-all-link">View All</a>
+      </div>
+      <div class="row g-4">
+
+        <div class="col-xl-3 col-md-6">
+          <div class="event-card-container">
+            <div class="event-thumbnail-box art-arijit">
+              <div class="date-badge-box"><span class="d-num">24</span><span class="d-mon">May</span></div>
+            </div>
+            <div class="event-info-wrapper">
+              <h5 class="ev-title">Arijit Singh Live In Concert</h5>
+              <span class="ev-loc"><i class="bi bi-geo-alt-fill me-1"></i> Jio World Garden, Mumbai</span>
+              <div class="rating-row"><i class="bi bi-star-fill"></i> 4.8 <span class="rating-count">(12.5K)</span></div>
+              <div class="buy-trigger-row">
+                <div class="ev-price">₹1,299 <span>Onwards</span></div>
+                <button class="ev-action-btn">Book Now</button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="col-xl-3 col-md-6">
+          <div class="event-card-container">
+            <div class="event-thumbnail-box art-cricket">
+              <div class="date-badge-box"><span class="d-num">31</span><span class="d-mon">May</span></div>
+            </div>
+            <div class="event-info-wrapper">
+              <h5 class="ev-title">MI vs CSK - IPL T20 Match</h5>
+              <span class="ev-loc"><i class="bi bi-geo-alt-fill me-1"></i> Wankhede Stadium, Mumbai</span>
+              <div class="rating-row"><i class="bi bi-star-fill"></i> 4.7 <span class="rating-count">(8.3K)</span></div>
+              <div class="buy-trigger-row">
+                <div class="ev-price">₹999 <span>Onwards</span></div>
+                <button class="ev-action-btn green">Book Now</button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="col-xl-3 col-md-6">
+          <div class="event-card-container">
+            <div class="event-thumbnail-box art-opera">
+              <div class="date-badge-box"><span class="d-num">08</span><span class="d-mon">Jun</span></div>
+            </div>
+            <div class="event-info-wrapper">
+              <h5 class="ev-title">The Phantom of the Opera Play</h5>
+              <span class="ev-loc"><i class="bi bi-geo-alt-fill me-1"></i> NCPA, Mumbai</span>
+              <div class="rating-row"><i class="bi bi-star-fill"></i> 4.9 <span class="rating-count">(2.1K)</span></div>
+              <div class="buy-trigger-row">
+                <div class="ev-price">₹1,499 <span>Onwards</span></div>
+                <button class="ev-action-btn orange">Book Now</button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="col-xl-3 col-md-6">
+          <div class="event-card-container">
+            <div class="event-thumbnail-box art-sunburn">
+              <div class="date-badge-box"><span class="d-num">15</span><span class="d-mon">Jun</span></div>
+            </div>
+            <div class="event-info-wrapper">
+              <h5 class="ev-title">Sunburn Festival Arena 2024</h5>
+              <span class="ev-loc"><i class="bi bi-geo-alt-fill me-1"></i> International Expo, Pune</span>
+              <div class="rating-row"><i class="bi bi-star-fill"></i> 4.6 <span class="rating-count">(15.4K)</span></div>
+              <div class="buy-trigger-row">
+                <div class="ev-price">₹2,499 <span>Onwards</span></div>
+                <button class="ev-action-btn">Book Now</button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </section>
+
+  <section class="offers-grid-space">
+    <div class="custom-container">
+      <div class="section-header-block">
+        <h3 class="section-headline">Exclusive Offers For You</h3>
+        <a href="#" class="view-all-link">View All</a>
+      </div>
+      <div class="row g-3">
+        <div class="col-xl-3 col-md-6">
+          <div class="offer-box-card o-flat-blue">
+            <div>
+              <span class="o-lbl">Flat</span>
+              <h4 class="o-main-title text-blue-glow">20% OFF</h4>
+              <span class="o-sub">On first ticket booking storewide</span>
+            </div>
+            <div><span class="o-code">Use Code: FIRST20</span></div>
+            <i class="bi bi-gift o-graphic-icon"></i>
+          </div>
+        </div>
+        <div class="col-xl-3 col-md-6">
+          <div class="offer-box-card o-wknd-teal">
+            <div>
+              <span class="o-lbl">Weekend Special</span>
+              <h4 class="o-main-title text-teal-glow">Up to 15% OFF</h4>
+              <span class="o-sub">On selected music event passes</span>
+            </div>
+            <div><span class="o-code" style="color:#99f6e4; background:rgba(20,184,166,0.1);">Auto Applied</span></div>
+            <i class="bi bi-lightning o-graphic-icon"></i>
+          </div>
+        </div>
+        <div class="col-xl-3 col-md-6">
+          <div class="offer-box-card o-group-gold">
+            <div>
+              <span class="o-lbl">Group Booking</span>
+              <h4 class="o-main-title text-gold-glow">Up to 25% OFF</h4>
+              <span class="o-sub">For groups of 4 or more corporate items</span>
+            </div>
+            <div><span class="o-code" style="color:#fef08a; background:rgba(245,158,11,0.1);">Code: TEAMUP</span></div>
+            <i class="bi bi-people o-graphic-icon"></i>
+          </div>
+        </div>
+        <div class="col-xl-3 col-md-6">
+          <div class="offer-box-card o-bank-navy">
+            <div>
+              <span class="o-lbl">Bank Offer</span>
+              <h4 class="o-main-title text-primary-glow">10% Instant Discount</h4>
+              <span class="o-sub">On Credit & Debit cards transaction</span>
+            </div>
+            <div><span class="o-code" style="color:#bfdbfe; background:rgba(59,130,246,0.1);">Select Banks</span></div>
+            <i class="bi bi-credit-card o-graphic-icon"></i>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="custom-container">
+    <div class="newsletter-row-banner">
+      <div class="row align-items-center">
+        <div class="col-lg-6 mb-3 mb-lg-0">
+          <h4 class="news-title">Never Miss An Event!</h4>
+          <p class="news-sub m-0">Subscribe to get real-time updates on high priority deals and premium passes.</p>
+        </div>
+        <div class="col-lg-6">
+          <div class="news-input-box ms-auto">
+            <input type="email" class="news-field" placeholder="Enter your email address" />
+            <button class="news-btn">Subscribe</button>
+          </div>
+        </div>
+      </div>
+      <i class="bi bi-envelope-paper-fill news-bg-crystals"></i>
+    </div>
+  </section>
+
+  <footer class="master-footer-node">
+    <div class="custom-container">
+      <div class="row g-4">
+
+        <div class="col-lg-4 col-md-6">
+          <a class="brand-wrapper mb-3" href="#">
+            <img src="images/logos/logo.png"
+                 alt="Eventora Logo"
+                 class="footer-logo"></a>
+          <p class="footer-desc-txt">Your gateway to premium, unified unforgettable experiences. Discover, track, book and celebrate custom moments perfectly.</p>
+          <div class="footer-social-deck">
+            <a href="#" class="f-social-ico"><i class="bi bi-instagram"></i></a>
+            <a href="#" class="f-social-ico"><i class="bi bi-facebook"></i></a>
+            <a href="#" class="f-social-ico"><i class="bi bi-twitter-x"></i></a>
+            <a href="#" class="f-social-ico"><i class="bi bi-youtube"></i></a>
+          </div>
+        </div>
+
+        <div class="col-lg-2 col-md-3 col-6">
+          <h6 class="f-col-heading">Company</h6>
+          <ul class="f-links-list">
+            <li><a href="#" class="f-anchor">About Us</a></li>
+            <li><a href="#" class="f-anchor">Careers</a></li>
+            <li><a href="#" class="f-anchor">Blog</a></li>
+            <li><a href="#" class="f-anchor">Newsroom</a></li>
+            <li><a href="#" class="f-anchor">Contact Us</a></li>
+          </ul>
+        </div>
+
+        <div class="col-lg-2 col-md-3 col-6">
+          <h6 class="f-col-heading">Support</h6>
+          <ul class="f-links-list">
+            <li><a href="#" class="f-anchor">Help Center</a></li>
+            <li><a href="#" class="f-anchor">Terms of Service</a></li>
+            <li><a href="#" class="f-anchor">Privacy Policy</a></li>
+            <li><a href="#" class="f-anchor">Refund Policy</a></li>
+            <li><a href="#" class="f-anchor">FAQs</a></li>
+          </ul>
+        </div>
+
+        <div class="col-lg-2 col-md-4 col-6">
+          <h6 class="f-col-heading">Top Categories</h6>
+          <ul class="f-links-list">
+            <li><a href="#" class="f-anchor">Concerts</a></li>
+            <li><a href="#" class="f-anchor">Sports</a></li>
+            <li><a href="#" class="f-anchor">Festivals</a></li>
+            <li><a href="#" class="f-anchor">Theater</a></li>
+            <li><a href="#" class="f-anchor">Comedy</a></li>
+          </ul>
+        </div>
+
+        <div class="col-lg-2 col-md-4 col-6">
+          <h6 class="f-col-heading">Download Our App</h6>
+          <a href="#" class="app-download-btn">
+            <i class="bi bi-play-btn-fill"></i>
+            <div><span class="app-btn-lbl">Get it on</span><span class="app-btn-main">Google Play</span></div>
+          </a>
+          <a href="#" class="app-download-btn">
+            <i class="bi bi-apple"></i>
+            <div><span class="app-btn-lbl">Download on the</span><span class="app-btn-main">App Store</span></div>
+          </a>
+        </div>
+
+      </div>
+
+      <div class="footer-base-line">
+        <span>© 2026 Eventora. All rights reserved. Built with precision.</span>
+        <div class="payment-gateways-row">
+          <span style="font-size:0.65rem; color:#64748b; font-weight:700;">We accept:</span>
+          <i class="bi bi-credit-card-2-front" title="Visa / Mastercard"></i>
+          <span style="font-weight:800; font-style:italic; font-size:0.8rem; letter-spacing:1px; color:#ffffff;">UPI</span>
+          <span style="font-weight:700; font-size:0.8rem; color:#06b6d4;">Paytm</span>
+        </div>
+      </div>
+    </div>
+  </footer>
+
+<!--  <style>-->
+<!--    @media (min-width: 1200px) {-->
+<!--      .col-xl-1-5 { flex: 0 0 auto; width: 12.3%; }-->
+<!--    }-->
+<!--  </style>-->
+
+    <script src="js/login.js"></script>
+
 </body>
 </html>
