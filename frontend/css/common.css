@@ -1,6 +1,4 @@
-/* =========================================================
-   1. GLOBAL RESET & BASE STYLES (Common for All Pages)
-========================================================= */
+/* Global Page Layout & Background Theme */
 html, body {
     margin: 0;
     padding: 0;
@@ -9,20 +7,75 @@ html, body {
 }
 
 body {
+    position: relative;
+    overflow-x: hidden;
+
     background:
-        linear-gradient(rgba(11,15,20,0.7), rgba(11,15,20,0.7)),
-        url("../images/login-bg.jpg");
-    background-size: cover;
-    background-position: center;
-    background-repeat: no-repeat;
-    background-attachment: fixed;
+        radial-gradient(circle at 20% 20%, rgba(99,102,241,0.18), transparent 25%),
+        radial-gradient(circle at 80% 10%, rgba(59,130,246,0.15), transparent 25%),
+        radial-gradient(circle at 50% 70%, rgba(168,85,247,0.12), transparent 30%),
+        linear-gradient(
+            135deg,
+            #020617 0%,
+            #081028 25%,
+            #0f172a 50%,
+            #081028 75%,
+            #020617 100%
+        );
+
     color: white;
     font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    min-height: 100vh;
 }
 
-/* =========================================================
-   2. GLASS UI COMPONENTS (Shared Cards)
-========================================================= */
+/* Neon Glow Background Effect */
+body::before {
+    content: "";
+
+    position: fixed;
+    inset: 0;
+
+    background:
+        radial-gradient(
+            circle,
+            rgba(0,255,255,0.08),
+            transparent 60%
+        );
+
+    filter: blur(120px);
+
+    pointer-events: none;
+
+    z-index: -2;
+}
+
+/* Secondary Gradient Glow Effect */
+body::after {
+    content: "";
+
+    position: fixed;
+
+    width: 700px;
+    height: 700px;
+
+    top: -200px;
+    right: -200px;
+
+    background:
+        radial-gradient(
+            circle,
+            rgba(168,85,247,0.15),
+            transparent 70%
+        );
+
+    filter: blur(150px);
+
+    pointer-events: none;
+
+    z-index: -2;
+}
+
+/* Shared Glassmorphism Card Styles */
 .card {
     background: rgba(255, 255, 255, 0.08);
     backdrop-filter: blur(12px);
@@ -31,14 +84,13 @@ body {
     transition: all 0.3s ease;
 }
 
-/* =========================================================
-   3. SHARED BUTTONS
-========================================================= */
+/* Shared Button Styles */
 .btn {
     border-radius: 10px;
     transition: all 0.2s ease;
 }
 
+/* Primary Action Button Styles */
 .btn-primary {
     background: linear-gradient(45deg, #6366f1, #3b82f6);
     border: none;
@@ -49,9 +101,7 @@ body {
     box-shadow: 0 0 15px rgba(99,102,241,0.5);
 }
 
-/* =========================================================
-   4. SHARED FORMS & INPUTS
-========================================================= */
+/* Shared Form Control Styles */
 input, select, textarea {
     background: rgba(255,255,255,0.1) !important;
     border: 1px solid rgba(255,255,255,0.2) !important;
@@ -63,14 +113,13 @@ input::placeholder {
     color: #bbb;
 }
 
-/* =========================================================
-   5. NAVBAR & NAVIGATION
-========================================================= */
+/* Navigation Bar Styles */
 .navbar {
     background: rgba(10, 15, 30, 0.8) !important;
     backdrop-filter: blur(10px);
 }
 
+/* Navigation Link Styles */
 .nav-link {
     color: rgba(255,255,255,0.8) !important;
 }
@@ -79,24 +128,19 @@ input::placeholder {
     color: #fff !important;
 }
 
-/* =========================================================
-   6. LAYOUT SYSTEM (Main Containers)
-========================================================= */
+/* Main Dashboard Layout */
 .main-dashboard {
     min-height: 100vh;
     display: flex;
     flex-direction: column;
 }
 
-/* Isse content hamesha navbar ke niche se shuru hoga */
-.content-wrapper {
+/* Main Content Container Layout */.content-wrapper {
     padding-top: 80px;
     flex: 1;
 }
 
-/* =========================================================
-   7. UTILITIES
-========================================================= */
+/* Utility Classes */
 .text-muted {
     color: #94a3b8 !important;
 }
@@ -105,11 +149,13 @@ input::placeholder {
     box-shadow: 0 10px 30px rgba(0,0,0,0.4) !important;
 }
 
+/* Fade In Animation */
 @keyframes fadeIn {
     from { opacity: 0; transform: translateY(10px); }
     to { opacity: 1; transform: translateY(0); }
 }
 
+/* Fade Animation Helper */
 .animate-fade {
     animation: fadeIn 0.5s ease forwards;
 }

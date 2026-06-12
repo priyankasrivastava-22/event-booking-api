@@ -2,7 +2,7 @@ console.log("JS loaded");
 
 const API_URL = "https://event-booking-api-gnww.onrender.com/api";
 
-// --- Helper: Dynamic Image Generator ---
+// ---------------- CATEGORY IMAGE MAPPING ----------------
 function getCategoryImage(category) {
     const cat = category ? category.toLowerCase() : "";
     if (cat.includes('music') || cat.includes('concert')) return 'https://images.unsplash.com/photo-1501281668745-f7f57925c3b4?auto=format&fit=crop&w=400';
@@ -77,7 +77,7 @@ async function loadCategories() {
     }
 }
 
-// ---------------- LOAD EVENTS (Fixed Logic) ----------------
+// ---------------- LOAD EVENTS & APPLY FILTERS ----------------
 async function loadEvents() {
     const token = localStorage.getItem("token");
     if (!token) return;
@@ -88,7 +88,7 @@ async function loadEvents() {
     // IMPORTANT: Path is just /events, parameters handle the filtering
     let url = `${API_URL}/events/events?limit=16`;
 
-    // FIX: Only use the search endpoint if a category is selected or text is typed
+   // Build query parameters based on selected filters
 //    if (category !== "" || search !== "") {
         const params = new URLSearchParams();
         if (search) params.append("title", search);
@@ -142,7 +142,7 @@ async function loadEvents() {
    }
  }
 
-// ---------------- NOTIFICATION & LOGOUT ----------------
+// ---------------- NOTIFICATION FUNCTIONS ----------------
 async function loadNotificationCount() {
     const token = localStorage.getItem("token");
     if (!token) return;
@@ -159,17 +159,19 @@ async function loadNotificationCount() {
     } catch (err) { console.error(err); }
 }
 
+// ---------------- USER LOGOUT ----------------
 function logout() {
     localStorage.removeItem("token");
     window.location.href = "login.html";
 }
 
+// ---------------- EVENT DETAILS NAVIGATION ----------------
 function viewEvent(id, img) {
      window.location.href = `event-details.html?id=${id}&img=${encodeURIComponent(img)}`;
 
 }
 
-// ---------------- INIT ----------------
+// ---------------- PAGE INITIALIZATION ----------------
 document.addEventListener("DOMContentLoaded", () => {
     setupAdminUI();
     loadCategories();
@@ -185,4 +187,25 @@ document.addEventListener("DOMContentLoaded", () => {
 
     document.getElementById("categoryFilter")?.addEventListener("change", loadEvents);
     document.getElementById("searchInput")?.addEventListener("input", loadEvents);
+});
+
+// ---------------- CATEGORY CARD FILTERING ----------------
+document.querySelectorAll(".category-card").forEach(card => {
+
+    card.addEventListener("click", () => {
+
+        document.querySelectorAll(".category-card")
+            .forEach(c => c.classList.remove("active"));
+
+        card.classList.add("active");
+
+        const selectedCategory =
+            card.dataset.category;
+
+        document.getElementById("categoryFilter").value =
+            selectedCategory;
+
+        loadEvents();
+    });
+
 });
