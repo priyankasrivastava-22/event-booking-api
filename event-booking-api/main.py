@@ -122,6 +122,7 @@ async def root():
 
 
 @app.get("/warmup")
+@app.head("/warmup")
 def warmup(db: Session = Depends(get_db)):
     db.execute(text("SELECT 1"))
     return {"status": "awake"}
