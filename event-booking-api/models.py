@@ -14,6 +14,7 @@ class Event(Base):
     description = Column(String, nullable=True)
     date_time = Column(String, nullable=True)
     price = Column(Integer, default=0)
+    image_url = Column(String, nullable=True)
     category = Column(String, nullable=True)
     category_id = Column(Integer, ForeignKey("categories.id"), nullable=True)
 

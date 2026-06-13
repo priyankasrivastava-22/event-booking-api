@@ -28,14 +28,10 @@ function setupAdminUI() {
     const user = getUserFromToken();
     if (!user || user.role !== "admin") return;
 
-    const navbar = document.querySelector(".navbar");
-    if (!navbar) return;
-
-    const btn = document.createElement("button");
-    btn.className = "btn btn-outline-light btn-sm ms-2";
-    btn.innerText = "Admin";
-    btn.onclick = () => { window.location.href = "admin.html"; };
-    navbar.appendChild(btn);
+    const adminLink = document.getElementById("adminLink");
+    if (adminLink) {
+        adminLink.style.display = "flex";
+    }
 }
 
 // ---------------- AUTH CHECK ----------------
@@ -117,7 +113,7 @@ async function loadEvents() {
         }
 
         data.forEach(event => {
-        const imageUrl = getCategoryImage(event.category);
+        const imageUrl =  event.image_url || getCategoryImage(event.category);
           container.innerHTML += `
           <div class="col">
             <div class="card h-100 shadow-sm border-secondary bg-dark text-white">

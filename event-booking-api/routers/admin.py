@@ -109,29 +109,6 @@ def delete_event(event_id: int,
     return {"message": "Event deleted"}
 
 #---------------------UPDATE EVENT--------------
-@router.put("/events/{event_id}")
-def update_event(event_id: int,
-                 updated: schemas.EventCreate,
-                 db: Session = Depends(get_db),
-                 user=Depends(get_current_user)):
-
-    admin_check(user)
-
-    event = db.query(models.Event).filter(
-        models.Event.id == event_id
-    ).first()
-
-    if not event:
-        raise HTTPException(status_code=404, detail="Event not found")
-
-    for key, value in updated.dict().items():
-        setattr(event, key, value)
-
-    db.commit()
-
-    return {"message": "Event updated"}
-
-
 @router.put("/events/{id}")
 def update_event(id: int, data: schemas.EventUpdate, db: Session = Depends(get_db), user=Depends(get_current_user)):
 

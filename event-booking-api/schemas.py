@@ -9,6 +9,7 @@ class EventCreate(BaseModel):
     description: str | None = None
     date_time: str | None = None
     price: int = 0
+    image_url: Optional[str] = None
     category_id: Optional[int] = None
     category: str | None = None
 
@@ -22,6 +23,7 @@ class EventResponse(BaseModel):
     description: str | None = None
     date_time: str | None = None
     price: int
+    image_url: str | None = None
     category: str | None = None
 
     class Config:
@@ -134,5 +136,6 @@ class EventUpdate(BaseModel):
     description: Optional[str] = None
     date_time: Optional[str] = None
     price: Optional[int] = None
+    image_url: Optional[str] = None
+    category: Optional[str] = None
     category_id: Optional[int] = None
-

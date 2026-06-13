@@ -39,6 +39,76 @@ def create_category(
     return new_category
 
 
+@router.delete("/admin/categories/{category_id}")
+def delete_category(
+    category_id: int,
+    db=Depends(get_db),
+    user=Depends(get_current_user)
+):
+    if user["role"] != "admin":
+        raise HTTPException(status_code=403, detail="Only admin allowed")
+
+    category = db.query(models.Category).filter(
+        models.Category.id == category_id
+    ).first()
+
+    if not category:
+        raise HTTPException(status_code=404, detail="Category not found")
+
+    # Agar koi event ye category use kar raha hai, usko unlink karo
+    db.query(models.Event).filter(
+        models.Event.category_id == category_id
+    ).update({models.Event.category_id: None})
+
+    db.delete(category)
+    db.commit()
+
+    return {"success": True, "message": "Category deleted"}
+
+# ---------------- UPDATE CATEGORY ----------------
+@router.put("/admin/categories/{category_id}")
+def update_category(
+    category_id: int,
+    category: CategoryCreate,
+    db=Depends(get_db),
+    user=Depends(get_current_user)
+):
+    if user["role"] != "admin":
+        raise HTTPException(status_code=403, detail="Only admin allowed")
+
+    if not category.name.strip():
+        raise HTTPException(status_code=400, detail="Category name cannot be empty")
+
+    existing_category = db.query(models.Category).filter(
+        models.Category.id == category_id
+    ).first()
+
+    if not existing_category:
+        raise HTTPException(status_code=404, detail="Category not found")
+
+    # Check ki naya naam kisi aur category se clash na kare
+    name_conflict = db.query(models.Category).filter(
+        models.Category.name == category.name,
+        models.Category.id != category_id
+    ).first()
+
+    if name_conflict:
+        raise HTTPException(status_code=400, detail="Category name already exists")
+
+    old_name = existing_category.name
+    existing_category.name = category.name
+
+    # Events jo purana naam (string field) use kar rahe hain, unko bhi update karo
+    db.query(models.Event).filter(
+        models.Event.category == old_name
+    ).update({models.Event.category: category.name})
+
+    db.commit()
+    db.refresh(existing_category)
+
+    return existing_category
+
+
 # ---------------- NOTIFICATIONS ----------------
 @router.post("/admin/notify")
 def notify(

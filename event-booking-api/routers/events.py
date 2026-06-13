@@ -1,4 +1,6 @@
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, HTTPException, UploadFile, File
+import cloudinary.uploader
+from core.cloudinary_config import cloudinary
 from sqlalchemy.orm import Session
 import models, schemas
 from utils.helpers import get_db
@@ -33,10 +35,9 @@ def create_event(event: schemas.EventCreate, db: Session = Depends(get_db)):
         description=event.description,
         date_time=event.date_time,
         price=event.price,
+        image_url=event.image_url,
         total_seats=event.total_seats,
         available_seats=event.total_seats,
-
-        # BOTH fields
         category=category_name,
         category_id=category_id
     )
@@ -72,7 +73,7 @@ def get_events(
 
     # FILTER BY CATEGORY (NEW)
     if category:
-        query = query.filter(models.Event.category == category)
+        query = query.filter(models.Event.category.ilike(category))
 
     # FILTER BY DATE
     if date:
@@ -100,7 +101,7 @@ def get_event(event_id: int, db: Session = Depends(get_db)):
 
 
 @router.put("/events/{event_id}")
-def update_event(event_id: int, data: schemas.EventCreate, db: Session = Depends(get_db)):
+def update_event(event_id: int, data: schemas.EventUpdate, db: Session = Depends(get_db)):
     event = db.query(models.Event).filter(models.Event.id == event_id).first()
     if not event:
         raise HTTPException(status_code=404)
@@ -108,6 +109,7 @@ def update_event(event_id: int, data: schemas.EventCreate, db: Session = Depends
     event.title = data.title
     event.location = data.location
     event.price = data.price
+    event.image_url = data.image_url
     # handle category update safely
     if data.category_id:
         category = db.query(models.Category).filter(
@@ -134,15 +136,26 @@ def delete_event(event_id: int, db: Session = Depends(get_db)):
     db.commit()
     return {"message": "deleted"}
 
-@router.get("/events")
-def get_events(title: str = None, category: str = None, db: Session = Depends(get_db)):
 
-    query = db.query(models.Event)
+# ---------------- UPLOAD EVENT IMAGE ----------------
+@router.post("/events/{event_id}/upload-image")
+def upload_event_image(
+    event_id: int,
+    file: UploadFile = File(...),
+    db: Session = Depends(get_db)
+):
+    event = db.query(models.Event).filter(models.Event.id == event_id).first()
+    if not event:
+        raise HTTPException(status_code=404, detail="Event not found")
 
-    if title:
-        query = query.filter(models.Event.title.contains(title))
+    result = cloudinary.uploader.upload(
+        file.file,
+        folder="event_images",
+        transformation=[{"width": 1200, "height": 675, "crop": "fill"}]
+    )
 
-    if category:
-        query = query.filter(models.Event.category == category)
+    event.image_url = result["secure_url"]
+    db.commit()
+    db.refresh(event)
 
-    return query.all()
+    return {"message": "Image uploaded", "image_url": event.image_url}
