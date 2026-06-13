@@ -7,7 +7,7 @@ The system supports authentication, role-based access (User/Admin), event manage
 ---
 
 ##  Live Demo
-- Frontend: https://event-booking-frontend-kmjh.onrender.com
+- Frontend: https://eventora-7nnn.onrender.com
 - Backend API: https://event-booking-api-gnww.onrender.com/docs
 
 ---
