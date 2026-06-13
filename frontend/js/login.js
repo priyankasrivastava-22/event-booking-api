@@ -1,5 +1,3 @@
-/* ======= LOGIN / REGISTER / DEMO AUTH SCRIPT. Handles local + deployed API environment ====== */
-
 /* Detect local environment */
 const isLocal =
     window.location.hostname === "localhost" ||

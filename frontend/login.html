@@ -31,17 +31,6 @@
                 EVENTORA
             </span>
         </a>
-
-        <div class="right-actions">
-            <a href="#" class="nav-link-custom">Events</a>
-            <a href="#" class="nav-link-custom">Categories</a>
-            <a href="#" class="nav-link-custom">Contact</a>
-
-            <button class="btn-signup">
-                Sign Up
-            </button>
-        </div>
-
     </div>
 </nav>
 
@@ -54,13 +43,15 @@
             <div class="vortex-ring ring-outer">
               <div class="glitter-particle g-1"></div>
             </div>
-    <div class="vortex-ring ring-mid">
-        <div class="glitter-particle g-2"></div>
-    </div>
-    <div class="vortex-ring ring-inner">
-        <div class="glitter-particle g-3"></div>
-    </div>
-  </div>
+
+            <div class="vortex-ring ring-mid">
+              <div class="glitter-particle g-2"></div>
+            </div>
+
+            <div class="vortex-ring ring-inner">
+              <div class="glitter-particle g-3"></div>
+            </div>
+          </div>
 
           <div class="typography-headers">
             <span class="neon-badge">DISCOVER. BOOK. ENJOY.</span>
@@ -120,10 +111,6 @@
 
 <div class="text-center mb-4">
 
-    <img src="images/logos/logo.png"
-         alt="Eventora"
-         class="login-logo">
-
     <h3 class="font-weight-bold text-white mb-1">
         Welcome Back! 👋
     </h3>
@@ -143,7 +130,7 @@
 
       <div class="inp-container">
         <i class="inp-icon-l bi bi-lock"></i>
-        <input type="password" id="loginPassword" class="form-control" placeholder="Password" required>
+        <input type="password" id="loginPassword" class="form-control glass-input" placeholder="Password" required>
         <i class="inp-icon-r bi bi-eye-slash" style="cursor:pointer;" onclick="togglePassword()"></i>
       </div>
 
@@ -167,8 +154,6 @@
       <div class="social-grid">
         <a href="#" class="social-tile"><img src="https://img.icons8.com/color/20/google-logo.png" alt="Google"></a>
         <a href="#" class="social-tile"><i class="bi bi-apple text-white" style="font-size: 1.1rem;"></i></a>
-        <a href="#" class="social-tile"><i class="bi bi-facebook" style="color: #1877F2; font-size: 1.1rem;"></i></a>
-        <a href="#" class="social-tile"><i class="bi bi-telephone text-success" style="font-size: 1.1rem;"></i></a>
       </div>
 
       <div class="text-center mt-3" style="font-size: 0.8rem; color: #94a3b8;">
@@ -226,8 +211,6 @@
 
       <div class="stats-counter-strip">
         <div class="row align-items-center">
-<!--          <div class="col-md-2 col-sm-4"><div class="stat-node"><i class="bi bi-people stat-ico"></i><div><span class="stat-num">25K+</span><span class="stat-lbl">Happy Users</span></div></div></div>-->
-<!--          <div class="col-md-1 d-none d-md-block"><div class="stat-pipe"></div></div>-->
           <div class="col-md-2 col-sm-4"><div class="stat-node"><i class="bi bi-ticket-perforated stat-ico" style="color:#a855f7;"></i><div><span class="stat-num">5000+</span><span class="stat-lbl">Events</span></div></div></div>
           <div class="col-md-1 d-none d-md-block"><div class="stat-pipe"></div></div>
           <div class="col-md-2 col-sm-4"><div class="stat-node"><i class="bi bi-map stat-ico" style="color:#f97316;"></i><div><span class="stat-num">150+</span><span class="stat-lbl">Cities</span></div></div></div>
@@ -244,17 +227,63 @@
     <div class="custom-container">
       <div class="section-header-block">
         <h3 class="section-headline">Browse by Categories</h3>
-        <a href="#" class="view-all-link">View All</a>
       </div>
-      <div class="row g-3">
-        <div class="col-xl-1-5 col-lg-3 col-sm-4 col-6"><div class="category-box-node"><i class="bi bi-music-note-beamed cat-ico-frame c-blue"></i><div class="cat-title">Concerts</div></div></div>
-        <div class="col-xl-1-5 col-lg-3 col-sm-4 col-6"><div class="category-box-node"><i class="bi bi-trophy cat-ico-frame c-green"></i><div class="cat-title">Sports</div></div></div>
-        <div class="col-xl-1-5 col-lg-3 col-sm-4 col-6"><div class="category-box-node"><i class="bi bi-brightness-high cat-ico-frame c-orange"></i><div class="cat-title">Festivals</div></div></div>
-        <div class="col-xl-1-5 col-lg-3 col-sm-4 col-6"><div class="category-box-node"><i class="bi bi-emoji-laughing cat-ico-frame c-red"></i><div class="cat-title">Comedy</div></div></div>
-        <div class="col-xl-1-5 col-lg-3 col-sm-4 col-6"><div class="category-box-node"><i class="bi bi-masks cat-ico-frame c-purple"></i><div class="cat-title">Theater</div></div></div>
-        <div class="col-xl-1-5 col-lg-3 col-sm-4 col-6"><div class="category-box-node"><i class="bi bi-mortarboard cat-ico-frame c-cyan"></i><div class="cat-title">Workshops</div></div></div>
-        <div class="col-xl-1-5 col-lg-3 col-sm-4 col-6"><div class="category-box-node"><i class="bi bi-cup-straw cat-ico-frame c-pink"></i><div class="cat-title">Parties</div></div></div>
-        <div class="col-xl-1-5 col-lg-3 col-sm-4 col-6"><div class="category-box-node"><i class="bi bi-palette cat-ico-frame c-teal"></i><div class="cat-title">Exhibitions</div></div></div>
+      <div class="row g-3 category-row">
+        <div class="col">
+        <div class="category-box-node">
+            <i class="bi bi-music-note-beamed cat-ico-frame c-blue"></i>
+            <div class="cat-title">Music</div>
+        </div>
+    </div>
+
+    <div class="col">
+        <div class="category-box-node">
+            <i class="bi bi-trophy-fill cat-ico-frame c-green"></i>
+            <div class="cat-title">Sports</div>
+        </div>
+    </div>
+
+    <div class="col">
+        <div class="category-box-node">
+            <i class="bi bi-cpu-fill cat-ico-frame c-cyan"></i>
+            <div class="cat-title">Technology</div>
+        </div>
+    </div>
+
+    <div class="col">
+        <div class="category-box-node">
+            <i class="bi bi-briefcase-fill cat-ico-frame c-orange"></i>
+            <div class="cat-title">Business</div>
+        </div>
+    </div>
+
+    <div class="col">
+        <div class="category-box-node">
+            <i class="bi bi-book-half cat-ico-frame c-purple"></i>
+            <div class="cat-title">Education</div>
+        </div>
+    </div>
+
+    <div class="col">
+        <div class="category-box-node">
+            <i class="bi bi-heart-pulse-fill cat-ico-frame c-red"></i>
+            <div class="cat-title">Health</div>
+        </div>
+    </div>
+
+    <div class="col">
+        <div class="category-box-node">
+            <i class="bi bi-emoji-laughing-fill cat-ico-frame c-pink"></i>
+            <div class="cat-title">Comedy</div>
+        </div>
+    </div>
+
+    <div class="col">
+        <div class="category-box-node">
+            <i class="bi bi-stars cat-ico-frame c-teal"></i>
+            <div class="cat-title">Festivals</div>
+        </div>
+    </div>
       </div>
     </div>
   </section>
@@ -488,12 +517,6 @@
       </div>
     </div>
   </footer>
-
-<!--  <style>-->
-<!--    @media (min-width: 1200px) {-->
-<!--      .col-xl-1-5 { flex: 0 0 auto; width: 12.3%; }-->
-<!--    }-->
-<!--  </style>-->
 
     <script src="js/login.js"></script>
 
