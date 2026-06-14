@@ -1,4 +1,3 @@
-<!-- event-details.html -->
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -12,145 +11,215 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Poppins:wght@600;700&display=swap" rel="stylesheet">
 
     <link rel="stylesheet" href="css/footer.css">
-    <link rel="stylesheet" href="css/common.css">
+<!--    <link rel="stylesheet" href="css/common.css">-->
     <link rel="stylesheet" href="css/event-details.css">
 </head>
+<body>
 
-<body class="d-flex flex-column">
+<div class="event-wrapper">
 
-<!-- Replace only navbar section in event-details.html -->
+    <!-- TOP ACTION BAR -->
+    <div class="top-bar">
 
-<nav class="navbar navbar-dark px-4 sticky-top">
-
-    <!-- Left Side -->
-    <span class="navbar-brand fw-bold"
-          onclick="goBack()"
-          style="cursor:pointer;">
-        <i class="bi bi-chevron-left me-2"></i>
-        Back to Events
-    </span>
-
-    <!-- Right Side -->
-    <div class="d-flex gap-2 align-items-center">
-
-    <!-- Favourite -->
-    <button class="btn btn-sm nav-icon-btn icon-clean" onclick="toggleFavourite()">
-        <i id="favIcon" class="bi bi-heart"></i>
-    </button>
-
-    <!-- Share -->
-    <button class="btn btn-sm nav-icon-btn icon-clean" onclick="shareEvent()">
-        <i class="bi bi-share"></i>
-    </button>
-
-    <!-- Notifications -->
-    <button class="btn btn-sm position-relative nav-icon-btn"
-            onclick="window.location.href='notifications.html'">
-        <i class="bi bi-bell"></i>
-
-        <span id="notifCount"
-              class="badge rounded-pill bg-danger position-absolute top-0 start-100 translate-middle">
-            0
-        </span>
-    </button>
-
-    <!-- Profile -->
-    <div class="dropdown">
-        <button class="btn btn-sm nav-icon-btn profile-btn-fix"
-                type="button"
-                id="profileDropdown"
-                data-bs-toggle="dropdown">
-            <i class="bi bi-person-circle"></i>
+        <button class="action-btn back-btn" onclick="goBack()">
+            <i class="bi bi-chevron-left"></i>
+            Back to Events
         </button>
 
-        <ul class="dropdown-menu dropdown-menu-end shadow-lg p-3 profile-menu">
+        <div class="top-actions">
 
-            <li class="text-white small mb-1 opacity-75">LOGGED IN AS</li>
-            <li class="text-white fw-bold mb-2" id="nav-username">Loading...</li>
+            <button class="action-btn icon-btn" onclick="toggleFavourite()">
+                <i id="favIcon" class="bi bi-heart"></i>
+            </button>
 
-            <li><hr class="dropdown-divider border-secondary"></li>
+            <button class="action-btn icon-btn" onclick="shareEvent()">
+                <i class="bi bi-share"></i>
+            </button>
 
-            <li>
-                <a class="dropdown-item text-white small" href="my-bookings.html">
-                    My Bookings
-                </a>
-            </li>
+<!--            <button class="action-btn book-top-btn"-->
+<!--                    onclick="document.getElementById('quantity').focus()">-->
+<!--                Book Now-->
+<!--            </button>-->
 
-            <li>
-                <a class="dropdown-item text-danger small mt-2" href="#" onclick="logout()">
-                    Logout
-                </a>
-            </li>
+        </div>
 
-        </ul>
+    </div>
+
+    <!-- MAIN GRID -->
+    <div class="event-grid">
+
+        <!-- LEFT SECTION -->
+        <div class="left-panel">
+
+            <!-- HERO IMAGE -->
+            <div class="hero-card">
+
+                <div class="category-badge">
+                    <i class="bi bi-lightning-charge-fill"></i>
+                    <span id="categoryText">Event</span>
+                </div>
+
+                <img id="eventImage" class="event-image" alt="Event">
+
+                <div class="image-overlay"></div>
+
+            </div>
+
+            <!-- EVENT CONTENT -->
+            <div class="content-card">
+
+                <div class="title-row">
+
+                    <h1 id="title"></h1>
+
+                    <div class="verified-badge">
+                        <i class="bi bi-patch-check-fill"></i>
+                    </div>
+
+                </div>
+
+                <div class="subtitle">
+                    Premium Event Experience
+                </div>
+
+                <div class="tag-wrapper">
+
+                    <span class="event-tag" id="categoryTag">
+                        Event
+                    </span>
+
+                </div>
+
+                <div class="description-block">
+
+                    <h4>About Event</h4>
+
+                    <p id="description"></p>
+
+                </div>
+
+                <!-- DATE / VENUE -->
+                <div class="meta-row">
+
+                    <div class="meta-card">
+
+                        <div class="meta-icon">
+                            <i class="bi bi-calendar-event"></i>
+                        </div>
+
+                        <div>
+                            <span class="meta-label">Date & Time</span>
+                            <span class="meta-value" id="date"></span>
+                        </div>
+
+                    </div>
+
+                    <div class="meta-card">
+
+                        <div class="meta-icon">
+                            <i class="bi bi-geo-alt"></i>
+                        </div>
+
+                        <div>
+                            <span class="meta-label">Location</span>
+                            <span class="meta-value" id="location"></span>
+                        </div>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+        </div>
+
+        <!-- RIGHT SECTION -->
+        <div class="right-panel">
+
+            <!-- PRICE CARD -->
+            <div class="card price-card">
+
+                <div>
+
+                    <span class="small-title">
+                        Starting From
+                    </span>
+
+                    <div class="price-value">
+                        ₹<span id="price"></span><span class="price-unit">/ticket</span>
+                    </div>
+
+                </div>
+
+                <button class="hero-book-btn"
+                        onclick="document.getElementById('quantity').focus()">
+                    Book Now
+                </button>
+
+            </div>
+
+            <!-- STATS CARD -->
+<div class="card stats-card">
+
+    <div class="stat-box">
+        <i class="bi bi-grid"></i>
+        <div class="stat-text">
+            <span class="stat-value" id="categoryStat">Sports</span>
+            <span class="stat-title">Category</span>
+        </div>
+    </div>
+
+    <div class="stat-box">
+        <i class="bi bi-people"></i>
+        <div class="stat-text">
+            <span class="stat-value" id="seats">799</span>
+            <span class="stat-title">Seats</span>
+        </div>
+    </div>
+
+    <div class="stat-box">
+        <i class="bi bi-ticket-perforated"></i>
+        <div class="stat-text">
+            <span class="stat-value">Available</span>
+            <span class="stat-title">Tickets</span>
+        </div>
     </div>
 
 </div>
 
-</nav>
+            <!-- TICKETS + SUMMARY -->
+<div class="bottom-row">
 
-<div class="container mt-4 event-wrapper">
-
-    <div class="event-grid">
-
-        <!-- LEFT -->
-        <div>
-            <img id="eventImage" class="event-image">
-
-            <div class="card mt-3">
-                <h5>Description</h5>
-                <p id="description"></p>
-            </div>
+    <!-- BOOKING CARD -->
+    <div class="card booking-card">
+        <h4>Select Tickets</h4>
+        <div class="ticket-row">
+            <label>Quantity</label>
+            <input type="number" id="quantity" min="1" value="1">
         </div>
+    </div>
 
-        <!-- RIGHT -->
-        <div>
+    <!-- SUMMARY -->
+    <div class="card summary-card">
+        <h4>Booking Summary</h4>
+        <div class="summary-row">
+            <span>Tickets</span>
+            <span id="ticketCount">1</span>
+        </div>
+        <div class="summary-row">
+            <span>Price</span>
+            <span>₹<span id="priceSummary"></span></span>
+        </div>
+        <div class="summary-divider"></div>
+        <div class="summary-total">
+            <span>Total</span>
+            <span>₹<span id="total"></span></span>
+        </div>
+        <button class="book-btn" onclick="bookEvent()">Continue Booking</button>
+        <p id="message"></p>
+    </div>
 
-            <div class="card mb-3">
-                <h2 id="title"></h2>
-                <p class="text-muted">Event Details</p>
-            </div>
-
-            <div class="card mb-3">
-
-                <div class="info-box">
-                    <span class="label">Location</span>
-                    <span class="value" id="location"></span>
-                </div>
-
-                <div class="info-box">
-                    <span class="label">Date & Time</span>
-                    <span class="value" id="date"></span>
-                </div>
-
-                <div class="info-box">
-                    <span class="label">Available Seats</span>
-                    <span class="value" id="seats"></span>
-                </div>
-
-                <div class="info-box">
-                    <span class="label">Price</span>
-                    <span class="value">₹<span id="price"></span>
-                    </span>
-                </div>
-
-            </div>
-
-            <div class="card">
-                <div class="ticket-row">
-                    <label class="mb-0">Tickets</label>
-                    <input type="number" id="quantity" value="1" min="1">
-                </div>
-
-                <h5 class="mt-3">Total: ₹<span id="total">0</span></h5>
-
-                <button class="btn btn-primary mt-3" onclick="bookEvent()">
-                    Book Now
-                </button>
-
-                <p id="message" class="mt-2"></p>
-
-            </div>
+</div>
 
         </div>
 
@@ -159,10 +228,9 @@
 </div>
 
 <div id="footer-placeholder"></div>
-<script src="js/footer.js"></script>
 
+<script src="js/footer.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 <script src="js/event-details.js"></script>
 
 </body>
-</html>

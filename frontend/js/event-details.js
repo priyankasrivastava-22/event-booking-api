@@ -1,5 +1,3 @@
-// event-details.js
-
 const API_URL = "https://event-booking-api-gnww.onrender.com/api";
 let eventData = null;
 
@@ -36,9 +34,16 @@ async function loadEvent() {
         document.getElementById("title").innerText = data.title;
         document.getElementById("description").innerText = data.description;
         document.getElementById("location").innerText = data.location;
-        document.getElementById("date").innerText = data.date;
         document.getElementById("price").innerText = data.price;
         document.getElementById("seats").innerText = data.available_seats;
+
+        document.getElementById("date").innerText =
+            new Date(data.date_time).toLocaleString();
+
+        document.getElementById("categoryText").innerText = data.category;
+        document.getElementById("categoryTag").innerText = data.category;
+        document.getElementById("categoryStat").innerText = data.category;
+        document.getElementById("priceSummary").innerText = data.price;
 
         updateTotal();
         loadUser();
@@ -55,6 +60,8 @@ function updateTotal() {
     if (!eventData || !qtyInput) return;
 
     const qty = parseInt(qtyInput.value) || 1;
+
+    document.getElementById("ticketCount").innerText = qty;
     document.getElementById("total").innerText = qty * eventData.price;
 }
 

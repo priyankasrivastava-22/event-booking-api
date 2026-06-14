@@ -609,7 +609,7 @@ async function showSection(section, forceRefresh = false) {
         else if (section === "bookings") {
             setHeader("All Bookings");
 
-            const bookings = await fetchAdminData("admin/bookings");
+            const bookings = await fetchAdminData("/admin/bookings");
             const html = renderBookingTable(bookings);
 
             sectionCache[section] = html;
