@@ -19,7 +19,7 @@ async function loadProfile() {
     if (!token) return;
 
     try {
-        const res = await fetch(`${API_URL}/me`, {
+        const res = await fetch(`${API_URL}/auth/me`, {
             headers: {
                 "Authorization": `Bearer ${token}`
             }
