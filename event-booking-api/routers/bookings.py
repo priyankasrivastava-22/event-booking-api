@@ -65,7 +65,7 @@ def my_bookings(user=Depends(get_current_user), db: Session = Depends(get_db)):
         result.append({
             "id": b.id,
             "tickets": b.tickets,
-            "status": getattr(b, "status", "confirmed"),
+            "status": b.payment_status,
             "event": {
                 "title": b.event.title if b.event else "N/A",
                 "date_time": b.event.date_time if b.event else "",

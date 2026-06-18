@@ -7,7 +7,7 @@ from utils.helpers import get_db
 
 router = APIRouter()
 
-@router.post("/events", response_model=schemas.EventResponse)
+@router.post("/", response_model=schemas.EventResponse)
 def create_event(event: schemas.EventCreate, db: Session = Depends(get_db)):
 
     category_id = None
@@ -49,7 +49,7 @@ def create_event(event: schemas.EventCreate, db: Session = Depends(get_db)):
     return db_event
 
 
-@router.get("/events")
+@router.get("/")
 def get_events(
     page: int = 1,
     limit: int = 16,
@@ -92,7 +92,7 @@ def get_events(
 
     return events
 
-@router.get("/events/{event_id}")
+@router.get("/{event_id}")
 def get_event(event_id: int, db: Session = Depends(get_db)):
     event = db.query(models.Event).filter(models.Event.id == event_id).first()
     if not event:
@@ -100,7 +100,7 @@ def get_event(event_id: int, db: Session = Depends(get_db)):
     return event
 
 
-@router.put("/events/{event_id}")
+@router.put("/{event_id}")
 def update_event(event_id: int, data: schemas.EventUpdate, db: Session = Depends(get_db)):
     event = db.query(models.Event).filter(models.Event.id == event_id).first()
     if not event:
@@ -129,7 +129,7 @@ def update_event(event_id: int, data: schemas.EventUpdate, db: Session = Depends
     return event
 
 
-@router.delete("/events/{event_id}")
+@router.delete("/{event_id}")
 def delete_event(event_id: int, db: Session = Depends(get_db)):
     event = db.query(models.Event).filter(models.Event.id == event_id).first()
     db.delete(event)
@@ -138,7 +138,7 @@ def delete_event(event_id: int, db: Session = Depends(get_db)):
 
 
 # ---------------- UPLOAD EVENT IMAGE ----------------
-@router.post("/events/{event_id}/upload-image")
+@router.post("/{event_id}/upload-image")
 def upload_event_image(
     event_id: int,
     file: UploadFile = File(...),

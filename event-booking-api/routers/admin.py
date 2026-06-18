@@ -4,9 +4,7 @@ import models, schemas
 from utils.helpers import get_db
 from core.security import get_current_user
 
-
-router = APIRouter(prefix="/admin", tags=["Admin"])
-
+router = APIRouter()
 
 # ---------------- ADMIN CHECK ----------------
 def admin_check(user):
@@ -126,82 +124,3 @@ def update_event(id: int, data: schemas.EventUpdate, db: Session = Depends(get_d
     db.refresh(event)
 
     return event
-
-# ---------------- DASHBOARD ----------------
-@router.get("/admin/dashboard")
-def admin_dashboard(db: Session = Depends(get_db), user=Depends(get_current_user)):
-
-    admin_check(user)
-
-    return {
-        "total_users": db.query(models.User).count(),
-        "total_events": db.query(models.Event).count(),
-        "total_bookings": db.query(models.Booking).count(),
-        "total_tickets_sold": sum(b.tickets for b in db.query(models.Booking).all())
-    }
-
-
-# ---------------- MOST BOOKED ----------------
-@router.get("/admin/analytics/most-booked")
-def most_booked(db: Session = Depends(get_db), user=Depends(get_current_user)):
-
-    admin_check(user)
-
-    events = db.query(models.Event).all()
-
-    result = []
-    for e in events:
-        count = db.query(models.Booking).filter(
-            models.Booking.event_id == e.id
-        ).count()
-
-        result.append({
-            "event_id": e.id,
-            "title": e.title,
-            "bookings": count
-        })
-
-    return sorted(result, key=lambda x: x["bookings"], reverse=True)
-
-
-# ---------------- LEAST BOOKED ----------------
-@router.get("/admin/analytics/least-booked")
-def least_booked(db: Session = Depends(get_db), user=Depends(get_current_user)):
-
-    admin_check(user)
-
-    events = db.query(models.Event).all()
-
-    result = []
-    for e in events:
-        count = db.query(models.Booking).filter(
-            models.Booking.event_id == e.id
-        ).count()
-
-        result.append({
-            "event_id": e.id,
-            "title": e.title,
-            "bookings": count
-        })
-
-    return sorted(result, key=lambda x: x["bookings"])
-
-
-# ---------------- REVENUE (TOTAL) ----------------
-@router.get("/admin/analytics/revenue")
-def revenue(db: Session = Depends(get_db), user=Depends(get_current_user)):
-
-    admin_check(user)
-
-    total = 0
-
-    for b in db.query(models.Booking).all():
-        event = db.query(models.Event).filter(
-            models.Event.id == b.event_id
-        ).first()
-
-        if event:
-            total += b.tickets * event.price
-
-    return {"total_revenue": total}
-

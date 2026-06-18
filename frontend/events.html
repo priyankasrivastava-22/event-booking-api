@@ -43,7 +43,7 @@
         </button>
 
         <!-- User Profile -->
-        <button class="icon-btn">
+        <button class="icon-btn" id="userAvatarBtn" onclick="window.location.href='profile.html'">
             <i class="bi bi-person-circle"></i>
         </button>
 
@@ -70,7 +70,7 @@
                 </a>
 
                 <a href="#" class="sidebar-link">
-                    <i class="bi bi-heart"></i>
+                    <i class="bi bi-heart wishlist-icon" onclick="toggleWishlist(${event.id}, this)"></i>
                     <span>Wishlist</span>
                 </a>
 

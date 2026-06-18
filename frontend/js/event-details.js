@@ -22,7 +22,7 @@ async function loadEvent() {
     }
 
     try {
-        const res = await fetch(`${API_URL}/events/events/${id}`, {
+        const res = await fetch(`${API_URL}/events/${id}`, {
             headers: { "Authorization": `Bearer ${token}` }
         });
 
@@ -134,7 +134,7 @@ async function loadNotificationCount() {
     if (!token) return;
 
     try {
-        const res = await fetch(`${API_URL}/engagement/my-notifications`, {
+        const res = await fetch(`${API_URL}/notifications/my`, {
             headers: { "Authorization": `Bearer ${token}` }
         });
 

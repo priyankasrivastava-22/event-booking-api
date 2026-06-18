@@ -6,7 +6,7 @@ import schemas
 from core.security import get_db, get_current_user
 from utils.helpers import generate_transaction_id
 
-router = APIRouter(prefix="/payments", tags=["Payments"])
+router = APIRouter()
 
 # ---------------- CREATE PAYMENT ----------------
 @router.post("/", response_model=schemas.PaymentResponse)

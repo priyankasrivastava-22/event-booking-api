@@ -1,7 +1,7 @@
 from dotenv import load_dotenv
 load_dotenv()
 from fastapi.middleware.cors import CORSMiddleware
-
+from utils.helpers import get_db
 from fastapi import FastAPI, Request
 from fastapi.responses import JSONResponse
 from fastapi.exceptions import RequestValidationError
@@ -89,25 +89,13 @@ async def rate_limit_handler(request: Request, exc):
         }
     )
 
-
-# ---------------- DATABASE ----------------
-models.Base.metadata.create_all(bind=engine)
-
-def get_db():
-    db = SessionLocal()
-    try:
-        yield db
-    finally:
-        db.close()
-
-
 # ---------------- ROUTERS ----------------
 app.include_router(auth.router, prefix="/api/auth", tags=["Auth"])
 app.include_router(events.router, prefix="/api/events", tags=["Events"])
 app.include_router(bookings.router, prefix="/api/bookings", tags=["Bookings"])
 app.include_router(admin.router, prefix="/api/admin", tags=["Admin"])
 app.include_router(analytics.router, prefix="/api/analytics", tags=["Analytics"])
-app.include_router(engagement.router, prefix="/api/engagement", tags=["Engagement"])
+app.include_router(engagement.router, prefix="/api", tags=["Categories & Notifications"])
 app.include_router(profile.router, prefix="/api/profile", tags=["Profile"])
 app.include_router(payment.router, prefix="/api/payment", tags=["Payment"])
 

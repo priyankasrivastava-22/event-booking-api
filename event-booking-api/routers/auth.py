@@ -95,21 +95,3 @@ def get_profile(user=Depends(get_current_user), db: Session = Depends(get_db)):
         "role": user["role"],
         "bookings": bookings_count
     }
-
-
-# ---------------- DEBUG ----------------
-@router.get("/debug-db")
-def debug_db(db: Session = Depends(get_db)):
-    return {
-        "users": db.query(models.User).count(),
-        "events": db.query(models.Event).count(),
-        "bookings": db.query(models.Booking).count()
-    }
-
-@router.get("/all-bookings")
-def all_bookings(db: Session = Depends(get_db)):
-    return db.query(models.Booking).all()
-
-@router.get("/debug-user/{username}")
-def debug(username: str, db: Session = Depends(get_db)):
-    return db.query(models.User).filter(models.User.username == username).first()

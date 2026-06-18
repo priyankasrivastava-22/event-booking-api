@@ -1,20 +1,15 @@
 from fastapi import APIRouter, Depends, HTTPException, UploadFile, File
 from sqlalchemy.orm import Session
-import shutil
-import os
+import cloudinary.uploader
+from core.cloudinary_config import cloudinary
 import models
 from core.security import get_db, get_current_user
 
 # Router instance
 router = APIRouter()
 
-# Directory for storing profile images
-UPLOAD_DIR = "uploads/profiles"
-os.makedirs(UPLOAD_DIR, exist_ok=True)
-
-
 # VIEW PROFILE
-@router.get("/profile")
+@router.get("/")
 def get_profile(
     db: Session = Depends(get_db),
     user=Depends(get_current_user)
@@ -40,7 +35,7 @@ def get_profile(
 
 
 # UPDATE PROFILE
-@router.put("/profile")
+@router.put("/")
 def update_profile(
     data: dict,
     db: Session = Depends(get_db),
@@ -73,16 +68,12 @@ def update_profile(
     return {"message": "Profile updated"}
 
 # UPLOAD PROFILE IMAGE
-@router.post("/profile/upload-image")
+@router.post("/upload-image")
 def upload_profile_image(
     file: UploadFile = File(...),
     db: Session = Depends(get_db),
     user=Depends(get_current_user)
 ):
-    """
-    Upload and store user profile image locally
-    """
-
     db_user = db.query(models.User).filter(
         models.User.username == user["username"]
     ).first()
@@ -90,24 +81,30 @@ def upload_profile_image(
     if not db_user:
         raise HTTPException(status_code=404, detail="User not found")
 
-    # Save file with username prefix to avoid collision
-    file_path = f"{UPLOAD_DIR}/{user['username']}_{file.filename}"
+    result = cloudinary.uploader.upload(
+        file.file,
+        folder="profile_images",
+        public_id=f"user_{user['username']}",
+        overwrite=True,
+        transformation=[{
+            "width": 200,
+            "height": 200,
+            "crop": "fill",
+            "gravity": "face"
+        }]
+    )
 
-    with open(file_path, "wb") as buffer:
-        shutil.copyfileobj(file.file, buffer)
-
-    db_user.profile_image = file_path
+    db_user.profile_image = result["secure_url"]
     db.commit()
     db.refresh(db_user)
 
     return {
         "message": "Image uploaded",
-        "path": file_path
+        "image_url": result["secure_url"]
     }
 
-
 # DELETE ACCOUNT
-@router.delete("/profile")
+@router.delete("/")
 def delete_account(
     db: Session = Depends(get_db),
     user=Depends(get_current_user)

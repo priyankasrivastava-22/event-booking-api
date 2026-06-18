@@ -128,7 +128,7 @@ def notify(
 
     return {"success": True, "message": "Notification sent"}
 
-@router.get("/my-notifications")
+@router.get("/notifications/my")
 def get_my_notifications(
     db=Depends(get_db),
     user=Depends(get_current_user)

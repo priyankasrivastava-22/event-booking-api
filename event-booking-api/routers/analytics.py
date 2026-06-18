@@ -1,15 +1,16 @@
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 import models
-from core.security import get_db, get_current_user
+from core.security import get_current_user
 from datetime import datetime, timedelta
 from sqlalchemy import func
 from routers.admin import admin_check
+from utils.helpers import get_db
 
 router = APIRouter()
 
 # ---------------- DASHBOARD ----------------
-@router.get("/admin/dashboard")
+@router.get("/dashboard")
 def admin_dashboard(db: Session = Depends(get_db), user=Depends(get_current_user)):
 
     if user["role"] != "admin":
@@ -24,7 +25,7 @@ def admin_dashboard(db: Session = Depends(get_db), user=Depends(get_current_user
 
 
 # ---------------- MOST BOOKED ----------------
-@router.get("/admin/analytics/most-booked")
+@router.get("/most-booked")
 def most_booked(db: Session = Depends(get_db), user=Depends(get_current_user)):
 
     if user["role"] != "admin":
@@ -41,7 +42,7 @@ def most_booked(db: Session = Depends(get_db), user=Depends(get_current_user)):
 
 
 # ---------------- LEAST BOOKED ----------------
-@router.get("/admin/analytics/least-booked")
+@router.get("least-booked")
 def least_booked(db: Session = Depends(get_db), user=Depends(get_current_user)):
 
     if user["role"] != "admin":
@@ -58,7 +59,7 @@ def least_booked(db: Session = Depends(get_db), user=Depends(get_current_user)):
 
 
 # ---------------- REVENUE ----------------
-@router.get("/admin/analytics/revenue")
+@router.get("/revenue")
 def revenue(db: Session = Depends(get_db), user=Depends(get_current_user)):
 
     if user["role"] != "admin":
@@ -107,7 +108,7 @@ def get_admin_stats(
     }
 
 # ---------------- BOOKINGS TREND ----------------
-@router.get("/admin/analytics/bookings-trend")
+@router.get("/bookings-trend")
 def bookings_trend(db: Session = Depends(get_db), user=Depends(get_current_user)):
 
     admin_check(user)
@@ -132,7 +133,7 @@ def bookings_trend(db: Session = Depends(get_db), user=Depends(get_current_user)
 
 
 # ---------------- REVENUE TREND ----------------
-@router.get("/admin/analytics/revenue-trend")
+@router.get("/revenue-trend")
 def revenue_trend(db: Session = Depends(get_db), user=Depends(get_current_user)):
 
     admin_check(user)

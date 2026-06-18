@@ -48,7 +48,7 @@ function checkAuth() {
 async function loadCategories() {
     const token = localStorage.getItem("token");
     try {
-        const res = await fetch(`${API_URL}/engagement/categories`, {
+        const res = await fetch(`${API_URL}/categories/`, {
             headers: { "Authorization": `Bearer ${token}` }
         });
         const categories = await res.json();
@@ -82,7 +82,7 @@ async function loadEvents() {
     const search = document.getElementById("searchInput")?.value.trim() || "";
 
     // IMPORTANT: Path is just /events, parameters handle the filtering
-    let url = `${API_URL}/events/events?limit=16`;
+    let url = `${API_URL}/events?limit=16`;
 
    // Build query parameters based on selected filters
 //    if (category !== "" || search !== "") {
@@ -143,7 +143,7 @@ async function loadNotificationCount() {
     const token = localStorage.getItem("token");
     if (!token) return;
     try {
-        const res = await fetch(`${API_URL}/engagement/my-notifications`, {
+        const res = await fetch(`${API_URL}/notifications/my`, {
             headers: { "Authorization": `Bearer ${token}` }
         });
         const data = await res.json();
@@ -153,6 +153,37 @@ async function loadNotificationCount() {
         badge.innerText = count;
         badge.style.display = count === 0 ? "none" : "inline-block";
     } catch (err) { console.error(err); }
+}
+
+// ---------------- USER AVATAR ----------------
+async function loadUserAvatar() {
+    const token = localStorage.getItem("token");
+    if (!token) return;
+
+    try {
+        const res = await fetch(`${API_URL}/profile/`, {
+            headers: { "Authorization": `Bearer ${token}` }
+        });
+        const data = await res.json();
+        const avatarBtn = document.getElementById("userAvatarBtn");
+        if (!avatarBtn) return;
+
+        if (data.profile_image) {
+            avatarBtn.innerHTML = `
+                <img src="${data.profile_image}"
+                     style="width:36px; height:36px; border-radius:50%; object-fit:cover; border: 2px solid #22d3ee;">`;
+        } else {
+            const letter = (data.username || "U")[0].toUpperCase();
+            avatarBtn.innerHTML = `
+                <div style="
+                    width:36px; height:36px; border-radius:50%;
+                    background: linear-gradient(135deg, #22d3ee, #2563eb);
+                    display:flex; align-items:center; justify-content:center;
+                    font-weight:700; font-size:1rem; color:#04111f;">
+                    ${letter}
+                </div>`;
+        }
+    } catch {}
 }
 
 // ---------------- USER LOGOUT ----------------
@@ -173,6 +204,7 @@ document.addEventListener("DOMContentLoaded", () => {
     loadCategories();
     loadEvents();
     loadNotificationCount();
+    loadUserAvatar();
     setInterval(loadNotificationCount, 5000);
 
     // Profile Name update
