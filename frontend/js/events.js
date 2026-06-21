@@ -82,7 +82,7 @@ async function loadEvents() {
     const search = document.getElementById("searchInput")?.value.trim() || "";
 
     // IMPORTANT: Path is just /events, parameters handle the filtering
-    let url = `${API_URL}/events/events?limit=16`;
+    let url = `${API_URL}/events?limit=16`;
 
    // Build query parameters based on selected filters
 //    if (category !== "" || search !== "") {
