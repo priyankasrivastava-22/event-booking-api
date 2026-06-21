@@ -42,7 +42,7 @@ def most_booked(db: Session = Depends(get_db), user=Depends(get_current_user)):
 
 
 # ---------------- LEAST BOOKED ----------------
-@router.get("least-booked")
+@router.get("/least-booked")
 def least_booked(db: Session = Depends(get_db), user=Depends(get_current_user)):
 
     if user["role"] != "admin":

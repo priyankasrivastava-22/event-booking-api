@@ -48,7 +48,7 @@ function checkAuth() {
 async function loadCategories() {
     const token = localStorage.getItem("token");
     try {
-        const res = await fetch(`${API_URL}/categories/`, {
+        const res = await fetch(`${API_URL}/engagement/categories`, {
             headers: { "Authorization": `Bearer ${token}` }
         });
         const categories = await res.json();
@@ -82,7 +82,7 @@ async function loadEvents() {
     const search = document.getElementById("searchInput")?.value.trim() || "";
 
     // IMPORTANT: Path is just /events, parameters handle the filtering
-    let url = `${API_URL}/events?limit=16`;
+    let url = `${API_URL}/events/events?limit=16`;
 
    // Build query parameters based on selected filters
 //    if (category !== "" || search !== "") {
@@ -114,13 +114,19 @@ async function loadEvents() {
 
         data.forEach(event => {
         const imageUrl =  event.image_url || getCategoryImage(event.category);
+        const eventData = {...event, image_url: imageUrl };
+        const liked = isInWishlist(event.id);
           container.innerHTML += `
           <div class="col">
             <div class="card h-100 shadow-sm border-secondary bg-dark text-white">
                 <img src="${imageUrl}" class="card-img-top" style="height: 120px; object-fit: cover;">
                 <div class="card-body p-2">
-                    <h6 class="card-title mb-1 text-truncate" style="font-size: 0.9rem;">${event.title}</h6>
-                    <p class="card-text small text-muted mb-2" style="font-size: 0.75rem;">
+                <div class="d-flex justify-content-between align-items-center">
+                 <h6 class="card-title mb-1 text-truncate"style="font-size: 0.9rem;">${event.title}</h6>
+                 <i class="bi ${liked ? 'bi-heart-fill text-danger' : 'bi-heart'}" style="cursor:pointer;font-size:1rem;" onclick='toggleWishlist(${JSON.stringify(eventData)}, this)'>
+                 </i>
+                 </div>
+                  <p class="card-text small text-muted mb-2" style="font-size: 0.75rem;">
                         <i class="bi bi-geo-alt"></i> ${event.location}
                     </p>
                     <div class="d-flex justify-content-between align-items-center mb-2">
@@ -237,3 +243,59 @@ document.querySelectorAll(".category-card").forEach(card => {
     });
 
 });
+
+// ---------------- WISHLIST ----------------
+
+function toggleWishlist(event, icon) {
+
+    let wishlist =
+        JSON.parse(localStorage.getItem("wishlist")) || [];
+
+    const exists =
+        wishlist.some(item => item.id === event.id);
+
+    if (exists) {
+
+        wishlist =
+            wishlist.filter(
+                item => item.id !== event.id
+            );
+
+        icon.classList.remove(
+            "bi-heart-fill",
+            "text-danger"
+        );
+
+        icon.classList.add(
+            "bi-heart"
+        );
+
+    } else {
+
+        wishlist.push(event);
+
+        icon.classList.remove(
+            "bi-heart"
+        );
+
+        icon.classList.add(
+            "bi-heart-fill",
+            "text-danger"
+        );
+    }
+
+    localStorage.setItem(
+        "wishlist",
+        JSON.stringify(wishlist)
+    );
+}
+
+function isInWishlist(eventId) {
+
+    const wishlist =
+        JSON.parse(localStorage.getItem("wishlist")) || [];
+
+    return wishlist.some(
+        item => item.id === eventId
+    );
+}

@@ -22,7 +22,7 @@ async function loadEvent() {
     }
 
     try {
-        const res = await fetch(`${API_URL}/events/${id}`, {
+        const res = await fetch(`${API_URL}/events/events/${id}`, {
             headers: { "Authorization": `Bearer ${token}` }
         });
 

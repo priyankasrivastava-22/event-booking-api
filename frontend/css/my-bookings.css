@@ -25,11 +25,6 @@ body {
     color: #cbd5e1;
 }
 
-/* Move heading left */
-.container.mt-4 .d-flex.align-items-center.gap-3.mb-4 {
-    margin-left: -65px !important;
-}
-
 /* Reduce top gap */
 .container.mt-4 {
     margin-top: 12px !important;
@@ -55,4 +50,56 @@ body {
 /* Back button hover */
 .booking-back-btn:hover {
     opacity: .75;
+}
+
+/* Header actions */
+.header-actions {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 12px;
+}
+
+/* Search box */
+.search-box {
+    width: 500px;
+    display: flex;
+    align-items: center;
+    padding: 10px 15px;
+    border-radius: 12px;
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.search-box i {
+    margin-right: 10px;
+    color: #94a3b8;
+}
+
+.search-box input {
+    width: 100%;
+    background: none;
+    border: none;
+    outline: none;
+    color: white;
+}
+
+/* Right side icons */
+.icon-btn {
+    width: 45px;
+    height: 45px;
+    border: none;
+    border-radius: 12px;
+    background: rgba(255, 255, 255, 0.05);
+    color: white;
+    transition: all 0.3s ease;
+}
+
+.icon-btn:hover {
+    background: rgba(255, 255, 255, 0.12);
+}
+
+/* Icon group alignment */
+.header-actions .icon-btn {
+    margin-left: 10px;
 }
