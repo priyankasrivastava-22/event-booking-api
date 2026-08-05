@@ -776,3 +776,74 @@ color: #3b82f6; font-size: 1.2rem; flex-shrink: 0;
     background:rgba(59,130,246,.18);
     box-shadow:0 0 15px rgba(59,130,246,.2);
 }
+
+.media-box{
+    height:95px;
+    border-radius:12px;
+    overflow:hidden;
+
+    background-size:cover;
+    background-position:center;
+    background-repeat:no-repeat;
+}
+
+.art-arijit{
+    background-image:url("../images/login/music festival.png");
+    background-size:cover;
+    background-position:center;
+}
+
+.art-cricket{
+    background-image:url("../images/login/ipl-match.png");
+    background-size:cover;
+    background-position:center;
+}
+
+.art-opera{
+    background-image:url("../images/login/opera.png");
+    background-size:cover;
+    background-position:center;
+}
+
+.art-sunburn{
+    background-image:url("../images/login/sunburn.jpg");
+    background-size:cover;
+    background-position:center;
+}
+
+.media-box{
+    width:100%;
+    height:120px;
+    border-radius:14px;
+    background-size:cover;
+    background-position:center;
+    background-repeat:no-repeat;
+}
+
+.bg-tech{
+    background-image: url("../images/login/tech-summit.png");
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+}
+
+.bg-music{
+    background-image: url("../images/login/music-festival.jpg");
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+}
+
+.bg-comedy{
+    background-image: url("../images/login/comedy.jpg");
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+}
+
+.bg-sunset{
+    background-image: url("../images/login/sunset-festival.png");
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+}

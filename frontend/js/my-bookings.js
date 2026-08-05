@@ -1,5 +1,3 @@
-/* MY BOOKINGS PAGE SCRIPT */
-
 const API_URL = "https://event-booking-api-gnww.onrender.com/api";
 
 /* Check login token */
@@ -51,6 +49,7 @@ async function loadBookings() {
         }
 
         const data = await res.json();
+        console.log(data);
 
         /* Show empty state */
         if (!data || data.length === 0) {
@@ -67,19 +66,27 @@ async function loadBookings() {
             const card = `
                 <div class="col-md-4 mb-4">
                     <div class="card p-3 text-white h-100">
-                        <h5>${b.event.title}</h5>
-                        <p>Date: ${b.event.date_time}</p>
-                        <p>Location: ${b.event.location}</p>
-                        <p>Tickets: ${b.tickets}</p>
-                        <p>Status: ${b.status || "confirmed"}</p>
+                    <img
+                       src="${b.event.image_url}"
+                       alt="${b.event.title}"
+                       class="booking-image"
+                    />
 
-                        <button class="btn btn-danger w-100 mt-2"
-                            onclick="cancelBooking(${b.id})">
-                            Cancel Booking
-                        </button>
+                        <div class="card-body">
+                           <h5>${b.event.title}</h5>
+                           <p>Date: ${b.event.date_time}</p>
+                           <p>Location: ${b.event.location}</p>
+                           <p>Tickets: ${b.tickets}</p>
+                           <p>Status: ${b.status || "confirmed"}</p>
+
+                           <button class="btn btn-danger w-100 mt-2"
+                              onclick="cancelBooking(${b.id})">
+                              Cancel Booking
+                           </button>
+                        </div>
                     </div>
                 </div>
-            `;
+                `;
 
             container.innerHTML += card;
         });
