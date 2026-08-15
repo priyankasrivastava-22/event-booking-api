@@ -1,5 +1,3 @@
-/* My Bookings Page */
-
 /* Body text color */
 body {
     color: white;
@@ -12,6 +10,7 @@ body {
     border: none;
     backdrop-filter: blur(10px);
     transition: 0.3s;
+    overflow: hidden;
 }
 
 /* Card hover lift effect */
@@ -117,7 +116,6 @@ body {
     flex:1;
 }
 
-
 .header-actions{
     display:flex;
     align-items:center;
@@ -133,5 +131,17 @@ body {
     width:100%;
     height:180px;
     object-fit:cover;
+    display: block;
     border-radius:14px 14px 0 0;
+}
+
+.booking-image-placeholder {
+    width: 100%;
+    height: 180px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(255,255,255,0.05);
+    color: #94a3b8;
+    border-radius: 14px 14px 0 0;
 }

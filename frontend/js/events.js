@@ -78,71 +78,148 @@ async function loadEvents() {
     const token = localStorage.getItem("token");
     if (!token) return;
 
-    const category = document.getElementById("categoryFilter")?.value || "";
-    const search = document.getElementById("searchInput")?.value.trim() || "";
+    const category =
+        document.getElementById("categoryFilter")?.value || "";
 
-    // IMPORTANT: Path is just /events, parameters handle the filtering
+    const search =
+        document.getElementById("searchInput")?.value.trim() || "";
+
     let url = `${API_URL}/events?limit=16`;
 
-   // Build query parameters based on selected filters
-//    if (category !== "" || search !== "") {
-        const params = new URLSearchParams();
-        if (search) params.append("title", search);
-        if (category) params.append("category", category);
+    // Build query parameters
+    const params = new URLSearchParams();
 
-        if (params.toString()) {
+    if (search) {
+        params.append("title", search);
+    }
+
+    if (category) {
+        params.append("category", category);
+    }
+
+    if (params.toString()) {
         url += `&${params.toString()}`;
     }
 
     try {
+        console.log("Loading events from:", url);
+
         const res = await fetch(url, {
-            headers: { "Authorization": `Bearer ${token}` }
+            headers: {
+                "Authorization": `Bearer ${token}`
+            }
         });
+
+        console.log("Events API status:", res.status);
+
         const data = await res.json();
 
-        const container = document.getElementById("eventsContainer");
+        console.log("Events data:", data);
+
+        const container =
+            document.getElementById("eventsContainer");
+
         if (!container) return;
+
         container.innerHTML = "";
 
         if (!data || data.length === 0) {
             container.innerHTML = `
                 <div class="col-12 text-center py-5">
-                    <h5 class="text-white">No events found for "${category || search}"</h5>
-                </div>`;
+                    <h5 class="text-white">
+                        No events found for "${category || search}"
+                    </h5>
+                </div>
+            `;
             return;
         }
 
         data.forEach(event => {
-        const imageUrl =  event.image_url || getCategoryImage(event.category);
-        const eventData = {...event, image_url: imageUrl };
-        const liked = isInWishlist(event.id);
-          container.innerHTML += `
-          <div class="col">
-            <div class="card h-100 shadow-sm border-secondary bg-dark text-white">
-                <img src="${imageUrl}" class="card-img-top" style="height: 120px; object-fit: cover;">
-                <div class="card-body p-2">
-                <div class="d-flex justify-content-between align-items-center">
-                 <h6 class="card-title mb-1 text-truncate"style="font-size: 0.9rem;">${event.title}</h6>
-                 <i class="bi ${liked ? 'bi-heart-fill text-danger' : 'bi-heart'}" style="cursor:pointer;font-size:1rem;" onclick='toggleWishlist(${JSON.stringify(eventData)}, this)'>
-                 </i>
-                 </div>
-                  <p class="card-text small text-muted mb-2" style="font-size: 0.75rem;">
-                        <i class="bi bi-geo-alt"></i> ${event.location}
-                    </p>
-                    <div class="d-flex justify-content-between align-items-center mb-2">
-                        <span class="fw-bold text-primary" style="font-size: 0.85rem;">₹${event.price}</span>
-                        <span class="badge bg-secondary" style="font-size: 0.6rem;">${event.category}</span>
+
+            const imageUrl =
+                event.image_url ||
+                getCategoryImage(event.category);
+
+            const eventData = {
+                ...event,
+                image_url: imageUrl
+            };
+
+            const liked = isInWishlist(event.id);
+
+            container.innerHTML += `
+                <div class="col">
+                    <div class="card h-100 shadow-sm border-secondary bg-dark text-white">
+
+                        <img
+                            src="${imageUrl}"
+                            class="card-img-top"
+                            style="height: 120px; object-fit: cover;"
+                        >
+
+                        <div class="card-body p-2">
+
+                            <div class="d-flex justify-content-between align-items-center">
+
+                                <h6
+                                    class="card-title mb-1 text-truncate"
+                                    style="font-size: 0.9rem;"
+                                >
+                                    ${event.title}
+                                </h6>
+
+                                <i
+                                    class="bi ${liked ? 'bi-heart-fill text-danger' : 'bi-heart'}"
+                                    style="cursor:pointer;font-size:1rem;"
+                                    onclick='toggleWishlist(${JSON.stringify(eventData)}, this)'
+                                ></i>
+
+                            </div>
+
+                            <p
+                                class="card-text small text-muted mb-2"
+                                style="font-size: 0.75rem;"
+                            >
+                                <i class="bi bi-geo-alt"></i>
+                                ${event.location}
+                            </p>
+
+                            <div class="d-flex justify-content-between align-items-center mb-2">
+
+                                <span
+                                    class="fw-bold text-primary"
+                                    style="font-size: 0.85rem;"
+                                >
+                                    ₹${event.price}
+                                </span>
+
+                                <span
+                                    class="badge bg-secondary"
+                                    style="font-size: 0.6rem;"
+                                >
+                                    ${event.category}
+                                </span>
+
+                            </div>
+
+                            <button
+                                class="btn btn-primary btn-sm w-100"
+                                style="font-size: 0.75rem;"
+                                onclick="viewEvent(${event.id}, '${imageUrl}')"
+                            >
+                                Details
+                            </button>
+
+                        </div>
                     </div>
-                    <button class="btn btn-primary btn-sm w-100" style="font-size: 0.75rem;" onclick="viewEvent(${event.id}, '${imageUrl}')">Details</button>
                 </div>
-            </div>
-        </div>`;
+            `;
         });
 
-       } catch (err) {
-        console.error("Filtering error:", err);
-   }
- }
+    } catch (err) {
+        console.error("Events loading error:", err);
+    }
+}
 
 // ---------------- NOTIFICATION FUNCTIONS ----------------
 async function loadNotificationCount() {
