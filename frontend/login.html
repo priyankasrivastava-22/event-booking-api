@@ -121,6 +121,7 @@
 
 </div>
 
+    <div id="loginView" class="auth-view">
     <form id="loginForm">
       <div class="inp-container">
         <i class="inp-icon-l bi bi-envelope"></i>
@@ -139,8 +140,7 @@
           <input type="checkbox" id="rememberMe" style="accent-color: #6366f1;">
           <label for="rememberMe" style="margin-left: 5px; cursor: pointer;">Remember me</label>
         </div>
-        <a href="#" style="color: rgba(255,255,255,0.7); text-decoration: none;">Forgot Password?</a>
-      </div>
+        <a href="#" onclick="showView('forgotView')" style="color: rgba(255,255,255,0.7); text-decoration: none;">Forgot Password?</a>      </div>
 
       <button type="submit" class="gradient-btn">
         Login
@@ -166,6 +166,31 @@
         New here? <a href="#" style="color: #00f2fe; text-decoration: none; font-weight: bold;">Create an account</a>
       </div>
     </form>
+    </div>
+
+    <div id="forgotView" class="auth-view d-none">
+
+    <h5 class="text-white mb-3">
+        Reset Password
+    </h5>
+
+    <input
+        type="email"
+        class="form-control glass-input mb-3"
+        placeholder="Enter your email"
+    >
+
+    <button class="gradient-btn mb-3">
+        Send Reset Link
+    </button>
+
+    <a href="#"
+       onclick="showView('loginView')"
+       style="color:#00f2fe;text-decoration:none;">
+       Back to Login
+    </a>
+
+</div>
 
   </div>
 </div>
