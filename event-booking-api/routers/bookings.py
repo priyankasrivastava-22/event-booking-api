@@ -69,10 +69,11 @@ def my_bookings(user=Depends(get_current_user), db: Session = Depends(get_db)):
             "event": {
                 "title": b.event.title if b.event else "N/A",
                 "date_time": b.event.date_time if b.event else "",
-                "location": b.event.location if b.event else ""
+                "location": b.event.location if b.event else "",
+                "image_url": b.event.image_url if b.event else "",
+                "category": b.event.category if b.event else ""
             }
         })
-
     return result
 
 

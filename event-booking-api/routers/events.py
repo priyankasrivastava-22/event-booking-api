@@ -4,11 +4,23 @@ from core.cloudinary_config import cloudinary
 from sqlalchemy.orm import Session
 import models, schemas
 from utils.helpers import get_db
+from core.security import get_current_user
 
 router = APIRouter()
 
+
+def admin_check(user):
+    if user["role"] != "admin":
+        raise HTTPException(status_code=403, detail="Admin only")
+
+
 @router.post("/", response_model=schemas.EventResponse)
-def create_event(event: schemas.EventCreate, db: Session = Depends(get_db)):
+def create_event(
+    event: schemas.EventCreate,
+    db: Session = Depends(get_db),
+    user=Depends(get_current_user)
+):
+    admin_check(user)
 
     category_id = None
     category_name = None
@@ -101,10 +113,17 @@ def get_event(event_id: int, db: Session = Depends(get_db)):
 
 
 @router.put("/{event_id}")
-def update_event(event_id: int, data: schemas.EventUpdate, db: Session = Depends(get_db)):
+def update_event(
+    event_id: int,
+    data: schemas.EventUpdate,
+    db: Session = Depends(get_db),
+    user=Depends(get_current_user)
+):
+    admin_check(user)
+
     event = db.query(models.Event).filter(models.Event.id == event_id).first()
     if not event:
-        raise HTTPException(status_code=404)
+        raise HTTPException(status_code=404, detail="Event not found")
 
     event.title = data.title
     event.location = data.location
@@ -130,8 +149,17 @@ def update_event(event_id: int, data: schemas.EventUpdate, db: Session = Depends
 
 
 @router.delete("/{event_id}")
-def delete_event(event_id: int, db: Session = Depends(get_db)):
+def delete_event(
+    event_id: int,
+    db: Session = Depends(get_db),
+    user=Depends(get_current_user)
+):
+    admin_check(user)
+
     event = db.query(models.Event).filter(models.Event.id == event_id).first()
+    if not event:
+        raise HTTPException(status_code=404, detail="Event not found")
+
     db.delete(event)
     db.commit()
     return {"message": "deleted"}
