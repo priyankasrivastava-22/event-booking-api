@@ -1,6 +1,7 @@
 from fastapi import APIRouter, Depends, HTTPException
 import models
-from core.security import get_db, get_current_user
+from utils.helpers import get_db
+from core.security import get_current_user
 from schemas import CategoryCreate, NotificationCreate
 
 router = APIRouter()
