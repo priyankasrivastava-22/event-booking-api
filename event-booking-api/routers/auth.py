@@ -6,6 +6,8 @@ from jose import jwt
 from pydantic import BaseModel
 
 import models, schemas
+from services.otp_service import create_otp, verify_otp_code
+from services.email_service import send_otp_email
 
 from core.security import (
     hash_password,
@@ -94,4 +96,116 @@ def get_profile(user=Depends(get_current_user), db: Session = Depends(get_db)):
         "username": user["username"],
         "role": user["role"],
         "bookings": bookings_count
+    }
+
+# ---------------- SEND OTP ----------------
+@router.post("/otp/send")
+@limiter.limit("3/minute")
+def send_otp(
+    request: Request,
+    data: schemas.OTPSendRequest,
+    user=Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    # Find the actual database user
+    db_user = db.query(models.User).filter(
+        models.User.username == user["username"]
+    ).first()
+
+    if not db_user:
+        raise HTTPException(
+            status_code=404,
+            detail="User not found"
+        )
+
+    # Only allow supported OTP purposes
+    allowed_purposes = {
+        "change_username",
+        "change_password",
+        "change_email",
+        "change_phone"
+    }
+
+    if data.purpose not in allowed_purposes:
+        raise HTTPException(
+            status_code=400,
+            detail="Invalid OTP purpose"
+        )
+
+    # Determine where OTP should be sent
+    if data.purpose in {
+        "change_username",
+        "change_password"
+    }:
+        destination = db_user.email
+
+        if not destination:
+            raise HTTPException(
+                status_code=400,
+                detail="No registered email address found"
+            )
+
+    elif data.purpose == "change_email":
+        if not data.destination:
+            raise HTTPException(
+                status_code=400,
+                detail="New email address is required"
+            )
+
+        destination = data.destination
+
+        # Prevent duplicate email
+        existing_email = db.query(models.User).filter(
+            models.User.email == destination
+        ).first()
+
+        if existing_email and existing_email.id != db_user.id:
+            raise HTTPException(
+                status_code=400,
+                detail="Email address is already registered"
+            )
+
+    elif data.purpose == "change_phone":
+        if not data.destination:
+            raise HTTPException(
+                status_code=400,
+                detail="Phone number is required"
+            )
+
+        destination = data.destination
+
+        # Prevent duplicate phone
+        existing_phone = db.query(models.User).filter(
+            models.User.phone == destination
+        ).first()
+
+        if existing_phone and existing_phone.id != db_user.id:
+            raise HTTPException(
+                status_code=400,
+                detail="Phone number is already registered"
+            )
+
+    # Generate and store OTP
+    otp, otp_record = create_otp(
+        db=db,
+        user_id=db_user.id,
+        purpose=data.purpose,
+        destination=destination
+    )
+
+    # Currently our email service sends OTP through email.
+    # Phone/SMS integration will be added separately.
+    if data.purpose in {
+        "change_username",
+        "change_password",
+        "change_email"
+    }:
+        send_otp_email(
+            recipient_email=destination,
+            otp=otp,
+            purpose=data.purpose
+        )
+
+    return {
+        "message": "OTP sent successfully"
     }

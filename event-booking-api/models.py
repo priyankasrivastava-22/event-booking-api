@@ -57,6 +57,10 @@ class User(Base):
 
     is_verified = Column(Boolean, default=False)
 
+    phone = Column(String, unique=True, nullable=True)
+    email_verified = Column(Boolean, default=False)
+    phone_verified = Column(Boolean, default=False)
+
 # ---------------- CATEGORY ----------------
 class Category(Base):
     __tablename__ = "categories"
@@ -111,6 +115,37 @@ class EmailVerification(Base):
     username = Column(String)
     token = Column(String, unique=True)
     expires_at = Column(DateTime)
+
+
+class OTPVerification(Base):
+    __tablename__ = "otp_verifications"
+
+    id = Column(Integer, primary_key=True, index=True)
+
+    user_id = Column(
+        Integer,
+        ForeignKey("users.id"),
+        nullable=False
+    )
+
+    purpose = Column(String, nullable=False)
+
+    destination = Column(String, nullable=False)
+
+    otp_hash = Column(String, nullable=False)
+
+    expires_at = Column(DateTime, nullable=False)
+
+    attempts = Column(Integer, default=0)
+
+    verified = Column(Boolean, default=False)
+
+    created_at = Column(
+        DateTime,
+        default=lambda: datetime.now(timezone.utc)
+    )
+
+    used_at = Column(DateTime, nullable=True)
 
 #----------------PAYMENT------------------------------
 class Payment(Base):
