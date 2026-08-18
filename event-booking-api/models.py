@@ -6,37 +6,29 @@ from datetime import datetime, timezone
 # ---------------- EVENT ----------------
 class Event(Base):
     __tablename__ = "events"
-
     id = Column(Integer, primary_key=True, index=True)
     title = Column(String)
     location = Column(String)
-
     description = Column(String, nullable=True)
     date_time = Column(String, nullable=True)
     price = Column(Integer, default=0)
     image_url = Column(String, nullable=True)
     category = Column(String, nullable=True)
     category_id = Column(Integer, ForeignKey("categories.id"), nullable=True)
-
     total_seats = Column(Integer)
     available_seats = Column(Integer)
-
     category_rel = relationship("Category", back_populates="events")
 
 # ---------------- BOOKING ----------------
 class Booking(Base):
     __tablename__ = "bookings"
-
     id = Column(Integer, primary_key=True, index=True)
     user_name = Column(String)
     event_id = Column(Integer, ForeignKey("events.id"))
     tickets = Column(Integer)
-
     booking_time = Column(DateTime, default=lambda: datetime.now(timezone.utc))
     payment_status = Column(String, default="pending")
-
     event = relationship("Event")
-
 
 # ---------------- USER ----------------
 class User(Base):
@@ -144,6 +136,12 @@ class OTPVerification(Base):
         DateTime,
         default=lambda: datetime.now(timezone.utc)
     )
+
+    used_at = Column(DateTime, nullable=True)
+
+    verification_token = Column(String, nullable=True, unique=True)
+
+    verification_token_expires_at = Column(DateTime, nullable=True)
 
     used_at = Column(DateTime, nullable=True)
 

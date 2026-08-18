@@ -1,7 +1,6 @@
 from datetime import datetime, timedelta, timezone
-
+import secrets
 from sqlalchemy.orm import Session
-
 from utils.helpers import generate_otp, hash_otp, verify_otp
 from models import OTPVerification
 
@@ -59,35 +58,52 @@ def verify_otp_code(
     otp_record = (
         db.query(OTPVerification)
         .filter(
-            OTPVerification.user_id == user_id,
+         OTPVerification.user_id == user_id,
             OTPVerification.purpose == purpose,
             OTPVerification.destination == destination,
-            OTPVerification.verified.is_(False)
+            OTPVerification.verified == False
         )
         .order_by(OTPVerification.created_at.desc())
         .first()
     )
 
     if not otp_record:
-        return False, "OTP not found or already used"
+        return False, "OTP not found or already used", None
 
     now = datetime.now(timezone.utc)
 
-    if otp_record.expires_at < now:
+    expires_at = otp_record.expires_at
+
+    if expires_at.tzinfo is None:
+        expires_at = expires_at.replace(tzinfo=timezone.utc)
+
+    if expires_at < now:
         return False, "OTP has expired"
 
     if otp_record.attempts >= MAX_OTP_ATTEMPTS:
-        return False, "Maximum OTP attempts exceeded"
+        return False, "Maximum OTP attempts exceeded", None
 
     otp_record.attempts += 1
 
     if not verify_otp(otp, otp_record.otp_hash):
         db.commit()
-        return False, "Invalid OTP"
+        return False, "Invalid OTP", None
 
+    # OTP is correct
     otp_record.verified = True
     otp_record.used_at = now
 
-    db.commit()
+    # Generate a temporary verification token
+    verification_token = secrets.token_urlsafe(32)
 
-    return True, "OTP verified successfully"
+    otp_record.verification_token = verification_token
+    otp_record.verification_token_expires_at = (
+        now + timedelta(minutes=10)
+    )
+
+    db.commit()
+    db.refresh(otp_record)
+
+    return (
+        True, "OTP verified successfully", verification_token
+    )
