@@ -3,8 +3,7 @@ from database import Base
 from sqlalchemy.orm import relationship
 from datetime import datetime, timezone
 
-# ---------------- EVENT ----------------
-class Event(Base):
+class Event(Base):                                                                                                      # EVENT
     __tablename__ = "events"
     id = Column(Integer, primary_key=True, index=True)
     title = Column(String)
@@ -19,145 +18,104 @@ class Event(Base):
     available_seats = Column(Integer)
     category_rel = relationship("Category", back_populates="events")
 
-# ---------------- BOOKING ----------------
-class Booking(Base):
+class Booking(Base):                                                                                                    # BOOKING
     __tablename__ = "bookings"
     id = Column(Integer, primary_key=True, index=True)
-    user_name = Column(String)
-    event_id = Column(Integer, ForeignKey("events.id"))
-    tickets = Column(Integer)
-    booking_time = Column(DateTime, default=lambda: datetime.now(timezone.utc))
-    payment_status = Column(String, default="pending")
+    user_id = Column( Integer, ForeignKey("users.id"),nullable=False, index=True)
+    event_id = Column( Integer, ForeignKey("events.id"), nullable=False)
+    tickets = Column(Integer, nullable=False)
+    booking_time = Column( DateTime, default=lambda: datetime.now(timezone.utc))
+    payment_status = Column( String, default="pending", nullable=False)
+    user = relationship("User", back_populates="bookings")
     event = relationship("Event")
 
-# ---------------- USER ----------------
-class User(Base):
+class User(Base):                                                                                                       # USER
     __tablename__ = "users"
-
     id = Column(Integer, primary_key=True, index=True)
     username = Column(String, unique=True)
     password = Column(String)
-
     role = Column(String, default="user")
     is_active = Column(Boolean, default=True)
-
     profile_image = Column(String, nullable=True)
     full_name = Column(String, nullable=True)
     bio = Column(String, nullable=True)
-
     email = Column(String, unique=True, nullable=True)
-
     is_verified = Column(Boolean, default=False)
-
-    phone = Column(String, unique=True, nullable=True)
+    phone_encrypted = Column(String, nullable=True)
+    phone_lookup_hmac = Column( String, unique=True, index=True, nullable=True)
     email_verified = Column(Boolean, default=False)
-    phone_verified = Column(Boolean, default=False)
+    phone_verified = Column( Boolean, default=False, nullable=False)
+    bookings = relationship("Booking", back_populates="user")
+    payments = relationship("Payment", back_populates="user")
+    notifications = relationship("Notification", back_populates="user")
+    audit_logs = relationship("AuditLog", back_populates="user")
 
-# ---------------- CATEGORY ----------------
-class Category(Base):
+class Category(Base):                                                                                                   # CATEGORY
     __tablename__ = "categories"
-
     id = Column(Integer, primary_key=True, index=True)
     name = Column(String, unique=True)
     events = relationship("Event", back_populates="category_rel")
 
-# ---------------- NOTIFICATION ----------------
-class Notification(Base):
+class Notification(Base):                                                                                               # NOTIFICATION
     __tablename__ = "notifications"
-
     id = Column(Integer, primary_key=True, index=True)
-    message = Column(String)
-    user_name = Column(String, nullable=True)
-    created_at = Column(DateTime, default=lambda: datetime.now(timezone.utc))
+    user_id = Column( Integer, ForeignKey("users.id"), nullable=True, index=True)
+    message = Column(String, nullable=False)
+    created_at = Column( DateTime, default=lambda: datetime.now(timezone.utc))
+    user = relationship("User", back_populates="notifications")
 
-
-# ---------------- AUDIT LOG ----------------
-class AuditLog(Base):
-    __tablename__ = "audit_logs"
-
-    id = Column(Integer, primary_key=True, index=True)
-    action = Column(String)
-    performed_by = Column(String)
-    timestamp = Column(DateTime, default=lambda: datetime.now(timezone.utc))
-
-
-# ---------------- BLACKLIST TOKEN ----------------
-class BlacklistedToken(Base):
+class BlacklistedToken(Base):                                                                                           # BLACKLIST TOKEN
     __tablename__ = "blacklisted_tokens"
-
     id = Column(Integer, primary_key=True, index=True)
     token = Column(String, unique=True)
 
-
-# ---------------- PASSWORD RESET ----------------
-class PasswordReset(Base):
+class PasswordReset(Base):                                                                                              # PASSWORD RESET
     __tablename__ = "password_resets"
-
     id = Column(Integer, primary_key=True, index=True)
     username = Column(String)
     token = Column(String, unique=True)
     expires_at = Column(DateTime)
 
-
-# ---------------- EMAIL VERIFICATION ----------------
-class EmailVerification(Base):
+class EmailVerification(Base):                                                                                          # EMAIL VERIFICATION
     __tablename__ = "email_verifications"
-
     id = Column(Integer, primary_key=True, index=True)
     username = Column(String)
     token = Column(String, unique=True)
     expires_at = Column(DateTime)
 
-
-class OTPVerification(Base):
+class OTPVerification(Base):                                                                                            # OTP VERIFICATION
     __tablename__ = "otp_verifications"
-
     id = Column(Integer, primary_key=True, index=True)
-
-    user_id = Column(
-        Integer,
-        ForeignKey("users.id"),
-        nullable=False
-    )
-
+    user_id = Column( Integer, ForeignKey("users.id"), nullable=False)
     purpose = Column(String, nullable=False)
-
     destination = Column(String, nullable=False)
-
     otp_hash = Column(String, nullable=False)
-
     expires_at = Column(DateTime, nullable=False)
-
     attempts = Column(Integer, default=0)
-
     verified = Column(Boolean, default=False)
-
-    created_at = Column(
-        DateTime,
-        default=lambda: datetime.now(timezone.utc)
-    )
-
+    created_at = Column(DateTime, default=lambda: datetime.now(timezone.utc))
     used_at = Column(DateTime, nullable=True)
-
     verification_token = Column(String, nullable=True, unique=True)
-
     verification_token_expires_at = Column(DateTime, nullable=True)
 
-    used_at = Column(DateTime, nullable=True)
-
-#----------------PAYMENT------------------------------
-class Payment(Base):
+class Payment(Base):                                                                                                    # PAYMENT
     __tablename__ = "payments"
-
     id = Column(Integer, primary_key=True, index=True)
-    booking_id = Column(Integer, ForeignKey("bookings.id"))
-    user_name = Column(String)
+    booking_id = Column( Integer, ForeignKey("bookings.id"),nullable=False )
+    user_id = Column( Integer, ForeignKey("users.id"), nullable=False, index=True)
+    amount = Column( Integer, nullable=False)
+    status = Column( String, default="pending", nullable=False)
+    method = Column( String, default="mock", nullable=False)
+    transaction_id = Column(String, unique=True, nullable=False)
+    created_at = Column( DateTime, default=lambda: datetime.now(timezone.utc))
+    user = relationship("User", back_populates="payments")
+    booking = relationship("Booking")
 
-    amount = Column(Integer)
-    status = Column(String, default="pending")  # pending / success / failed
-    method = Column(String, default="mock")
-
-    transaction_id = Column(String, unique=True)
-    created_at = Column(DateTime, default=lambda: datetime.now(timezone.utc))
-
-
+class AuditLog(Base):
+    __tablename__ = "audit_logs"
+    id = Column(Integer, primary_key=True, index=True)
+    user_id = Column( Integer, ForeignKey("users.id"), nullable=True, index=True)
+    action = Column(String, nullable=False)
+    performed_by = Column(String, nullable=True)
+    timestamp = Column(DateTime, default=lambda: datetime.now(timezone.utc))
+    user = relationship("User", back_populates="audit_logs")
