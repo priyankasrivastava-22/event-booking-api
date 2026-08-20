@@ -97,21 +97,62 @@ class NotificationResponse(BaseModel):
         from_attributes = True
 
 class UserProfile(BaseModel):
+    id: int
+    username: str
+    role: str
+
     full_name: str | None = None
     bio: str | None = None
     email: str | None = None
+    phone: str | None = None
+
     profile_image: str | None = None
+
+    email_verified: bool
+    phone_verified: bool
+
+    bookings: int
 
 
 class UserProfileUpdate(BaseModel):
     full_name: str | None = None
     bio: str | None = None
-    email: str | None = None
 
+
+class OTPSendRequest(BaseModel):
+    purpose: str
+    destination: str | None = None
+
+
+class OTPVerifyRequest(BaseModel):
+    purpose: str
+    otp: str
+    destination: str | None = None
+
+class ChangeUsernameRequest(BaseModel):
+    username: str
+    verification_token: str
+
+class ChangeEmailRequest(BaseModel):
+    email: str
+    verification_token: str
+
+class ChangePhoneRequest(BaseModel):
+    phone: str
+    verification_token: str
+
+class ChangePasswordRequest(BaseModel):
+    password: str
+    verification_token: str
 
 class PaymentCreate(BaseModel):
     booking_id: int
     method: str = "mock"
+
+class OTPVerifyResponse(BaseModel):
+    message: str
+    verification_token: str
+
 
 class PaymentResponse(BaseModel):
     id: int

@@ -2,72 +2,293 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Profile</title>
-
+    <meta name="viewport"
+          content="width=device-width, initial-scale=1.0">
+    <title>My Profile | Eventora</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="css/common.css">
-
-    <style>
-        .profile-card {
-            max-width: 500px;
-            margin: auto;
-            margin-top: 80px;
-            background: rgba(255,255,255,0.08);
-            backdrop-filter: blur(10px);
-            border-radius: 16px;
-            padding: 30px;
-            color: white;
-        }
-
-        .label {
-            color: #aaa;
-            font-size: 14px;
-        }
-
-        .value {
-            font-size: 18px;
-            margin-bottom: 15px;
-        }
-    </style>
+    <link rel="stylesheet" href="css/profile.css">
 </head>
 <body>
 
-<div class="container">
-
-    <div class="profile-card">
-
-        <h3 class="mb-4 text-center">My Profile</h3>
-
+<div class="profile-page">
+    <header class="profile-header">                                                                                      <!-- HEADER -->
         <div>
-            <div class="label">Username</div>
-            <div class="value" id="username">-</div>
-
-            <div class="label">Role</div>
-            <div class="value" id="role">-</div>
-
-            <div class="label">Total Bookings</div>
-            <div class="value" id="bookings">-</div>
+            <h1>My Profile</h1>
+            <p>Manage your account, security and personal information.</p>
         </div>
+        <button class="btn btn-secondary" onclick="window.location.href='events.html'">Back to Events </button>
+    </header>
 
-        <div class="d-flex flex-wrap gap-2 justify-content-between mt-4" id="actionButtons">
+    <main class="profile-container">
+        <section class="profile-overview glass-card">                                                                    <!-- PROFILE OVERVIEW -->
+            <div class="profile-avatar" id="profileAvatar">
+                U
+            </div>
 
-    <button class="btn btn-secondary"
-        onclick="window.location.href='events.html'">
-        Back
-    </button>
+            <div class="profile-main-info">
+                <h2 id="profileUsername"> Loading... </h2>
+                <span class="role-badge" id="profileRole"> User </span>
+                <p id="profileEmail"> Loading...</p>
+            </div>
 
-    <div id="adminBtnContainer"></div>
+            <div class="profile-stats">
+                <div class="stat-item">
+                    <strong id="totalBookings">0</strong>
+                    <span>Total Bookings</span>
+                </div>
 
-    <button class="btn btn-danger" onclick="logout()">
-        Logout
-    </button>
+                <div class="stat-item">
+                    <strong id="accountStatus"> Active </strong>
+                    <span>Account Status</span>
+                </div>
+            </div>
+        </section>
 
+        <section class="glass-card profile-section">                                                                     <!-- PERSONAL INFORMATION -->
+            <div class="section-header">
+                <div>
+                    <h3>Personal Information</h3>
+                    <p> Manage the basic information associated with your Eventora account. </p>
+                </div>
+            </div>
+
+            <div class="info-grid">
+                <div class="info-box">                                                                                   <!-- USERNAME -->
+                    <label>Username</label>
+                    <div class="info-value-row">
+                        <span id="usernameValue"> Loading... </span>
+                        <button class="outline-btn" onclick="startUsernameChange()"> Change </button>
+                    </div>
+                </div>
+
+                <div class="info-box">                                                                                   <!-- EMAIL -->
+                    <label>Email Address</label>
+                    <div class="info-value-row">
+                        <div>
+                            <span id="emailValue"> Loading... </span>
+                            <span id="emailVerifiedBadge" class="verified-badge"> Verified </span>
+                        </div>
+                        <button class="outline-btn" onclick="startEmailChange()"> Change </button>
+                    </div>
+                </div>
+
+                <div class="info-box">                                                                                   <!-- PHONE -->
+                    <label>Phone Number</label>
+                    <div class="info-value-row">
+                        <div>
+                            <span id="phoneValue"> Not added </span>
+                            <span id="phoneVerifiedBadge" class="verified-badge"> Verified </span>
+                        </div>
+                        <button class="outline-btn" onclick="startPhoneChange()"> Manage </button>
+                    </div>
+                </div>
+
+                <div class="info-box">                                                                                   <!-- ROLE -->
+                    <label>Account Role</label>
+                    <div class="info-value-row">
+                        <span id="roleValue"> User </span>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section class="glass-card profile-section">                                                                     <!-- SECURITY -->
+            <div class="section-header">
+                <div>
+                    <h3>Password & Security</h3>
+                    <p> Protect your account and manage your authentication settings. </p>
+                </div>
+            </div>
+
+            <div class="security-list">                                                                                  <!-- PASSWORD -->
+                <div class="security-item">
+                    <div class="security-icon"> 🔒 </div>
+                    <div class="security-content">
+                        <h4>Password</h4>
+                        <p> Keep your password strong and change it regularly. </p>
+                    </div>
+                    <button class="outline-btn" onclick="startPasswordChange()"> Change Password </button>
+                </div>
+
+                <div class="security-item">                                                                              <!-- OTP -->
+                    <div class="security-icon"> ✓ </div>
+                    <div class="security-content">
+                        <h4>Account Verification</h4>
+                        <p> OTP verification is required before sensitive account changes. </p>
+                    </div>
+                    <span class="security-status"> Enabled </span>
+                </div>
+
+                <div class="security-item">                                                                              <!-- SESSIONS -->
+                    <div class="security-icon"> ● </div>
+                    <div class="security-content">
+                        <h4>Active Session</h4>
+                        <p> You are currently logged into this account. </p>
+                    </div>
+                    <button class="outline-btn" onclick="logout()"> Logout </button>
+                </div>
+            </div>
+        </section>
+
+        <section class="glass-card profile-section">                                                                     <!-- ACCOUNT ACTIVITY -->
+            <div class="section-header">
+                <div>
+                    <h3>Account Activity</h3>
+                    <p> Important information about your account. </p>
+                </div>
+            </div>
+            <div class="activity-grid">
+                <div class="activity-box">
+                    <span class="activity-label"> Total Bookings </span>
+                    <strong id="activityBookings"> 0 </strong>
+                </div>
+                <div class="activity-box">
+                    <span class="activity-label"> Account Status </span>
+                    <strong> Active </strong>
+                </div>
+                <div class="activity-box">
+                    <span class="activity-label"> Email Verification </span>
+                    <strong id="activityEmailStatus"> Verified </strong>
+                </div>
+                <div class="activity-box">
+                    <span class="activity-label"> Phone Verification </span>
+                    <strong id="activityPhoneStatus"> Not Added </strong>
+                </div>
+            </div>
+        </section>
+
+        <section id="adminSection" class="glass-card profile-section admin-section" style="display:none;">               <!-- ADMIN -->
+            <div>
+                <h3>Administrator Access</h3>
+                <p> You have administrator privileges for Eventora. </p>
+            </div>
+            <button class="btn btn-warning" onclick="window.location.href='admin.html'"> Open Admin Panel </button>
+        </section>
+
+        <section class="glass-card profile-section danger-section">                                                      <!-- DANGER ZONE -->
+            <div>
+                <h3>Danger Zone</h3>
+                <p>These actions affect your account and should be used carefully. </p>
+            </div>
+            <div class="danger-actions">
+                <button class="danger-outline-btn" onclick="logout()"> Logout </button>
+                <button class="danger-btn" onclick="requestAccountDeletion()"> Delete Account </button>
+            </div>
+        </section>
+    </main>
 </div>
 
+<div class="modal fade" id="otpModal" tabindex="-1">                                                                     <!-- OTP MODAL -->
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content profile-modal">
+            <div class="modal-header">
+                <h5 class="modal-title"> Verify Your Identity </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"> </button>
+            </div>
+            <div class="modal-body">
+                <p id="otpDescription"> Enter the OTP sent to your registered contact. </p>
+                <input type="text" id="otpInput" class="form-control" maxlength="6" placeholder="Enter 6-digit OTP">
+                <div class="otp-actions">
+                    <button class="btn btn-primary" onclick="verifyOtp()"> Verify OTP </button>
+                    <button class="btn btn-link" id="resendOtpBtn" onclick="resendOtp()"> Resend OTP </button>
+                </div>
+                <p id="otpTimer" class="otp-timer"> </p>
+            </div>
+        </div>
     </div>
-
 </div>
 
+<div class="modal fade" id="usernameModal" tabindex="-1">                                                                <!-- CHANGE USERNAME MODAL -->
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content profile-modal">
+            <div class="modal-header">
+                <h5> Change Username </h5>
+            </div>
+            <div class="modal-body">
+                <label> New Username </label>
+                <input type="text" id="newUsername" class="form-control" placeholder="Enter new username">
+                <button class="btn btn-primary w-100 mt-3" onclick="saveUsername()"> Save Username </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="emailModal" tabindex="-1">                                                                   <!-- CHANGE EMAIL MODAL -->
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content profile-modal">
+            <div class="modal-header">
+                <h5> Change Email Address </h5>
+            </div>
+            <div class="modal-body">
+                <label> New Email Address </label>
+                <input type="email" id="newEmail" class="form-control" placeholder="example@email.com">
+                <p class="modal-help">A verification OTP will be sent to the new email address. </p
+                <button class="btn btn-primary w-100 mt-3" onclick="saveEmail()"> Continue </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="phoneModal" tabindex="-1">                                                                   <!-- PHONE MODAL -->
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content profile-modal">
+            <div class="modal-header">
+                <h5> Manage Phone Number </h5>
+            </div>
+            <div class="modal-body">
+                <label> Phone Number </label>
+                <input type="tel" id="newPhone" class="form-control" placeholder="+91XXXXXXXXXX">
+                <p class="modal-help"> An OTP will be sent to this number for verification. </p>
+                <button class="btn btn-primary w-100 mt-3" onclick="savePhone()"> Send Verification OTP </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="passwordModal" tabindex="-1">                                                                <!-- PASSWORD MODAL -->
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content profile-modal">
+            <div class="modal-header">
+                <h5> Change Password </h5>
+            </div>
+            <div class="modal-body">
+                <label> New Password </label>
+                <input type="password" id="newPassword" class="form-control" placeholder="Enter new password">
+                <label class="mt-3"> Confirm New Password </label>
+                <input type="password" id="confirmPassword" class="form-control" placeholder="Confirm new password">
+                <div class="password-rules">
+                    <p>Password should:</p>
+                    <ul>
+                        <li>Contain at least 8 characters</li>
+                        <li>Contain uppercase and lowercase letters</li>
+                        <li>Contain at least one number</li>
+                        <li>Contain at least one special character</li>
+                    </ul>
+                </div>
+                <button class="btn btn-primary w-100 mt-3" onclick="savePassword()"> Change Password </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="deleteModal" tabindex="-1">                                                                  <!-- DELETE ACCOUNT MODAL -->
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content profile-modal">
+            <div class="modal-header">
+                <h5> Delete Account </h5>
+            </div>
+            <div class="modal-body">
+                <div class="delete-warning">This action cannot be undone. Your account and associated personal information may be permanently deleted. </div>
+                <label> Enter your password </label>
+                <input type="password" id="deletePassword" class="form-control" placeholder="Current password">
+                <button class="danger-btn w-100 mt-3" onclick="deleteAccount()">Permanently Delete Account</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 <script src="js/profile.js"></script>
 
 </body>
