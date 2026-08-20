@@ -12,7 +12,7 @@ from core.security import ( hash_password, verify_password, create_token, get_cu
 
 router = APIRouter()
 
-def mask_phone(phone: str) -> str:                                                                                       # HELPERS
+def mask_phone(phone: str) -> str:                                                                                                                 # HELPERS
     if not phone:
         return ""
     if len(phone) <= 4:
@@ -68,7 +68,7 @@ def consume_verification_token(otp_record):
     otp_record.verification_token = None
     otp_record.verification_token_expires_at = None
 
-@router.post("/register", response_model=schemas.UserResponse)                                                           # REGISTER
+@router.post("/register", response_model=schemas.UserResponse)                                                                                  # REGISTER
 @limiter.limit("3/minute")
 def register(request: Request, user: schemas.UserCreate, db: Session = Depends(get_db)):
     existing = (db.query(models.User).filter(
@@ -98,7 +98,7 @@ def register(request: Request, user: schemas.UserCreate, db: Session = Depends(g
     db.refresh(new_user)
     return new_user
 
-class LoginRequest(BaseModel):                                                                                           # LOGIN
+class LoginRequest(BaseModel):                                                                                                                     # LOGIN
     username: str
     password: str
 
@@ -122,7 +122,7 @@ def login( request: Request, user: LoginRequest, db: Session = Depends(get_db)):
         "token_type": "bearer"
     }
 
-@router.get("/me")                                                                                                       # PROFILE
+@router.get("/me")                                                                                                                                # PROFILE
 def get_profile(user=Depends(get_current_user), db: Session = Depends(get_db)):
     db_user = db.query(models.User).filter(models.User.username == user["username"]).first()
     if not db_user:
@@ -134,7 +134,7 @@ def get_profile(user=Depends(get_current_user), db: Session = Depends(get_db)):
             decrypted_phone = decrypt_phone(
                 db_user.phone_encrypted
             )
-            if len(decrypted_phone) >= 4:                                                                                # Return only masked phone
+            if len(decrypted_phone) >= 4:                                                                                                       # Return only masked phone
                 phone = ("*" * (len(decrypted_phone) - 4) + decrypted_phone[-4:])
         except ValueError:
             phone = None
@@ -149,7 +149,7 @@ def get_profile(user=Depends(get_current_user), db: Session = Depends(get_db)):
         "bookings": bookings_count
     }
 
-@router.post("/otp/send")                                                                                                # SEND OTP
+@router.post("/otp/send")                                                                                                                             # SEND OTP
 @limiter.limit("5/minute")
 def send_otp(request: Request,data: schemas.OTPSendRequest, user=Depends(get_current_user), db: Session = Depends(get_db)):
     db_user = get_authenticated_user(user, db)
@@ -161,7 +161,7 @@ def send_otp(request: Request,data: schemas.OTPSendRequest, user=Depends(get_cur
     }
     if data.purpose not in allowed_purposes:
         raise HTTPException(status_code=400, detail="Invalid OTP purpose")
-    if data.purpose in {                                                                                                 # CHANGE USERNAME / PASSWORD
+    if data.purpose in {                                                                                                                             # CHANGE USERNAME / PASSWORD
         "change_username",
         "change_password"
     }:
@@ -169,7 +169,7 @@ def send_otp(request: Request,data: schemas.OTPSendRequest, user=Depends(get_cur
             raise HTTPException(status_code=400,detail="No registered email address found")
         destination = db_user.email
 
-    elif data.purpose == "change_email":                                                                                 # CHANGE EMAIL
+    elif data.purpose == "change_email":                                                                                                            # CHANGE EMAIL
         if not data.destination:
             raise HTTPException(status_code=400, detail="New email address is required")
         destination = data.destination.strip().lower()
@@ -177,27 +177,14 @@ def send_otp(request: Request,data: schemas.OTPSendRequest, user=Depends(get_cur
         if existing_email and existing_email.id != db_user.id:
             raise HTTPException(status_code=400, detail="Email address is already registered")
 
-    elif data.purpose == "change_phone":                                                                                 # CHANGE PHONE
+    elif data.purpose == "change_phone":                                                                                                           # CHANGE PHONE
         if not data.destination:
-            raise HTTPException(status_code=400,
-                detail="Phone number is required"
-            )
-
+            raise HTTPException(status_code=400, detail="Phone number is required")
         try:
-            destination = normalize_phone(
-                data.destination
-            )
-
+            destination = normalize_phone(data.destination)
         except ValueError as exc:
-            raise HTTPException(
-                status_code=400,
-                detail=str(exc)
-            )
-
-        lookup_hash = phone_lookup_hmac(
-            destination
-        )
-
+            raise HTTPException(status_code=400, detail=str(exc))
+        lookup_hash = phone_lookup_hmac(destination)
         existing_phone = (
             db.query(models.User)
             .filter(
@@ -205,246 +192,84 @@ def send_otp(request: Request,data: schemas.OTPSendRequest, user=Depends(get_cur
             )
             .first()
         )
-
-        if (
-            existing_phone
-            and existing_phone.id != db_user.id
+        if ( existing_phone and existing_phone.id != db_user.id
         ):
-            raise HTTPException(
-                status_code=400,
-                detail="Phone number is already registered"
-            )
+            raise HTTPException(status_code=400, detail="Phone number is already registered")
 
-    # --------------------------------------------------------
-    # CREATE OTP
-    # --------------------------------------------------------
+    otp, otp_record = create_otp(db=db, user_id=db_user.id, purpose=data.purpose,destination=destination)                                           # CREATE OTP
 
-    otp, otp_record = create_otp(
-        db=db,
-        user_id=db_user.id,
-        purpose=data.purpose,
-        destination=destination
-    )
-
-    # ========================================================
-    # SEND OTP THROUGH THE APPROPRIATE CHANNEL
-    # ========================================================
-
-    if data.purpose in {
+    if data.purpose in {                                                                                                                            # SEND OTP THROUGH THE APPROPRIATE CHANNEL
         "change_username",
         "change_password",
         "change_email"
     }:
-
-        send_otp_email(
-            recipient_email=destination,
-            otp=otp,
-            purpose=data.purpose
-        )
-
+        send_otp_email( recipient_email=destination, otp=otp, purpose=data.purpose)
     elif data.purpose == "change_phone":
-
         try:
-            send_otp_sms(
-                recipient_phone=destination,
-                otp=otp
-            )
-
-
+            send_otp_sms( recipient_phone=destination, otp=otp )
         except Exception as exc:
-
             otp_record.expires_at = datetime.now(timezone.utc)
-
             otp_record.used_at = datetime.now(timezone.utc)
-
             db.commit()
+            raise HTTPException( status_code=503, detail="Unable to send verification SMS") from exc
 
-            raise HTTPException(
-
-                status_code=503,
-
-                detail="Unable to send verification SMS"
-
-            ) from exc
-
-    # --------------------------------------------------------
-    # PHONE OTP
-    #
-    # SMS sender will be connected in the next step.
-    # The OTP destination is already stored securely in
-    # otp_verifications.destination.
-    # --------------------------------------------------------
-
-    elif data.purpose == "change_phone":
-
+    elif data.purpose == "change_phone":                                                                                                             # PHONE OTP
         # SMS integration goes here.
-        #
-        # IMPORTANT:
-        # Do NOT trust the frontend again during verification.
-        # The destination stored in otp_record is authoritative.
-        #
-        # Example for next step:
-        #
-        # send_otp_sms(
-        #     phone_number=destination,
-        #     otp=otp
-        # )
-
         pass
-
     return {
         "message": "OTP sent successfully"
     }
 
-
-# ============================================================
-# VERIFY OTP
-# ============================================================
-
-@router.post(
-    "/otp/verify",
-    response_model=schemas.OTPVerifyResponse
-)
+@router.post("/otp/verify",response_model=schemas.OTPVerifyResponse)                                                                                 # VERIFY OTP
 @limiter.limit("5/minute")
-def verify_otp_endpoint(
-    request: Request,
-    data: schemas.OTPVerifyRequest,
-    user=Depends(get_current_user),
-    db: Session = Depends(get_db)
-):
-
+def verify_otp_endpoint( request: Request, data: schemas.OTPVerifyRequest, user=Depends(get_current_user),db: Session = Depends(get_db)):
     db_user = get_authenticated_user(user, db)
-
     allowed_purposes = {
         "change_username",
         "change_password",
         "change_email",
         "change_phone"
     }
-
     if data.purpose not in allowed_purposes:
-        raise HTTPException(
-            status_code=400,
-            detail="Invalid OTP purpose"
-        )
-
-    # --------------------------------------------------------
-    # IMPORTANT SECURITY FIX
-    #
-    # NEVER trust data.destination from the frontend.
-    #
-    # The backend finds the latest OTP record and gets the
-    # destination from the database.
-    # --------------------------------------------------------
-
-    otp_record = get_latest_pending_otp(
-        db=db,
-        user_id=db_user.id,
-        purpose=data.purpose
-    )
-
+        raise HTTPException( status_code=400, detail="Invalid OTP purpose")
+    otp_record = get_latest_pending_otp(db=db, user_id=db_user.id, purpose=data.purpose)
     if not otp_record:
-        raise HTTPException(
-            status_code=400,
-            detail="OTP not found or already used"
-        )
-
+        raise HTTPException(status_code=400, detail="OTP not found or already used")
     destination = otp_record.destination
-
-    # --------------------------------------------------------
-    # VERIFY OTP
-    # --------------------------------------------------------
-
-    success, message, verification_token = verify_otp_code(
+    success, message, verification_token = verify_otp_code(                                                                                         # VERIFY OTP
         db=db,
         user_id=db_user.id,
         purpose=data.purpose,
         otp=data.otp,
         destination=destination
     )
-
     if not success:
-        raise HTTPException(
-            status_code=400,
-            detail=message
-        )
-
+        raise HTTPException(status_code=400, detail=message)
     return {
         "message": message,
         "verification_token": verification_token
     }
 
-
-# ============================================================
-# CHANGE PHONE
-# ============================================================
-
-@router.post("/change-phone")
-def change_phone(
-    data: schemas.ChangePhoneRequest,
-    user=Depends(get_current_user),
-    db: Session = Depends(get_db)
-):
-
+@router.post("/change-phone")                                                                                                                     # CHANGE PHONE
+def change_phone(data: schemas.ChangePhoneRequest,user=Depends(get_current_user),db: Session = Depends(get_db)):
     db_user = get_authenticated_user(user, db)
-
-    # --------------------------------------------------------
-    # NORMALIZE NEW PHONE
-    # --------------------------------------------------------
-
     try:
-        normalized_phone = normalize_phone(
-            data.phone
-        )
-
+        normalized_phone = normalize_phone(data.phone)
     except ValueError as exc:
-        raise HTTPException(
-            status_code=400,
-            detail=str(exc)
-        )
-
-    # --------------------------------------------------------
-    # FIND VERIFIED OTP TOKEN
-    # --------------------------------------------------------
-
-    otp_record = get_verified_otp_by_token(
+        raise HTTPException(status_code=400, detail=str(exc))
+    otp_record = get_verified_otp_by_token(                                                                                                       # FIND VERIFIED OTP TOKEN
         db=db,
         user_id=db_user.id,
         purpose="change_phone",
         verification_token=data.verification_token
     )
-
     if not otp_record:
+        raise HTTPException(status_code=400, detail="Invalid verification token")
+    check_verification_token_expiry(otp_record)
+    if normalized_phone != otp_record.destination:                                                                                                # Security Check
         raise HTTPException(
-            status_code=400,
-            detail="Invalid verification token"
-        )
-
-    check_verification_token_expiry(
-        otp_record
-    )
-
-    # --------------------------------------------------------
-    # CRITICAL SECURITY CHECK
-    #
-    # The phone being changed must be EXACTLY the same phone
-    # number for which the OTP was verified.
-    # --------------------------------------------------------
-
-    if normalized_phone != otp_record.destination:
-        raise HTTPException(
-            status_code=400,
-            detail="Phone number does not match verified OTP destination"
-        )
-
-    # --------------------------------------------------------
-    # CHECK DUPLICATE PHONE
-    # --------------------------------------------------------
-
-    lookup_hash = phone_lookup_hmac(
-        normalized_phone
-    )
-
+            status_code=400, detail="Phone number does not match verified OTP destination")
+    lookup_hash = phone_lookup_hmac( normalized_phone)                                                                                            # CHECK DUPLICATE PHONE
     existing_phone = (
         db.query(models.User)
         .filter(
@@ -452,286 +277,109 @@ def change_phone(
         )
         .first()
     )
-
-    if (
-        existing_phone
-        and existing_phone.id != db_user.id
+    if (existing_phone and existing_phone.id != db_user.id
     ):
-        raise HTTPException(
-            status_code=400,
-            detail="Phone number is already registered"
-        )
-
-    # --------------------------------------------------------
-    # STORE PHONE SECURELY
-    # --------------------------------------------------------
-
+        raise HTTPException(status_code=400,  detail="Phone number is already registered")
     db_user.phone_encrypted = encrypt_phone(
         normalized_phone
     )
-
     db_user.phone_lookup_hmac = lookup_hash
-
-    # OTP verified the new phone.
-    db_user.phone_verified = True
-
-    # --------------------------------------------------------
-    # CONSUME VERIFICATION TOKEN
-    # --------------------------------------------------------
-
-    consume_verification_token(
-        otp_record
-    )
-
+    db_user.phone_verified = True                                                                                                                  # VERIFIED NEW OTP
+    consume_verification_token(otp_record)                                                                                                          # CONSUME VERIFICATION TOKEN
     db.commit()
     db.refresh(db_user)
-
     return {
         "message": "Phone number changed successfully",
         "phone": mask_phone(normalized_phone),
         "phone_verified": True
     }
-
-
-# ============================================================
-# CHANGE PASSWORD
-# ============================================================
-
-class ChangePasswordRequest(BaseModel):
+class ChangePasswordRequest(BaseModel):                                                                                                              # CHANGE PASSWORD
     verification_token: str
     new_password: str
 
-
 @router.post("/change-password")
 @limiter.limit("5/minute")
-def change_password(
-    request: Request,
-    data: ChangePasswordRequest,
-    user=Depends(get_current_user),
-    db: Session = Depends(get_db)
-):
-
+def change_password(request: Request, data: ChangePasswordRequest, user=Depends(get_current_user),db: Session = Depends(get_db)):
     db_user = get_authenticated_user(user, db)
-
     otp_record = get_verified_otp_by_token(
         db=db,
         user_id=db_user.id,
         purpose="change_password",
         verification_token=data.verification_token
     )
-
     if not otp_record:
         raise HTTPException(
             status_code=400,
             detail="Invalid verification token"
         )
-
-    check_verification_token_expiry(
-        otp_record
-    )
-
-    # Basic password validation
-    if not data.new_password or len(data.new_password) < 8:
-        raise HTTPException(
-            status_code=400,
-            detail="Password must be at least 8 characters long"
-        )
-
-    db_user.password = hash_password(
-        data.new_password
-    )
-
-    consume_verification_token(
-        otp_record
-    )
-
+    check_verification_token_expiry(otp_record)
+    if not data.new_password or len(data.new_password) < 8:                                                                                   # Basic password validation
+        raise HTTPException(status_code=400,  detail="Password must be at least 8 characters long")
+    db_user.password = hash_password(data.new_password)
+    consume_verification_token(otp_record)
     db.commit()
-
     return {
         "message": "Password changed successfully"
     }
 
-
-# ============================================================
-# CHANGE EMAIL
-# ============================================================
-
-@router.post("/change-email")
+@router.post("/change-email")                                                                                                                 # CHANGE EMAIL
 @limiter.limit("5/minute")
-def change_email(
-    request: Request,
-    data: schemas.ChangeEmailRequest,
-    user=Depends(get_current_user),
-    db: Session = Depends(get_db)
-):
-
+def change_email(request: Request, data: schemas.ChangeEmailRequest, user=Depends(get_current_user),db: Session = Depends(get_db)):
     db_user = get_authenticated_user(user, db)
-
     new_email = data.email.strip().lower()
-
-    # --------------------------------------------------------
-    # CHECK DUPLICATE EMAIL
-    # --------------------------------------------------------
-
-    existing_email = (
-        db.query(models.User)
-        .filter(models.User.email == new_email)
-        .first()
-    )
-
-    if (
-        existing_email
-        and existing_email.id != db_user.id
+    existing_email = (db.query(models.User).filter(models.User.email == new_email).first())                                                   # CHECK DUPLICATE EMAIL
+    if (existing_email and existing_email.id != db_user.id
     ):
-        raise HTTPException(
-            status_code=400,
-            detail="Email address is already registered"
-        )
-
-    # --------------------------------------------------------
-    # FIND VERIFIED OTP
-    # --------------------------------------------------------
-
-    otp_record = get_verified_otp_by_token(
+        raise HTTPException(status_code=400, detail="Email address is already registered")
+    otp_record = get_verified_otp_by_token(                                                                                                   # FIND VERIFIED OTP
         db=db,
         user_id=db_user.id,
         purpose="change_email",
         verification_token=data.verification_token
     )
-
     if not otp_record:
-        raise HTTPException(
-            status_code=400,
-            detail="Invalid verification token"
-        )
-
-    check_verification_token_expiry(
-        otp_record
-    )
-
-    # --------------------------------------------------------
-    # MAKE SURE EMAIL MATCHES OTP DESTINATION
-    # --------------------------------------------------------
-
-    if new_email != otp_record.destination:
-        raise HTTPException(
-            status_code=400,
-            detail="Email address does not match verified OTP destination"
-        )
-
-    # --------------------------------------------------------
-    # UPDATE EMAIL
-    # --------------------------------------------------------
-
-    db_user.email = new_email
-
-    # The new email was verified through OTP.
+        raise HTTPException(status_code=400, detail="Invalid verification token")
+    check_verification_token_expiry(otp_record)
+    if new_email != otp_record.destination:                                                                                                   # MAKE SURE EMAIL MATCHES OTP DESTINATION
+        raise HTTPException(status_code=400, detail="Email address does not match verified OTP destination")
+    db_user.email = new_email                                                                                                                 # UPDATE EMAIL
     db_user.email_verified = True
-
-    consume_verification_token(
-        otp_record
-    )
-
+    consume_verification_token(otp_record)
     db.commit()
     db.refresh(db_user)
-
     return {
         "message": "Email changed successfully",
         "email": db_user.email,
         "email_verified": True
     }
 
-
-# ============================================================
-# CHANGE USERNAME
-# ============================================================
-
-@router.post("/change-username")
+@router.post("/change-username")                                                                                                              # CHANGE USERNAME
 @limiter.limit("5/minute")
-def change_username(
-    request: Request,
-    data: schemas.ChangeUsernameRequest,
-    user=Depends(get_current_user),
-    db: Session = Depends(get_db)
-):
-
+def change_username(request: Request, data: schemas.ChangeUsernameRequest, user=Depends(get_current_user), db: Session = Depends(get_db)):
     db_user = get_authenticated_user(user, db)
-
     new_username = data.username.strip()
-
-    # --------------------------------------------------------
-    # VALIDATION
-    # --------------------------------------------------------
-
-    if not new_username:
-        raise HTTPException(
-            status_code=400,
-            detail="Username cannot be empty"
-        )
-
+    if not new_username:                                                                                                                      # VALIDATION
+        raise HTTPException(status_code=400, detail="Username cannot be empty")
     if len(new_username) < 3 or len(new_username) > 50:
-        raise HTTPException(
-            status_code=400,
-            detail="Username must be between 3 and 50 characters"
-        )
-
-    # --------------------------------------------------------
-    # CHECK DUPLICATE USERNAME
-    # --------------------------------------------------------
-
-    existing_user = (
-        db.query(models.User)
-        .filter(
-            models.User.username == new_username
-        )
-        .first()
-    )
-
-    if (
-        existing_user
-        and existing_user.id != db_user.id
+        raise HTTPException(status_code=400, detail="Username must be between 3 and 50 characters")
+    existing_user = (db.query(models.User).filter(models.User.username == new_username) .first())                                             # CHECK DUPLICATE USERNAME
+    if (existing_user and existing_user.id != db_user.id
     ):
-        raise HTTPException(
-            status_code=400,
-            detail="Username is already taken"
-        )
-
-    # --------------------------------------------------------
-    # FIND VERIFIED OTP
-    # --------------------------------------------------------
-
-    otp_record = get_verified_otp_by_token(
+        raise HTTPException(status_code=400, detail="Username is already taken")
+    otp_record = get_verified_otp_by_token(                                                                                                   # FIND VERIFIED OTP
         db=db,
         user_id=db_user.id,
         purpose="change_username",
         verification_token=data.verification_token
     )
-
     if not otp_record:
-        raise HTTPException(
-            status_code=400,
-            detail="Invalid verification token"
-        )
-
-    check_verification_token_expiry(
-        otp_record
-    )
-
-    # --------------------------------------------------------
-    # CHANGE USERNAME
-    # --------------------------------------------------------
-
-    old_username = db_user.username
-
+        raise HTTPException(status_code=400, detail="Invalid verification token")
+    check_verification_token_expiry(otp_record)
+    old_username = db_user.username                                                                                                           # CHANGE USERNAME
     db_user.username = new_username
-
-    consume_verification_token(
-        otp_record
-    )
-
+    consume_verification_token(otp_record)
     db.commit()
     db.refresh(db_user)
-
     return {
         "message": "Username changed successfully",
         "old_username": old_username,

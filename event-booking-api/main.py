@@ -19,20 +19,9 @@ from sqlalchemy import text
 from database import engine
 import models
 
-from routers import (
-    auth,
-    events,
-    bookings,
-    admin,
-    analytics,
-    engagement,
-    profile,
-    payment
-)
+from routers import (auth,events,bookings,admin,analytics,engagement,profile,payment)
 
 app = FastAPI()
-
-
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
@@ -41,13 +30,10 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# ---------------- RATE LIMITING ----------------
-app.state.limiter = limiter
+app.state.limiter = limiter                                                                                              # RATE LIMITING
 app.add_middleware(SlowAPIMiddleware)
 
-# ---------------- GLOBAL ERROR HANDLER ----------------
-
-@app.exception_handler(StarletteHTTPException)
+@app.exception_handler(StarletteHTTPException)                                                                           # GLOBAL ERROR HANDLER
 async def http_exception_handler(request: Request, exc: StarletteHTTPException):
     return JSONResponse(
         status_code=exc.status_code,
@@ -57,7 +43,6 @@ async def http_exception_handler(request: Request, exc: StarletteHTTPException):
         }
     )
 
-
 @app.exception_handler(RequestValidationError)
 async def validation_exception_handler(request: Request, exc: RequestValidationError):
     return JSONResponse(
@@ -66,7 +51,6 @@ async def validation_exception_handler(request: Request, exc: RequestValidationE
             "detail": str(exc.errors())
         }
     )
-
 
 @app.exception_handler(Exception)
 async def global_exception_handler(request: Request, exc: Exception):
@@ -78,7 +62,6 @@ async def global_exception_handler(request: Request, exc: Exception):
         }
     )
 
-
 @app.exception_handler(RateLimitExceeded)
 async def rate_limit_handler(request: Request, exc):
     return JSONResponse(
@@ -89,8 +72,7 @@ async def rate_limit_handler(request: Request, exc):
         }
     )
 
-# ---------------- ROUTERS ----------------
-app.include_router(auth.router, prefix="/api/auth", tags=["Auth"])
+app.include_router(auth.router, prefix="/api/auth", tags=["Auth"])                                                       # ROUTERS
 app.include_router(events.router, prefix="/api/events", tags=["Events"])
 app.include_router(bookings.router, prefix="/api/bookings", tags=["Bookings"])
 app.include_router(admin.router, prefix="/api/admin", tags=["Admin"])
@@ -99,7 +81,6 @@ app.include_router(engagement.router, prefix="/api/engagement", tags=["Engagemen
 app.include_router(profile.router, prefix="/api/profile", tags=["Profile"])
 app.include_router(payment.router, prefix="/api/payment", tags=["Payment"])
 
-
 @app.get("/")
 async def root():
     return {
@@ -107,7 +88,6 @@ async def root():
         "docs": "/docs",
         "status": "success"
     }
-
 
 @app.get("/warmup")
 @app.head("/warmup")
