@@ -14,6 +14,108 @@ def admin_check(user):
         raise HTTPException(status_code=403, detail="Admin only")
 
 
+def _build_seat_inventory(db: Session, event: models.Event) -> dict:
+    """FIXED_SEAT event: active layout + zones -> rows -> individual seats."""
+    layout = (
+        db.query(models.VenueLayout)
+        .filter(models.VenueLayout.event_id == event.id, models.VenueLayout.is_active == True)
+        .first()
+    )
+
+    zones = (
+        db.query(models.EventZone)
+        .filter(models.EventZone.event_id == event.id, models.EventZone.is_active == True)
+        .all()
+    )
+
+    zones_out = []
+    for zone in zones:
+        rows = (
+            db.query(models.VenueRow)
+            .filter(models.VenueRow.zone_id == zone.id)
+            .order_by(models.VenueRow.row_number)
+            .all()
+        )
+        rows_out = []
+        for row in rows:
+            seats = (
+                db.query(models.Seat)
+                .filter(models.Seat.row_id == row.id, models.Seat.is_active == True)
+                .order_by(models.Seat.seat_number)
+                .all()
+            )
+            rows_out.append({
+                "id": row.id,
+                "row_label": row.row_label,
+                "row_number": row.row_number,
+                "seats": [
+                    {
+                        "id": seat.id,
+                        "seat_code": seat.seat_code,
+                        "seat_number": seat.seat_number,
+                        "status": seat.status,
+                        "price": seat.price,
+                    }
+                    for seat in seats
+                ],
+            })
+        zones_out.append({
+            "id": zone.id,
+            "name": zone.name,
+            "code": zone.code,
+            "base_price": zone.base_price,
+            "rows": rows_out,
+        })
+
+    return {
+        "layout": {"id": layout.id, "name": layout.name, "version": layout.version} if layout else None,
+        "zones": zones_out,
+    }
+
+
+def _build_zone_inventory(db: Session, event: models.Event) -> list:
+    """ZONE event: pooled zones with live availability (capacity - sold - locked)."""
+    zones = (
+        db.query(models.EventZone)
+        .filter(models.EventZone.event_id == event.id, models.EventZone.is_active == True)
+        .all()
+    )
+    return [
+        {
+            "id": zone.id,
+            "name": zone.name,
+            "code": zone.code,
+            "base_price": zone.base_price,
+            "capacity": zone.capacity,
+            "available": max(0, zone.capacity - zone.sold_count - zone.locked_count),
+        }
+        for zone in zones
+    ]
+
+
+def _build_general_inventory(db: Session, event: models.Event) -> list:
+    """GENERAL/PASS event: pooled ticket types with live availability."""
+    ticket_types = (
+        db.query(models.TicketType)
+        .filter(models.TicketType.event_id == event.id, models.TicketType.is_active == True)
+        .all()
+    )
+    return [
+        {
+            "id": tt.id,
+            "name": tt.name,
+            "price": tt.price,
+            "inventory_limit": tt.inventory_limit,
+            "available": (
+                max(0, tt.inventory_limit - tt.sold_count - tt.locked_count)
+                if tt.inventory_limit is not None
+                else None  # unlimited
+            ),
+        }
+        for tt in ticket_types
+    ]
+
+
 @router.post("/", response_model=schemas.EventResponse)
 def create_event(
     event: schemas.EventCreate,
@@ -108,8 +210,39 @@ def get_events(
 def get_event(event_id: int, db: Session = Depends(get_db)):
     event = db.query(models.Event).filter(models.Event.id == event_id).first()
     if not event:
-        raise HTTPException(status_code=404)
-    return event
+        raise HTTPException(status_code=404, detail="Event not found")
+
+    # Every field event-details.js already reads stays exactly as it was -
+    # this is purely additive, nothing here changes existing behavior.
+    response = {
+        "id": event.id,
+        "title": event.title,
+        "location": event.location,
+        "description": event.description,
+        "date_time": event.date_time,
+        "price": event.price,
+        "image_url": event.image_url,
+        "total_seats": event.total_seats,
+        "available_seats": event.available_seats,
+        "category": event.category,
+        "category_id": event.category_id,
+        "inventory_type": event.inventory_type,
+    }
+
+    # Additive per-type structure so the frontend can eventually branch on
+    # inventory_type. Uses the same "seat"/"zone"/"general" values already
+    # defined in models.py - no separate label scheme to keep in sync.
+    if event.inventory_type == models.INVENTORY_SEAT:
+        response["seating"] = _build_seat_inventory(db, event)
+    elif event.inventory_type == models.INVENTORY_ZONE:
+        response["zones"] = _build_zone_inventory(db, event)
+    else:
+        # models.INVENTORY_GENERAL, or any legacy event with no seating/zone
+        # setup at all - returns an empty list, which is fine: those events
+        # still work off the flat price/available_seats fields above.
+        response["ticket_types"] = _build_general_inventory(db, event)
+
+    return response
 
 
 @router.put("/{event_id}")

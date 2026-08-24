@@ -528,7 +528,7 @@ class InventoryService:
     # Release
     # ------------------------------------------------------------------
 
-    def release_seats(self, booking_id: int, user_id: int) -> int:
+    def release_seats(self, booking_id: int, user_id: int, commit: bool = True) -> int:
         booking = self._get_owned_booking(booking_id, user_id)
 
         items = (
@@ -557,10 +557,11 @@ class InventoryService:
             released += item.quantity
 
         self._maybe_close_booking(booking)
-        self.db.commit()
+        if commit:
+            self.db.commit()
         return released
 
-    def release_zone(self, booking_id: int, user_id: int) -> int:
+    def release_zone(self, booking_id: int, user_id: int, commit: bool = True) -> int:
         booking = self._get_owned_booking(booking_id, user_id)
 
         items = (
@@ -599,10 +600,11 @@ class InventoryService:
             released += item.quantity
 
         self._maybe_close_booking(booking)
-        self.db.commit()
+        if commit:
+            self.db.commit()
         return released
 
-    def release_passes(self, booking_id: int, user_id: int) -> int:
+    def release_passes(self, booking_id: int, user_id: int, commit: bool = True) -> int:
         booking = self._get_owned_booking(booking_id, user_id)
 
         items = (
@@ -641,7 +643,8 @@ class InventoryService:
             released += item.quantity
 
         self._maybe_close_booking(booking)
-        self.db.commit()
+        if commit:
+            self.db.commit()
         return released
 
     # ------------------------------------------------------------------
