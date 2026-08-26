@@ -15,7 +15,10 @@ def admin_check(user):
 
 
 def _build_seat_inventory(db: Session, event: models.Event) -> dict:
-    """FIXED_SEAT event: active layout + zones -> rows -> individual seats."""
+    """FIXED_SEAT event: active layout + zones, each with a flat seat list
+    (row_label/row_number denormalized onto every seat). Matches exactly
+    what event-details.js's flattenSeats()/groupSeatsByRow() expect -
+    zone.seats (flat), not zone.rows[].seats (nested)."""
     layout = (
         db.query(models.VenueLayout)
         .filter(models.VenueLayout.event_id == event.id, models.VenueLayout.is_active == True)
@@ -36,7 +39,7 @@ def _build_seat_inventory(db: Session, event: models.Event) -> dict:
             .order_by(models.VenueRow.row_number)
             .all()
         )
-        rows_out = []
+        seats_out = []
         for row in rows:
             seats = (
                 db.query(models.Seat)
@@ -44,27 +47,23 @@ def _build_seat_inventory(db: Session, event: models.Event) -> dict:
                 .order_by(models.Seat.seat_number)
                 .all()
             )
-            rows_out.append({
-                "id": row.id,
-                "row_label": row.row_label,
-                "row_number": row.row_number,
-                "seats": [
-                    {
-                        "id": seat.id,
-                        "seat_code": seat.seat_code,
-                        "seat_number": seat.seat_number,
-                        "status": seat.status,
-                        "price": seat.price,
-                    }
-                    for seat in seats
-                ],
-            })
+            for seat in seats:
+                seats_out.append({
+                    "id": seat.id,
+                    "seat_code": seat.seat_code,
+                    "seat_number": seat.seat_number,
+                    "row_label": row.row_label,
+                    "row_number": row.row_number,
+                    "zone_id": zone.id,
+                    "status": seat.status,
+                    "price": seat.price,
+                })
         zones_out.append({
             "id": zone.id,
             "name": zone.name,
             "code": zone.code,
             "base_price": zone.base_price,
-            "rows": rows_out,
+            "seats": seats_out,
         })
 
     return {
@@ -240,6 +239,31 @@ def get_event(event_id: int, db: Session = Depends(get_db)):
         # models.INVENTORY_GENERAL, or any legacy event with no seating/zone
         # setup at all - returns an empty list, which is fine: those events
         # still work off the flat price/available_seats fields above.
+        response["ticket_types"] = _build_general_inventory(db, event)
+
+    return response
+
+
+@router.get("/{event_id}/inventory")
+def get_event_inventory_detail(event_id: int, db: Session = Depends(get_db)):
+    """Dedicated inventory endpoint - event-details.js calls this separately
+    from GET /{event_id}. Reuses the exact same builders so the two never
+    drift out of sync with each other."""
+    event = db.query(models.Event).filter(models.Event.id == event_id).first()
+    if not event:
+        raise HTTPException(status_code=404, detail="Event not found")
+
+    response = {"inventory_type": event.inventory_type}
+
+    if event.inventory_type == models.INVENTORY_SEAT:
+        seating = _build_seat_inventory(db, event)
+        # Flatten to a plain seat list too, since the frontend's flattenSeats()
+        # already knows how to read data.zones[].seats - this shape covers it.
+        response["zones"] = seating["zones"]
+        response["layout"] = seating["layout"]
+    elif event.inventory_type == models.INVENTORY_ZONE:
+        response["zones"] = _build_zone_inventory(db, event)
+    else:
         response["ticket_types"] = _build_general_inventory(db, event)
 
     return response

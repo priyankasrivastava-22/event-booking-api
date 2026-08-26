@@ -1,8 +1,10 @@
 from datetime import datetime, timezone                                                                                 # UTC TIMESTAMP UTILITIES
 import secrets                                                                                                           # SECURE TOKEN GENERATION
 import uuid                                                                                                              # UNIQUE TICKET IDENTIFIERS
+from typing import List, Optional                                                                                       # OPTIONAL/LIST TYPE HINTS
 
 from fastapi import APIRouter, Depends, HTTPException, Request, status                                                  # FASTAPI ROUTING AND ERRORS
+from pydantic import BaseModel, Field                                                                                   # REQUEST VALIDATION
 from core.limiter import limiter                                                                                         # API RATE LIMITING
 from sqlalchemy.orm import Session                                                                                       # SQLALCHEMY SESSION
 
@@ -12,6 +14,8 @@ import schemas_seating                                                          
 
 from utils.helpers import get_db                                                                                          # DATABASE DEPENDENCY
 from core.security import get_current_user                                                                                 # AUTHENTICATED USER DEPENDENCY
+from services.booking_service import BookingService                                                                      # BOOKING LIFECYCLE ORCHESTRATION
+from services.inventory_service import InventoryService                                                                  # SAFE, LOCKED INVENTORY HOLDS
 
 
 router = APIRouter()                                                                                                      # BOOKING ROUTER
@@ -32,6 +36,91 @@ def generate_ticket_code():                                                     
 
 def generate_qr_token():                                                                                                 # GENERATE SECURE QR VERIFICATION TOKEN
     return secrets.token_urlsafe(32)                                                                                      # RETURN NON-GUESSABLE QR TOKEN
+
+
+class InventoryBookingRequest(BaseModel):                                                                                # UNIFIED CREATE+HOLD REQUEST FROM event-details.js
+    event_id: int = Field(..., gt=0)                                                                                     # TARGET EVENT
+    tickets: int = Field(default=1, gt=0)                                                                                # QUANTITY FOR ZONE/GENERAL - IGNORED FOR SEAT_IDS (LEN USED INSTEAD)
+    seat_ids: Optional[List[int]] = None                                                                                 # FIXED-SEAT SELECTION
+    zone_id: Optional[int] = None                                                                                        # ZONE SELECTION
+    ticket_type_id: Optional[int] = None                                                                                 # PASS SELECTION
+    idempotency_key: Optional[str] = None                                                                                # CLIENT-SUPPLIED IDEMPOTENCY KEY
+    total_amount: Optional[int] = None                                                                                   # ACCEPTED FOR FRONTEND COMPATIBILITY - NEVER USED FOR PRICING; SERVER ALWAYS COMPUTES ITS OWN TOTAL
+
+
+def _inventory_booking_response(booking: models.Booking) -> dict:                                                        # SERIALIZE BOOKING FOR THE HOLD-BASED FLOW
+    return {                                                                                                             # BUILD RESPONSE
+        "id": booking.id,                                                                                                # BOOKING ID (event-details.js REDIRECTS ON THIS)
+        "user_id": booking.user_id,                                                                                      # OWNING USER
+        "event_id": booking.event_id,                                                                                    # TARGET EVENT
+        "tickets": booking.tickets,                                                                                      # LEGACY QUANTITY FIELD
+        "status": booking.status,                                                                                        # NEW LIFECYCLE STATUS (pending/held/confirmed/...)
+        "total_amount": booking.total_amount,                                                                            # SERVER-COMPUTED TOTAL
+        "expires_at": booking.expires_at,                                                                                # HOLD EXPIRY
+        "booking_time": booking.booking_time,                                                                            # CREATION TIME
+        "payment_status": booking.payment_status,                                                                        # LEGACY PAYMENT STATUS FIELD
+    }                                                                                                                     # END RESPONSE
+
+
+@router.post("")                                                                                                         # CREATE + HOLD IN ONE CALL (matches event-details.js's POST /api/bookings exactly, no trailing slash)
+@limiter.limit("10/minute")
+def create_inventory_booking(request: Request, payload: InventoryBookingRequest, db: Session = Depends(get_db), user=Depends(get_current_user)):  # UNIFIED HOLD ENTRY POINT
+    db_user = get_authenticated_user(user, db)                                                                            # RESOLVE AUTHENTICATED USER
+
+    if not (payload.seat_ids or payload.zone_id or payload.ticket_type_id):                                              # REQUIRE EXACTLY ONE INVENTORY SELECTION
+        raise HTTPException(status_code=400, detail="Must specify seat_ids, zone_id, or ticket_type_id")                # REJECT AMBIGUOUS REQUEST
+
+    booking_service = BookingService(db)                                                                                 # LIFECYCLE ORCHESTRATION
+    inventory_service = InventoryService(db)                                                                             # SAFE, LOCKED HOLD OPERATIONS
+
+    try:                                                                                                                 # START HOLD SEQUENCE
+        booking = booking_service.create_hold(                                                                          # CREATE OR REUSE (VIA IDEMPOTENCY KEY) A PENDING BOOKING
+            user_id=db_user.id,
+            event_id=payload.event_id,
+            idempotency_key=payload.idempotency_key,
+        )
+
+        if payload.seat_ids:                                                                                            # FIXED-SEAT HOLD
+            booking = inventory_service.hold_seats(
+                event_id=payload.event_id,
+                seat_ids=payload.seat_ids,
+                user_id=db_user.id,
+                booking_id=booking.id,
+            )
+        elif payload.zone_id:                                                                                           # ZONE HOLD
+            booking = inventory_service.hold_zone(
+                event_id=payload.event_id,
+                zone_id=payload.zone_id,
+                quantity=payload.tickets,
+                user_id=db_user.id,
+                booking_id=booking.id,
+            )
+        else:                                                                                                           # PASS HOLD
+            booking = inventory_service.hold_passes(
+                event_id=payload.event_id,
+                ticket_type_id=payload.ticket_type_id,
+                quantity=payload.tickets,
+                user_id=db_user.id,
+                booking_id=booking.id,
+            )
+
+        return _inventory_booking_response(booking)                                                                      # RETURN HELD BOOKING
+
+    except ValueError as exc:                                                                                            # HANDLE EXPECTED BUSINESS ERRORS (sold out, expired, not found, etc.)
+        db.rollback()                                                                                                    # ROLLBACK PARTIAL HOLD
+        raise HTTPException(status_code=400, detail=str(exc))                                                           # RETURN CLEAR CLIENT ERROR
+
+
+@router.get("/{booking_id}/status")                                                                                      # READ-ONLY HOLD-BASED BOOKING LOOKUP (used by a future checkout/confirmation page)
+def get_inventory_booking(booking_id: int, db: Session = Depends(get_db), user=Depends(get_current_user)):              # FETCH OWNED BOOKING
+    db_user = get_authenticated_user(user, db)                                                                            # RESOLVE AUTHENTICATED USER
+    booking_service = BookingService(db)                                                                                 # LIFECYCLE ORCHESTRATION
+
+    try:                                                                                                                 # START LOOKUP
+        booking = booking_service.get_booking(booking_id=booking_id, user_id=db_user.id)                                # FETCH OWNED BOOKING
+        return _inventory_booking_response(booking)                                                                      # RETURN BOOKING STATE
+    except ValueError as exc:                                                                                            # HANDLE NOT FOUND / NOT OWNED
+        raise HTTPException(status_code=404, detail=str(exc))                                                           # RETURN NOT FOUND
 
 
 @router.post("/book")                                                                                                    # BOOK GENERAL OR ZONE INVENTORY
