@@ -1,362 +1,843 @@
 <!DOCTYPE html>
-<!-- Eventora responsive event details page -->
 <html lang="en">
-<!-- Main document -->
+
 <head>
-<!-- Document metadata and styles -->
-<meta charset="UTF-8">
-<!-- UTF-8 character encoding -->
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<!-- Responsive viewport -->
-<title>Event Details | Eventora</title>
-<!-- Page title -->
-<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-<!-- Bootstrap responsive framework -->
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
-<!-- Bootstrap icons -->
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<!-- Google fonts connection -->
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<!-- Google fonts connection -->
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Poppins:wght@600;700&display=swap" rel="stylesheet">
-<!-- Eventora typography -->
-<link rel="stylesheet" href="../css/footer.css">
-<!-- Footer styles -->
-<link rel="stylesheet" href="../css/event-details.css">
-<!-- Event details styles -->
+
+    <meta charset="UTF-8">
+
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Event Details | Eventora</title>
+
+    <!-- Bootstrap -->
+    <link
+        href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css"
+        rel="stylesheet"
+    >
+
+    <!-- Bootstrap Icons -->
+    <link
+        rel="stylesheet"
+        href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css"
+    >
+
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+
+    <link
+        rel="preconnect"
+        href="https://fonts.gstatic.com"
+        crossorigin
+    >
+
+    <link
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Poppins:wght@600;700&display=swap"
+        rel="stylesheet"
+    >
+
+    <!-- Eventora CSS -->
+
+    <link rel="stylesheet" href="../css/event-details.css">
+
 </head>
-<!-- End head -->
+
+
 <body>
-<!-- Page body -->
+
 <div class="event-wrapper">
-<!-- Main Eventora wrapper -->
-<div class="top-bar">
-<!-- Top navigation/action bar -->
-<button class="action-btn back-btn" type="button" onclick="goBack()">
-<!-- Back button -->
-<i class="bi bi-chevron-left"></i>
-<!-- Back icon -->
-<span>Back to Events</span>
-<!-- Back text -->
-</button>
-<!-- End back button -->
-<div class="top-actions">
-<!-- Top action buttons -->
-<button class="action-btn icon-btn" type="button" onclick="toggleFavourite()" aria-label="Favourite event">
-<!-- Favourite button -->
-<i id="favIcon" class="bi bi-heart"></i>
-<!-- Favourite icon -->
-</button>
-<!-- End favourite button -->
-<button class="action-btn icon-btn" type="button" onclick="shareEvent()" aria-label="Share event">
-<!-- Share button -->
-<i class="bi bi-share"></i>
-<!-- Share icon -->
-</button>
-<!-- End share button -->
+
+    <!-- =========================================================
+         TOP ACTION BAR
+    ========================================================== -->
+
+    <div class="top-bar">
+
+        <button
+            class="action-btn back-btn"
+            type="button"
+            onclick="goBack()"
+            aria-label="Back to events"
+        >
+            <i class="bi bi-chevron-left"></i>
+            <span>Back to Events</span>
+        </button>
+
+
+        <div class="top-actions">
+
+            <!-- Favourite -->
+            <button
+                class="action-btn icon-btn"
+                type="button"
+                onclick="toggleFavourite()"
+                aria-label="Add event to favourites"
+                title="Favourite"
+            >
+                <i id="favIcon" class="bi bi-heart"></i>
+            </button>
+
+
+            <!-- Share -->
+            <button
+                class="action-btn icon-btn"
+                type="button"
+                onclick="shareEvent()"
+                aria-label="Share event"
+                title="Share"
+            >
+                <i class="bi bi-share"></i>
+            </button>
+
+        </div>
+
+    </div>
+
+
+    <!-- =========================================================
+         LOADING STATE
+    ========================================================== -->
+
+    <div
+        id="loadingState"
+        class="loading-state"
+        role="status"
+        aria-live="polite"
+    >
+
+        <div
+            class="spinner-border"
+            role="status"
+            aria-hidden="true"
+        ></div>
+
+        <p>Loading event details...</p>
+
+    </div>
+
+
+    <!-- =========================================================
+         ERROR STATE
+    ========================================================== -->
+
+    <div
+        id="errorState"
+        class="error-state d-none"
+        role="alert"
+    >
+
+        <i class="bi bi-exclamation-circle"></i>
+
+        <h4>Unable to load event</h4>
+
+        <p id="errorMessage">
+            Something went wrong while loading this event.
+        </p>
+
+        <button
+            class="btn btn-primary"
+            type="button"
+            onclick="loadEventDetails()"
+        >
+            Try Again
+        </button>
+
+    </div>
+
+
+    <!-- =========================================================
+         EVENT CONTENT
+    ========================================================== -->
+
+    <div
+        id="eventContent"
+        class="event-grid d-none"
+    >
+
+
+        <!-- =====================================================
+             LEFT PANEL
+        ====================================================== -->
+
+        <div class="left-panel">
+
+
+            <!-- =================================================
+                 HERO IMAGE
+            ================================================== -->
+
+            <div class="hero-card">
+
+                <!-- Dynamic category -->
+                <div class="category-badge">
+
+                    <i class="bi bi-lightning-charge-fill"></i>
+
+                    <span id="categoryText">
+                        Event
+                    </span>
+
+                </div>
+
+
+                <!-- Dynamic event image -->
+                <img
+                    id="eventImage"
+                    class="event-image"
+                    src="../images/event-placeholder.jpg"
+                    alt="Event image"
+                    loading="eager"
+                >
+
+
+                <div class="image-overlay"></div>
+
+            </div>
+
+
+            <!-- =================================================
+                 EVENT MAIN INFORMATION
+            ================================================== -->
+
+            <div class="content-card">
+
+
+                <!-- Event title -->
+                <div class="title-row">
+
+                    <div>
+
+                        <h1 id="title">
+                            Event
+                        </h1>
+
+
+                        <div class="subtitle">
+                            Premium Event Experience
+                        </div>
+
+                    </div>
+
+
+                    <!-- Verification -->
+                    <div
+                        class="verified-badge"
+                        title="Verified event"
+                    >
+
+                        <i class="bi bi-patch-check-fill"></i>
+
+                    </div>
+
+                </div>
+
+
+                <!-- =================================================
+                     EVENT TAGS
+                ================================================== -->
+
+                <div class="tag-wrapper">
+
+                    <!-- Category -->
+                    <span
+                        class="event-tag"
+                        id="categoryTag"
+                    >
+                        Event
+                    </span>
+
+
+                    <!-- Inventory type -->
+                    <span
+                        class="event-tag inventory-tag"
+                        id="inventoryTypeTag"
+                    >
+                        General Admission
+                    </span>
+
+
+                    <!-- Event availability -->
+                    <span
+                        class="event-tag status-tag"
+                        id="eventStatusTag"
+                    >
+                        Available
+                    </span>
+
+                </div>
+
+
+                <!-- =================================================
+                     EVENT DESCRIPTION
+                ================================================== -->
+
+                <div class="description-block">
+
+                    <h4>
+                        About Event
+                    </h4>
+
+                    <p id="description">
+                        Event description
+                    </p>
+
+                </div>
+
+
+                <!-- =================================================
+                     EVENT META INFORMATION
+                ================================================== -->
+
+                <div class="meta-row">
+
+
+                    <!-- Date & Time -->
+                    <div class="meta-card">
+
+                        <div class="meta-icon">
+
+                            <i class="bi bi-calendar-event"></i>
+
+                        </div>
+
+
+                        <div>
+
+                            <span class="meta-label">
+                                Date &amp; Time
+                            </span>
+
+                            <span
+                                class="meta-value"
+                                id="date"
+                            >
+                                —
+                            </span>
+
+                        </div>
+
+                    </div>
+
+
+                    <!-- Location -->
+                    <div class="meta-card">
+
+                        <div class="meta-icon">
+
+                            <i class="bi bi-geo-alt"></i>
+
+                        </div>
+
+
+                        <div>
+
+                            <span class="meta-label">
+                                Location
+                            </span>
+
+                            <span
+                                class="meta-value"
+                                id="location"
+                            >
+                                —
+                            </span>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+
+                <!-- =================================================
+                     EVENT AVAILABILITY INFORMATION
+                ================================================== -->
+
+                <div
+                    class="event-availability"
+                    id="eventAvailabilitySection"
+                >
+
+                    <div class="availability-header">
+
+                        <div>
+
+                            <h5>
+                                Ticket Availability
+                            </h5>
+
+                            <p>
+                                Check availability before continuing.
+                            </p>
+
+                        </div>
+
+
+                        <div
+                            id="availabilityStatus"
+                            class="availability-status"
+                        >
+                            Available
+                        </div>
+
+                    </div>
+
+
+                    <div class="availability-progress">
+
+                        <div
+                            class="progress"
+                            role="progressbar"
+                            aria-label="Event ticket availability"
+                        >
+
+                            <div
+                                id="availabilityProgress"
+                                class="progress-bar"
+                                style="width: 100%;"
+                            ></div>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+
+            </div>
+
+        </div>
+
+
+        <!-- =========================================================
+             RIGHT PANEL
+        ========================================================== -->
+
+        <div class="right-panel">
+
+
+            <!-- =================================================
+                 PRICE CARD
+            ================================================== -->
+
+            <div class="card price-card">
+
+                <div>
+
+                    <span class="small-title">
+                        Starting From
+                    </span>
+
+
+                    <div class="price-value">
+
+                        ₹<span id="price">0</span>
+
+                        <span class="price-unit">
+                            /ticket
+                        </span>
+
+                    </div>
+
+                </div>
+
+
+                <button
+                    id="heroBookButton"
+                    class="hero-book-btn"
+                    type="button"
+                    onclick="focusBookingSection()"
+                >
+                    Book Now
+                </button>
+
+            </div>
+
+
+            <!-- =================================================
+                 EVENT STATS
+            ================================================== -->
+
+            <div class="card stats-card">
+
+
+                <!-- Category -->
+                <div class="stat-box">
+
+                    <i class="bi bi-grid"></i>
+
+                    <div class="stat-text">
+
+                        <span
+                            class="stat-value"
+                            id="categoryStat"
+                        >
+                            —
+                        </span>
+
+                        <span class="stat-title">
+                            Category
+                        </span>
+
+                    </div>
+
+                </div>
+
+
+                <!-- Availability -->
+                <div class="stat-box">
+
+                    <i class="bi bi-people"></i>
+
+                    <div class="stat-text">
+
+                        <span
+                            class="stat-value"
+                            id="seats"
+                        >
+                            —
+                        </span>
+
+                        <span
+                            class="stat-title"
+                            id="capacityLabel"
+                        >
+                            Available
+                        </span>
+
+                    </div>
+
+                </div>
+
+
+                <!-- Ticket status -->
+                <div class="stat-box">
+
+                    <i class="bi bi-ticket-perforated"></i>
+
+                    <div class="stat-text">
+
+                        <span
+                            class="stat-value"
+                            id="ticketStatus"
+                        >
+                            Available
+                        </span>
+
+                        <span class="stat-title">
+                            Tickets
+                        </span>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+
+            <!-- =================================================
+                 BOOKING / INVENTORY CARD
+            ================================================== -->
+
+            <div
+                id="inventoryCard"
+                class="card booking-card"
+            >
+
+
+                <!-- Booking heading -->
+                <div class="section-heading">
+
+                    <div>
+
+                        <h4 id="inventoryHeading">
+                            Select Tickets
+                        </h4>
+
+                        <p id="inventoryDescription">
+                            Choose the tickets you want to book.
+                        </p>
+
+                    </div>
+
+                </div>
+
+
+                <!-- =================================================
+                     GENERAL ADMISSION
+                ================================================== -->
+
+                <div
+                    id="generalInventory"
+                    class="inventory-section d-none"
+                >
+
+                    <div class="ticket-row">
+
+                        <div>
+
+                            <strong id="generalTicketName">
+                                General Admission
+                            </strong>
+
+                            <small id="generalTicketAvailability">
+                                Available
+                            </small>
+
+                        </div>
+
+
+                        <div class="quantity-control">
+
+                            <button
+                                type="button"
+                                class="quantity-btn"
+                                onclick="changeQuantity(-1)"
+                                aria-label="Decrease ticket quantity"
+                            >
+                                −
+                            </button>
+
+
+                            <input
+                                type="number"
+                                id="quantity"
+                                min="1"
+                                value="1"
+                                inputmode="numeric"
+                                aria-label="Ticket quantity"
+                            >
+
+
+                            <button
+                                type="button"
+                                class="quantity-btn"
+                                onclick="changeQuantity(1)"
+                                aria-label="Increase ticket quantity"
+                            >
+                                +
+                            </button>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+
+                <!-- =================================================
+                     ZONE INVENTORY
+                ================================================== -->
+
+                <div
+                    id="zoneInventory"
+                    class="inventory-section d-none"
+                >
+
+                    <div class="inventory-section-heading">
+
+                        <div>
+
+                            <strong>
+                                Select Zone
+                            </strong>
+
+                            <small>
+                                Choose your preferred seating zone.
+                            </small>
+
+                        </div>
+
+                    </div>
+
+
+                    <div
+                        id="zoneList"
+                        class="zone-list"
+                    ></div>
+
+                </div>
+
+
+                <!-- =================================================
+                     SEAT INVENTORY
+                ================================================== -->
+
+                <div
+                    id="seatInventory"
+                    class="inventory-section d-none"
+                >
+
+                    <div class="seat-selection-header">
+
+                        <div>
+
+                            <strong>
+                                Select Your Seats
+                            </strong>
+
+                            <small id="selectedSeatText">
+                                No seats selected
+                            </small>
+
+                        </div>
+
+
+                        <div
+                            id="selectedSeatCount"
+                            class="selected-seat-count"
+                        >
+                            0
+                        </div>
+
+                    </div>
+
+
+                    <!-- Seat legend -->
+                    <div
+                        class="seat-legend"
+                        aria-label="Seat availability legend"
+                    >
+
+                        <span class="legend-item">
+
+                            <span class="legend-seat available"></span>
+
+                            Available
+
+                        </span>
+
+
+                        <span class="legend-item">
+
+                            <span class="legend-seat selected"></span>
+
+                            Selected
+
+                        </span>
+
+
+                        <span class="legend-item">
+
+                            <span class="legend-seat locked"></span>
+
+                            Locked
+
+                        </span>
+
+
+                        <span class="legend-item">
+
+                            <span class="legend-seat sold"></span>
+
+                            Sold
+
+                        </span>
+
+                    </div>
+
+
+                    <!-- Seat map -->
+                    <div
+                        id="seatMap"
+                        class="seat-map"
+                        aria-label="Event seat map"
+                    ></div>
+
+                </div>
+
+            </div>
+
+
+            <!-- =================================================
+                 BOOKING SUMMARY
+            ================================================== -->
+
+            <div class="card summary-card">
+
+                <h4>
+                    Booking Summary
+                </h4>
+
+
+                <!-- Tickets -->
+                <div class="summary-row">
+
+                    <span>
+                        Tickets
+                    </span>
+
+                    <span id="ticketCount">
+                        0
+                    </span>
+
+                </div>
+
+
+                <!-- Price -->
+                <div class="summary-row">
+
+                    <span>
+                        Price
+                    </span>
+
+                    <span>
+                        ₹<span id="priceSummary">0</span>
+                    </span>
+
+                </div>
+
+
+                <div class="summary-divider"></div>
+
+
+                <!-- Total -->
+                <div class="summary-total">
+
+                    <span>
+                        Total
+                    </span>
+
+                    <span>
+                        ₹<span id="total">0</span>
+                    </span>
+
+                </div>
+
+
+                <!-- Continue booking -->
+                <button
+                    id="bookButton"
+                    class="book-btn"
+                    type="button"
+                    onclick="bookEvent()"
+                >
+                    Continue Booking
+                </button>
+
+
+                <!-- Booking message -->
+                <p
+                    id="message"
+                    class="booking-message"
+                    role="status"
+                    aria-live="polite"
+                ></p>
+
+            </div>
+
+
+        </div>
+
+    </div>
+
 </div>
-<!-- End top actions -->
-</div>
-<!-- End top bar -->
-<div id="loadingState" class="loading-state">
-<!-- Loading state -->
-<div class="spinner-border" role="status"></div>
-<!-- Loading spinner -->
-<p>Loading event details...</p>
-<!-- Loading message -->
-</div>
-<!-- End loading state -->
-<div id="errorState" class="error-state d-none">
-<!-- Error state -->
-<i class="bi bi-exclamation-circle"></i>
-<!-- Error icon -->
-<h4>Unable to load event</h4>
-<!-- Error heading -->
-<p id="errorMessage">Something went wrong while loading this event.</p>
-<!-- Error message -->
-<button class="btn btn-primary" type="button" onclick="loadEventDetails()">Try Again</button>
-<!-- Retry button -->
-</div>
-<!-- End error state -->
-<div id="eventContent" class="event-grid d-none">
-<!-- Main event content -->
-<div class="left-panel">
-<!-- Left event information panel -->
-<div class="hero-card">
-<!-- Hero image card -->
-<div class="category-badge">
-<!-- Category badge -->
-<i class="bi bi-lightning-charge-fill"></i>
-<!-- Category icon -->
-<span id="categoryText">Event</span>
-<!-- Category -->
-</div>
-<!-- End category badge -->
-<img id="eventImage" class="event-image" src="../images/event-placeholder.jpg" alt="Event">
-<!-- Event image -->
-<div class="image-overlay"></div>
-<!-- Image overlay -->
-</div>
-<!-- End hero card -->
-<div class="content-card">
-<!-- Event information card -->
-<div class="title-row">
-<!-- Event title row -->
-<div>
-<!-- Title container -->
-<h1 id="title">Event</h1>
-<!-- Event title -->
-<div class="subtitle">Premium Event Experience</div>
-<!-- Event subtitle -->
-</div>
-<!-- End title container -->
-<div class="verified-badge">
-<!-- Verification badge -->
-<i class="bi bi-patch-check-fill"></i>
-<!-- Verification icon -->
-</div>
-<!-- End verification badge -->
-</div>
-<!-- End title row -->
-<div class="tag-wrapper">
-<!-- Category tag wrapper -->
-<span class="event-tag" id="categoryTag">Event</span>
-<!-- Category tag -->
-<span class="event-tag inventory-tag" id="inventoryTypeTag">General Admission</span>
-<!-- Inventory type tag -->
-</div>
-<!-- End tags -->
-<div class="description-block">
-<!-- Description section -->
-<h4>About Event</h4>
-<!-- Description heading -->
-<p id="description">Event description</p>
-<!-- Event description -->
-</div>
-<!-- End description -->
-<div class="meta-row">
-<!-- Event metadata -->
-<div class="meta-card">
-<!-- Date metadata -->
-<div class="meta-icon">
-<!-- Date icon -->
-<i class="bi bi-calendar-event"></i>
-<!-- Calendar icon -->
-</div>
-<!-- End date icon -->
-<div>
-<!-- Date content -->
-<span class="meta-label">Date &amp; Time</span>
-<!-- Date label -->
-<span class="meta-value" id="date">—</span>
-<!-- Date value -->
-</div>
-<!-- End date content -->
-</div>
-<!-- End date card -->
-<div class="meta-card">
-<!-- Location metadata -->
-<div class="meta-icon">
-<!-- Location icon -->
-<i class="bi bi-geo-alt"></i>
-<!-- Location icon -->
-</div>
-<!-- End location icon -->
-<div>
-<!-- Location content -->
-<span class="meta-label">Location</span>
-<!-- Location label -->
-<span class="meta-value" id="location">—</span>
-<!-- Location value -->
-</div>
-<!-- End location content -->
-</div>
-<!-- End location card -->
-</div>
-<!-- End metadata -->
-</div>
-<!-- End content card -->
-</div>
-<!-- End left panel -->
-<div class="right-panel">
-<!-- Right booking panel -->
-<div class="card price-card">
-<!-- Price card -->
-<div>
-<!-- Price information -->
-<span class="small-title">Starting From</span>
-<!-- Price label -->
-<div class="price-value">₹<span id="price">0</span><span class="price-unit">/ticket</span></div>
-<!-- Starting price -->
-</div>
-<!-- End price information -->
-<button class="hero-book-btn" type="button" onclick="focusBookingSection()">Book Now</button>
-<!-- Top booking button -->
-</div>
-<!-- End price card -->
-<div class="card stats-card">
-<!-- Event statistics -->
-<div class="stat-box">
-<!-- Category statistic -->
-<i class="bi bi-grid"></i>
-<!-- Category icon -->
-<div class="stat-text">
-<!-- Category text -->
-<span class="stat-value" id="categoryStat">—</span>
-<!-- Category -->
-<span class="stat-title">Category</span>
-<!-- Statistic label -->
-</div>
-<!-- End category text -->
-</div>
-<!-- End category statistic -->
-<div class="stat-box">
-<!-- Availability statistic -->
-<i class="bi bi-people"></i>
-<!-- People icon -->
-<div class="stat-text">
-<!-- Availability text -->
-<span class="stat-value" id="seats">—</span>
-<!-- Available count -->
-<span class="stat-title" id="capacityLabel">Available</span>
-<!-- Availability label -->
-</div>
-<!-- End availability text -->
-</div>
-<!-- End availability statistic -->
-<div class="stat-box">
-<!-- Inventory statistic -->
-<i class="bi bi-ticket-perforated"></i>
-<!-- Ticket icon -->
-<div class="stat-text">
-<!-- Inventory text -->
-<span class="stat-value" id="availabilityStatus">Available</span>
-<!-- Availability -->
-<span class="stat-title">Tickets</span>
-<!-- Statistic label -->
-</div>
-<!-- End inventory text -->
-</div>
-<!-- End inventory statistic -->
-</div>
-<!-- End stats card -->
-<div id="inventoryCard" class="card booking-card">
-<!-- Inventory selection card -->
-<div class="section-heading">
-<!-- Inventory heading -->
-<div>
-<!-- Heading content -->
-<h4 id="inventoryHeading">Select Tickets</h4>
-<!-- Inventory heading -->
-<p id="inventoryDescription">Choose the tickets you want to book.</p>
-<!-- Inventory description -->
-</div>
-<!-- End heading content -->
-</div>
-<!-- End inventory heading -->
-<div id="generalInventory" class="inventory-section d-none">
-<!-- General admission inventory -->
-<div class="ticket-row">
-<!-- General ticket row -->
-<div>
-<!-- Ticket information -->
-<strong id="generalTicketName">General Admission</strong>
-<!-- Ticket name -->
-<small id="generalTicketAvailability">Available</small>
-<!-- Ticket availability -->
-</div>
-<!-- End ticket information -->
-<div class="quantity-control">
-<!-- Quantity control -->
-<button type="button" class="quantity-btn" onclick="changeQuantity(-1)">−</button>
-<!-- Decrease quantity -->
-<input type="number" id="quantity" min="1" value="1" inputmode="numeric">
-<!-- Quantity input -->
-<button type="button" class="quantity-btn" onclick="changeQuantity(1)">+</button>
-<!-- Increase quantity -->
-</div>
-<!-- End quantity control -->
-</div>
-<!-- End ticket row -->
-</div>
-<!-- End general inventory -->
-<div id="zoneInventory" class="inventory-section d-none">
-<!-- Zone inventory -->
-<div id="zoneList" class="zone-list"></div>
-<!-- Zone list -->
-</div>
-<!-- End zone inventory -->
-<div id="seatInventory" class="inventory-section d-none">
-<!-- Seat inventory -->
-<div class="seat-selection-header">
-<!-- Seat selection header -->
-<div>
-<!-- Seat header content -->
-<strong>Select Your Seats</strong>
-<!-- Seat heading -->
-<small id="selectedSeatText">No seats selected</small>
-<!-- Selected seats text -->
-</div>
-<!-- End seat header -->
-</div>
-<!-- End seat selection header -->
-<div id="seatMap" class="seat-map"></div>
-<!-- Seat map -->
-</div>
-<!-- End seat inventory -->
-</div>
-<!-- End inventory card -->
-<div class="card summary-card">
-<!-- Booking summary -->
-<h4>Booking Summary</h4>
-<!-- Summary heading -->
-<div class="summary-row">
-<!-- Ticket count row -->
-<span>Tickets</span>
-<!-- Ticket label -->
-<span id="ticketCount">0</span>
-<!-- Ticket count -->
-</div>
-<!-- End ticket count -->
-<div class="summary-row">
-<!-- Price row -->
-<span>Price</span>
-<!-- Price label -->
-<span>₹<span id="priceSummary">0</span></span>
-<!-- Price -->
-</div>
-<!-- End price row -->
-<div class="summary-divider"></div>
-<!-- Summary divider -->
-<div class="summary-total">
-<!-- Total row -->
-<span>Total</span>
-<!-- Total label -->
-<span>₹<span id="total">0</span></span>
-<!-- Total amount -->
-</div>
-<!-- End total row -->
-<button id="bookButton" class="book-btn" type="button" onclick="bookEvent()">Continue Booking</button>
-<!-- Booking button -->
-<p id="message" class="booking-message"></p>
-<!-- Booking status -->
-</div>
-<!-- End summary card -->
-</div>
-<!-- End right panel -->
-</div>
-<!-- End event grid -->
-</div>
-<!-- End wrapper -->
+
+
 <div id="footer-placeholder"></div>
-<!-- Footer placeholder -->
-<script src="../js/footer.js"></script>
-<!-- Footer script -->
+
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-<!-- Bootstrap JavaScript -->
 <script src="../js/event-details.js"></script>
-<!-- Event details JavaScript -->
+
 </body>
-<!-- End body -->
+
 </html>
-<!-- End document -->

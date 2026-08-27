@@ -180,47 +180,215 @@ function renderInventory(data) {
 // Render general admission
 }
 // End renderInventory
-
 function renderGeneralInventory(data = {}) {
-// Render general inventory
+    // Show general inventory section
     document.getElementById("generalInventory").classList.remove("d-none");
-// Show general inventory
+
+    // Hide other inventory types
     document.getElementById("zoneInventory").classList.add("d-none");
-// Hide zones
     document.getElementById("seatInventory").classList.add("d-none");
-// Hide seats
-    const ticket = data.ticket_type || data.ticketType || data.ticket_types?.[0] || data.ticketTypes?.[0] || null;
-// Find ticket type
+
+    // Read all ticket types from backend
+    const tickets =
+        Array.isArray(data.ticket_types)
+            ? data.ticket_types
+            : Array.isArray(data.ticketTypes)
+                ? data.ticketTypes
+                : [];
+
+    const container = document.getElementById("generalTicketList");
+
+    // If the new container exists, render all ticket types
+    if (container) {
+        container.innerHTML = "";
+
+        if (!tickets.length) {
+            selectedTicketType = null;
+            unitPrice = Number(currentEvent?.price || 0);
+
+            container.innerHTML = `
+                <div class="empty-inventory">
+                    General admission is currently unavailable.
+                </div>
+            `;
+
+            document.getElementById("seats").textContent = "0";
+            document.getElementById("availabilityStatus").textContent = "Sold Out";
+
+            updateSummary();
+            return;
+        }
+
+        tickets.forEach((ticket, index) => {
+            const available = getAvailableQuantity(ticket, ticket);
+            const price = Number(ticket.price ?? currentEvent?.price ?? 0);
+
+            const card = document.createElement("button");
+
+            card.type = "button";
+            card.className = "ticket-type-option";
+            card.dataset.ticketTypeId = ticket.id ?? "";
+
+            card.innerHTML = `
+                <div class="ticket-type-info">
+                    <strong>${escapeHtml(ticket.name || `Ticket ${index + 1}`)}</strong>
+                    <small>
+                        ${
+                            available === null
+                                ? "Available"
+                                : `${available} available`
+                        }
+                    </small>
+                </div>
+
+                <strong>₹${price}</strong>
+            `;
+
+            card.disabled = available === 0;
+
+            card.addEventListener("click", () => {
+                selectTicketType(ticket, price, card);
+            });
+
+            container.appendChild(card);
+        });
+
+        // Do not automatically select a ticket.
+        selectedTicketType = null;
+
+        document.getElementById("generalTicketName").textContent =
+            "Select ticket type";
+
+        document.getElementById("generalTicketAvailability").textContent =
+            "Choose a ticket type";
+
+        document.getElementById("quantity").value = 1;
+        document.getElementById("quantity").max = "";
+
+        quantity = 1;
+        unitPrice = 0;
+
+        const totalAvailable = tickets.reduce((sum, ticket) => {
+            const available = getAvailableQuantity(ticket, ticket);
+            return sum + (available === null ? 0 : Math.max(0, available));
+        }, 0);
+
+        document.getElementById("seats").textContent =
+            totalAvailable || "Available";
+
+        document.getElementById("capacityLabel").textContent =
+            "Available";
+
+        document.getElementById("availabilityStatus").textContent =
+            totalAvailable > 0 ? "Available" : "Sold Out";
+
+        updateSummary();
+
+        return;
+    }
+
+    /*
+     * Backward compatibility:
+     * If old HTML does not have #generalTicketList,
+     * use the first ticket type.
+     */
+    const ticket =
+        tickets[0] ||
+        data.ticket_type ||
+        data.ticketType ||
+        null;
+
     selectedTicketType = ticket;
-// Store ticket type
+
     const eventPrice = Number(currentEvent?.price || 0);
-// Read event price
+
     unitPrice = Number(ticket?.price ?? eventPrice);
-// Resolve price
-    document.getElementById("generalTicketName").textContent = ticket?.name || "General Admission";
-// Set ticket name
+
+    document.getElementById("generalTicketName").textContent =
+        ticket?.name || "General Admission";
+
     const available = getAvailableQuantity(ticket, data);
-// Resolve availability
-    document.getElementById("generalTicketAvailability").textContent = available === null ? "Available" : `${available} available`;
-// Set availability
-    document.getElementById("seats").textContent = available === null ? "Available" : available;
-// Set availability statistic
-    document.getElementById("capacityLabel").textContent = "Available";
-// Set statistic label
-    document.getElementById("availabilityStatus").textContent = available === 0 ? "Sold Out" : "Available";
-// Set ticket status
+
+    document.getElementById("generalTicketAvailability").textContent =
+        available === null
+            ? "Available"
+            : `${available} available`;
+
+    document.getElementById("seats").textContent =
+        available === null ? "Available" : available;
+
+    document.getElementById("capacityLabel").textContent =
+        "Available";
+
+    document.getElementById("availabilityStatus").textContent =
+        available === 0 ? "Sold Out" : "Available";
+
     const input = document.getElementById("quantity");
-// Find quantity input
-    input.max = available !== null && available > 0 ? available : "";
-// Set maximum quantity
-    if (available === 0) input.value = 0;
-// Prevent invalid quantity
+
+    input.max =
+        available !== null && available > 0
+            ? available
+            : "";
+
+    if (available === 0) {
+        input.value = 0;
+    } else {
+        input.value = 1;
+    }
+
     quantity = Math.max(1, Number(input.value || 1));
-// Set quantity
+
     updateSummary();
-// Update summary
 }
-// End general inventory
+
+function selectTicketType(ticket, price, element) {
+    // Remove previous selection
+    document
+        .querySelectorAll(".ticket-type-option")
+        .forEach(button => {
+            button.classList.remove("selected");
+        });
+
+    // Highlight selected ticket
+    element.classList.add("selected");
+
+    // Store selected ticket type
+    selectedTicketType = ticket;
+
+    // Store price
+    unitPrice = Number(price || 0);
+
+    // Reset quantity
+    quantity = 1;
+
+    const input = document.getElementById("quantity");
+
+    input.value = 1;
+
+    // Set availability
+    const available = getAvailableQuantity(ticket, ticket);
+
+    input.max =
+        available !== null && available > 0
+            ? available
+            : "";
+
+    // Update displayed ticket information
+    document.getElementById("generalTicketName").textContent =
+        ticket.name || "Ticket";
+
+    document.getElementById("generalTicketAvailability").textContent =
+        available === null
+            ? "Available"
+            : `${available} available`;
+
+    document.getElementById("availabilityStatus").textContent =
+        available === 0
+            ? "Sold Out"
+            : "Available";
+
+    updateSummary();
+}
 
 function renderZoneInventory(data) {
 // Render zone inventory
@@ -480,101 +648,254 @@ document.addEventListener("input", event => {
 // End input listener
 
 function updateSummary() {
-// Update booking summary
-    const count = selectedSeats.length || quantity || 0;
-// Calculate quantity
-    const price = selectedSeats.length ? selectedSeats.reduce((sum, seat) => sum + seat.price, 0) : unitPrice * count;
-// Calculate total
-    document.getElementById("ticketCount").textContent = count;
-// Set ticket count
-    document.getElementById("priceSummary").textContent = selectedSeats.length ? unitPrice.toFixed(0) : unitPrice.toFixed(0);
-// Set displayed price
-    document.getElementById("total").textContent = Math.max(0, price).toFixed(0);
-// Set total
+    const count =
+        selectedSeats.length ||
+        quantity ||
+        0;
+
+    let total = 0;
+
+    if (selectedSeats.length) {
+        total = selectedSeats.reduce(
+            (sum, seat) =>
+                sum + Number(seat.price || 0),
+            0
+        );
+    } else {
+        total =
+            Number(unitPrice || 0) *
+            Number(quantity || 0);
+    }
+
+    const averagePrice =
+        count > 0
+            ? total / count
+            : 0;
+
+    document.getElementById(
+        "ticketCount"
+    ).textContent = count;
+
+    document.getElementById(
+        "priceSummary"
+    ).textContent =
+        `₹${averagePrice.toFixed(0)}`;
+
+    document.getElementById(
+        "total"
+    ).textContent =
+        `₹${Math.max(0, total).toFixed(0)}`;
 }
-// End updateSummary
 
 async function bookEvent() {
-// Start booking process
-    const message = document.getElementById("message");
-// Get booking message
     const button = document.getElementById("bookButton");
-// Get booking button
-    const count = selectedSeats.length || quantity;
-// Calculate requested quantity
+
+    if (!button) {
+        console.error("bookButton not found");
+        return;
+    }
+
+    const inventoryType =
+        normalizeInventoryType(
+            currentEvent?.inventory_type
+        );
+
+    // Validate fixed seats
+    if (
+        inventoryType === "seat" &&
+        selectedSeats.length === 0
+    ) {
+        showMessage(
+            "Please select your seats before continuing.",
+            true
+        );
+
+        focusBookingSection();
+        return;
+    }
+
+    // Validate zone
+    if (
+        inventoryType === "zone" &&
+        !selectedZone
+    ) {
+        showMessage(
+            "Please select a zone before continuing.",
+            true
+        );
+
+        focusBookingSection();
+        return;
+    }
+
+    // Validate general/pass
+    if (
+        inventoryType === "general" &&
+        !selectedTicketType
+    ) {
+        showMessage(
+            "Please select a ticket type before continuing.",
+            true
+        );
+
+        focusBookingSection();
+        return;
+    }
+
+    const count =
+        selectedSeats.length || quantity;
+
     if (!count || count < 1) {
-// Validate quantity
-        showMessage("Please select at least one ticket.", true);
-// Show validation message
+        showMessage(
+            "Please select at least one ticket.",
+            true
+        );
+
         return;
-// Stop booking
     }
-// End validation
-    if (normalizeInventoryType(currentEvent?.inventory_type) === "seat" && !selectedSeats.length) {
-// Validate seat selection
-        showMessage("Please select your seats before continuing.", true);
-// Show seat validation
-        return;
-// Stop booking
-    }
-// End seat validation
+
     button.disabled = true;
-// Prevent duplicate booking
-    button.textContent = "Processing...";
-// Update button
+    button.textContent = "Holding inventory...";
+
     try {
-// Start booking request
-        const payload = buildBookingPayload();
-// Build backend booking payload
-        const response = await fetch(`${API_BASE_URL}/api/bookings`, { method: "POST", headers: authHeaders(), body: JSON.stringify(payload) });
-// Send booking request
-        const data = await response.json().catch(() => ({}));
-// Parse response
-        if (!response.ok) throw new Error(data.detail || data.message || "Booking could not be created.");
-// Validate booking
-        showMessage("Booking created successfully.", false);
-// Show success
-        if (data.id) sessionStorage.setItem("eventora_booking_id", data.id);
-// Store booking ID
+        const payload =
+            buildBookingPayload();
+
+        console.log(
+            "Creating inventory hold:",
+            payload
+        );
+
+        const response = await fetch(
+            `${API_BASE_URL}/api/bookings`,
+            {
+                method: "POST",
+                headers: authHeaders(),
+                body: JSON.stringify(payload)
+            }
+        );
+
+        const data =
+            await response
+                .json()
+                .catch(() => ({}));
+
+        if (!response.ok) {
+            throw new Error(
+                data.detail ||
+                data.message ||
+                "Unable to hold inventory."
+            );
+        }
+
+        // Save booking ID
+        if (data.id) {
+            sessionStorage.setItem(
+                "eventora_booking_id",
+                data.id
+            );
+        }
+
+        // Save expiry
+        if (data.expires_at) {
+            sessionStorage.setItem(
+                "eventora_booking_expires_at",
+                data.expires_at
+            );
+        }
+
+        // Request is complete, allow a fresh idempotency key
+        sessionStorage.removeItem(
+            "eventora_booking_request_key"
+        );
+
+        showMessage(
+            "Tickets held successfully. Continuing to checkout...",
+            false
+        );
+
         setTimeout(() => {
-// Redirect after success
-            window.location.href = data.id ? `booking-confirmation.html?id=${data.id}` : "my-bookings.html";
-// Navigate to confirmation/history
+            if (data.id) {
+                window.location.href =
+                    `booking-confirmation.html?id=${data.id}`;
+            } else {
+                window.location.href =
+                    "my-bookings.html";
+            }
         }, 700);
-// End redirect
+
     } catch (error) {
-// Handle booking failure
-        console.error("Booking error:", error);
-// Log booking error
-        showMessage(error.message || "Unable to complete booking.", true);
-// Show booking error
+        console.error(
+            "Inventory hold error:",
+            error
+        );
+
+        showMessage(
+            error.message ||
+            "Unable to hold inventory.",
+            true
+        );
+
         button.disabled = false;
-// Re-enable button
-        button.textContent = "Continue Booking";
-// Restore button
+        button.textContent =
+            "Continue Booking";
     }
-// End try/catch
 }
-// End bookEvent
 
 function buildBookingPayload() {
-// Build booking request compatible with current Booking model
     const count = selectedSeats.length || quantity;
-// Resolve quantity
-    const total = selectedSeats.length ? selectedSeats.reduce((sum, seat) => sum + seat.price, 0) : unitPrice * count;
-// Calculate total
-    const payload = { event_id: Number(eventId), tickets: count, total_amount: Math.round(total) };
-// Create legacy-compatible booking payload
-    if (selectedSeats.length) payload.seat_ids = selectedSeats.map(seat => seat.id);
-// Include physical seats when supported by backend
-    if (selectedZone?.id) payload.zone_id = selectedZone.id;
-// Include zone when selected
-    if (selectedTicketType?.id) payload.ticket_type_id = selectedTicketType.id;
-// Include ticket type when selected
-    return payload;
-// Return payload
+
+    const total = selectedSeats.length
+        ? selectedSeats.reduce(
+            (sum, seat) => sum + Number(seat.price || 0),
+            0
+        )
+        : unitPrice * count;
+
+    const idempotencyKey =
+        sessionStorage.getItem("eventora_booking_request_key") ||
+        crypto.randomUUID();
+
+    sessionStorage.setItem(
+        "eventora_booking_request_key",
+        idempotencyKey
+    );
+
+    const payload = {
+        event_id: Number(eventId),
+        tickets: count,
+        total_amount: Math.round(total),
+        idempotency_key: idempotencyKey
+    };
+
+    // Fixed-seat event
+    if (selectedSeats.length) {
+        payload.seat_ids =
+            selectedSeats.map(seat => seat.id);
+
+        return payload;
+    }
+
+    // Zone event
+    if (selectedZone?.id) {
+        payload.zone_id =
+            Number(selectedZone.id);
+
+        return payload;
+    }
+
+    // General/pass event
+    if (selectedTicketType?.id) {
+        payload.ticket_type_id =
+            Number(selectedTicketType.id);
+
+        return payload;
+    }
+
+    throw new Error(
+        "Please select a ticket, zone, or seat."
+    );
 }
-// End buildBookingPayload
 
 function renderLegacyGeneralInventory() {
 // Use event-level inventory when inventory endpoint is unavailable
@@ -741,3 +1062,56 @@ function showMessage(message, error = false) {
 // Set message state
 }
 // End showMessage
+
+let holdTimerInterval = null;
+
+function startHoldCountdown(expiresAt) {
+    const timer = document.getElementById("holdTimer");
+
+    if (!timer || !expiresAt) {
+        return;
+    }
+
+    if (holdTimerInterval) {
+        clearInterval(holdTimerInterval);
+    }
+
+    timer.classList.remove("d-none");
+
+    function updateTimer() {
+        const expiry =
+            new Date(expiresAt).getTime();
+
+        const remaining =
+            expiry - Date.now();
+
+        if (remaining <= 0) {
+            clearInterval(holdTimerInterval);
+
+            timer.textContent =
+                "Your ticket hold has expired.";
+
+            timer.classList.add("expired");
+
+            return;
+        }
+
+        const minutes =
+            Math.floor(
+                remaining / 60000
+            );
+
+        const seconds =
+            Math.floor(
+                (remaining % 60000) / 1000
+            );
+
+        timer.textContent =
+            `Tickets reserved for ${minutes}:${String(seconds).padStart(2, "0")}`;
+    }
+
+    updateTimer();
+
+    holdTimerInterval =
+        setInterval(updateTimer, 1000);
+}
