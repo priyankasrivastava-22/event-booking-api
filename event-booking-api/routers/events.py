@@ -14,6 +14,60 @@ def admin_check(user):
         raise HTTPException(status_code=403, detail="Admin only")
 
 
+@router.post("/{event_id}/ticket-types", response_model=schemas.TicketTypeResponse)
+def create_ticket_type(
+    event_id: int,
+    ticket_type: schemas.TicketTypeCreate,
+    db: Session = Depends(get_db),
+    user=Depends(get_current_user)
+):
+    admin_check(user)
+
+    event = db.query(models.Event).filter(models.Event.id == event_id).first()
+    if not event:
+        raise HTTPException(status_code=404, detail="Event not found")
+
+    db_ticket_type = models.TicketType(
+        event_id=event_id,
+        zone_id=ticket_type.zone_id,
+        name=ticket_type.name,
+        price=ticket_type.price,
+        inventory_limit=ticket_type.inventory_limit,   # None = unlimited
+        is_active=True,
+    )
+
+    db.add(db_ticket_type)
+    db.commit()
+    db.refresh(db_ticket_type)
+
+    return db_ticket_type
+
+
+@router.get("/{event_id}/ticket-types", response_model=list[schemas.TicketTypeResponse])
+def list_ticket_types(event_id: int, db: Session = Depends(get_db)):
+    return db.query(models.TicketType).filter(
+        models.TicketType.event_id == event_id,
+        models.TicketType.is_active == True
+    ).all()
+
+
+@router.delete("/ticket-types/{ticket_type_id}")
+def delete_ticket_type(
+    ticket_type_id: int,
+    db: Session = Depends(get_db),
+    user=Depends(get_current_user)
+):
+    admin_check(user)
+
+    ticket_type = db.query(models.TicketType).filter(models.TicketType.id == ticket_type_id).first()
+    if not ticket_type:
+        raise HTTPException(status_code=404, detail="Ticket type not found")
+
+    db.delete(ticket_type)
+    db.commit()
+    return {"message": "deleted"}
+
+
 def _build_seat_inventory(db: Session, event: models.Event) -> dict:
     """FIXED_SEAT event: active layout + zones, each with a flat seat list
     (row_label/row_number denormalized onto every seat). Matches exactly
@@ -152,7 +206,10 @@ def create_event(
         total_seats=event.total_seats,
         available_seats=event.total_seats,
         category=category_name,
-        category_id=category_id
+        category_id=category_id,
+        age_limit = event.age_limit or "All Ages",
+        duration = event.duration,
+        status=event.status or "published",
     )
 
     db.add(db_event)
@@ -286,7 +343,13 @@ def update_event(
     event.location = data.location
     event.price = data.price
     event.image_url = data.image_url
-    # handle category update safely
+    if data.age_limit is not None:
+        event.age_limit = data.age_limit
+    if data.status is not None:
+        event.status = data.status
+    if data.duration is not None:
+        event.duration = data.duration
+        # handle category update safely
     if data.category_id:
         category = db.query(models.Category).filter(
             models.Category.id == data.category_id
@@ -344,3 +407,70 @@ def upload_event_image(
     db.refresh(event)
 
     return {"message": "Image uploaded", "image_url": event.image_url}
+
+@router.get("/admin/list")                                                                                               # ADMIN EVENTS LIST — with total count for pagination
+def get_events_admin(
+    page: int = 1,
+    limit: int = 10,
+    title: str = None,
+    category: str = None,
+    status: str = None,
+    db: Session = Depends(get_db),
+    user=Depends(get_current_user)
+):
+    admin_check(user)
+
+    query = db.query(models.Event)
+
+    if title:
+        query = query.filter(models.Event.title.ilike(f"%{title}%"))
+    if category:
+        query = query.filter(models.Event.category.ilike(category))
+    if status:
+        query = query.filter(models.Event.status == status)
+
+    total = query.count()
+    skip = (page - 1) * limit
+    events = query.order_by(models.Event.id.desc()).offset(skip).limit(limit).all()
+
+    return {
+        "items": events,
+        "total": total,
+        "page": page,
+        "limit": limit,
+        "total_pages": max(1, (total + limit - 1) // limit)
+    }
+
+
+@router.post("/{event_id}/duplicate", response_model=schemas.EventResponse)                                              # DUPLICATE EVENT
+def duplicate_event(
+    event_id: int,
+    db: Session = Depends(get_db),
+    user=Depends(get_current_user)
+):
+    admin_check(user)
+
+    original = db.query(models.Event).filter(models.Event.id == event_id).first()
+    if not original:
+        raise HTTPException(status_code=404, detail="Event not found")
+
+    copy = models.Event(
+        title=f"{original.title} (Copy)",
+        location=original.location,
+        description=original.description,
+        date_time=original.date_time,
+        price=original.price,
+        image_url=original.image_url,
+        total_seats=original.total_seats,
+        available_seats=original.total_seats,
+        category=original.category,
+        category_id=original.category_id,
+        age_limit=original.age_limit,
+        duration=original.duration,
+        status="draft",
+    )
+
+    db.add(copy)
+    db.commit()
+    db.refresh(copy)
+    return copy
