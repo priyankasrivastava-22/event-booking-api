@@ -14,6 +14,161 @@ def admin_check(user):
         raise HTTPException(status_code=403, detail="Admin only")
 
 
+@router.post("/{event_id}/ticket-types", response_model=schemas.TicketTypeResponse)
+def create_ticket_type(
+    event_id: int,
+    ticket_type: schemas.TicketTypeCreate,
+    db: Session = Depends(get_db),
+    user=Depends(get_current_user)
+):
+    admin_check(user)
+
+    event = db.query(models.Event).filter(models.Event.id == event_id).first()
+    if not event:
+        raise HTTPException(status_code=404, detail="Event not found")
+
+    db_ticket_type = models.TicketType(
+        event_id=event_id,
+        zone_id=ticket_type.zone_id,
+        name=ticket_type.name,
+        price=ticket_type.price,
+        inventory_limit=ticket_type.inventory_limit,   # None = unlimited
+        is_active=True,
+    )
+
+    db.add(db_ticket_type)
+    db.commit()
+    db.refresh(db_ticket_type)
+
+    return db_ticket_type
+
+
+@router.get("/{event_id}/ticket-types", response_model=list[schemas.TicketTypeResponse])
+def list_ticket_types(event_id: int, db: Session = Depends(get_db)):
+    return db.query(models.TicketType).filter(
+        models.TicketType.event_id == event_id,
+        models.TicketType.is_active == True
+    ).all()
+
+
+@router.delete("/ticket-types/{ticket_type_id}")
+def delete_ticket_type(
+    ticket_type_id: int,
+    db: Session = Depends(get_db),
+    user=Depends(get_current_user)
+):
+    admin_check(user)
+
+    ticket_type = db.query(models.TicketType).filter(models.TicketType.id == ticket_type_id).first()
+    if not ticket_type:
+        raise HTTPException(status_code=404, detail="Ticket type not found")
+
+    db.delete(ticket_type)
+    db.commit()
+    return {"message": "deleted"}
+
+
+def _build_seat_inventory(db: Session, event: models.Event) -> dict:
+    """FIXED_SEAT event: active layout + zones, each with a flat seat list
+    (row_label/row_number denormalized onto every seat). Matches exactly
+    what event-details.js's flattenSeats()/groupSeatsByRow() expect -
+    zone.seats (flat), not zone.rows[].seats (nested)."""
+    layout = (
+        db.query(models.VenueLayout)
+        .filter(models.VenueLayout.event_id == event.id, models.VenueLayout.is_active == True)
+        .first()
+    )
+
+    zones = (
+        db.query(models.EventZone)
+        .filter(models.EventZone.event_id == event.id, models.EventZone.is_active == True)
+        .all()
+    )
+
+    zones_out = []
+    for zone in zones:
+        rows = (
+            db.query(models.VenueRow)
+            .filter(models.VenueRow.zone_id == zone.id)
+            .order_by(models.VenueRow.row_number)
+            .all()
+        )
+        seats_out = []
+        for row in rows:
+            seats = (
+                db.query(models.Seat)
+                .filter(models.Seat.row_id == row.id, models.Seat.is_active == True)
+                .order_by(models.Seat.seat_number)
+                .all()
+            )
+            for seat in seats:
+                seats_out.append({
+                    "id": seat.id,
+                    "seat_code": seat.seat_code,
+                    "seat_number": seat.seat_number,
+                    "row_label": row.row_label,
+                    "row_number": row.row_number,
+                    "zone_id": zone.id,
+                    "status": seat.status,
+                    "price": seat.price,
+                })
+        zones_out.append({
+            "id": zone.id,
+            "name": zone.name,
+            "code": zone.code,
+            "base_price": zone.base_price,
+            "seats": seats_out,
+        })
+
+    return {
+        "layout": {"id": layout.id, "name": layout.name, "version": layout.version} if layout else None,
+        "zones": zones_out,
+    }
+
+
+def _build_zone_inventory(db: Session, event: models.Event) -> list:
+    """ZONE event: pooled zones with live availability (capacity - sold - locked)."""
+    zones = (
+        db.query(models.EventZone)
+        .filter(models.EventZone.event_id == event.id, models.EventZone.is_active == True)
+        .all()
+    )
+    return [
+        {
+            "id": zone.id,
+            "name": zone.name,
+            "code": zone.code,
+            "base_price": zone.base_price,
+            "capacity": zone.capacity,
+            "available": max(0, zone.capacity - zone.sold_count - zone.locked_count),
+        }
+        for zone in zones
+    ]
+
+
+def _build_general_inventory(db: Session, event: models.Event) -> list:
+    """GENERAL/PASS event: pooled ticket types with live availability."""
+    ticket_types = (
+        db.query(models.TicketType)
+        .filter(models.TicketType.event_id == event.id, models.TicketType.is_active == True)
+        .all()
+    )
+    return [
+        {
+            "id": tt.id,
+            "name": tt.name,
+            "price": tt.price,
+            "inventory_limit": tt.inventory_limit,
+            "available": (
+                max(0, tt.inventory_limit - tt.sold_count - tt.locked_count)
+                if tt.inventory_limit is not None
+                else None  # unlimited
+            ),
+        }
+        for tt in ticket_types
+    ]
+
+
 @router.post("/", response_model=schemas.EventResponse)
 def create_event(
     event: schemas.EventCreate,
@@ -51,7 +206,10 @@ def create_event(
         total_seats=event.total_seats,
         available_seats=event.total_seats,
         category=category_name,
-        category_id=category_id
+        category_id=category_id,
+        age_limit = event.age_limit or "All Ages",
+        duration = event.duration,
+        status=event.status or "published",
     )
 
     db.add(db_event)
@@ -108,8 +266,64 @@ def get_events(
 def get_event(event_id: int, db: Session = Depends(get_db)):
     event = db.query(models.Event).filter(models.Event.id == event_id).first()
     if not event:
-        raise HTTPException(status_code=404)
-    return event
+        raise HTTPException(status_code=404, detail="Event not found")
+
+    # Every field event-details.js already reads stays exactly as it was -
+    # this is purely additive, nothing here changes existing behavior.
+    response = {
+        "id": event.id,
+        "title": event.title,
+        "location": event.location,
+        "description": event.description,
+        "date_time": event.date_time,
+        "price": event.price,
+        "image_url": event.image_url,
+        "total_seats": event.total_seats,
+        "available_seats": event.available_seats,
+        "category": event.category,
+        "category_id": event.category_id,
+        "inventory_type": event.inventory_type,
+    }
+
+    # Additive per-type structure so the frontend can eventually branch on
+    # inventory_type. Uses the same "seat"/"zone"/"general" values already
+    # defined in models.py - no separate label scheme to keep in sync.
+    if event.inventory_type == models.INVENTORY_SEAT:
+        response["seating"] = _build_seat_inventory(db, event)
+    elif event.inventory_type == models.INVENTORY_ZONE:
+        response["zones"] = _build_zone_inventory(db, event)
+    else:
+        # models.INVENTORY_GENERAL, or any legacy event with no seating/zone
+        # setup at all - returns an empty list, which is fine: those events
+        # still work off the flat price/available_seats fields above.
+        response["ticket_types"] = _build_general_inventory(db, event)
+
+    return response
+
+
+@router.get("/{event_id}/inventory")
+def get_event_inventory_detail(event_id: int, db: Session = Depends(get_db)):
+    """Dedicated inventory endpoint - event-details.js calls this separately
+    from GET /{event_id}. Reuses the exact same builders so the two never
+    drift out of sync with each other."""
+    event = db.query(models.Event).filter(models.Event.id == event_id).first()
+    if not event:
+        raise HTTPException(status_code=404, detail="Event not found")
+
+    response = {"inventory_type": event.inventory_type}
+
+    if event.inventory_type == models.INVENTORY_SEAT:
+        seating = _build_seat_inventory(db, event)
+        # Flatten to a plain seat list too, since the frontend's flattenSeats()
+        # already knows how to read data.zones[].seats - this shape covers it.
+        response["zones"] = seating["zones"]
+        response["layout"] = seating["layout"]
+    elif event.inventory_type == models.INVENTORY_ZONE:
+        response["zones"] = _build_zone_inventory(db, event)
+    else:
+        response["ticket_types"] = _build_general_inventory(db, event)
+
+    return response
 
 
 @router.put("/{event_id}")
@@ -129,7 +343,13 @@ def update_event(
     event.location = data.location
     event.price = data.price
     event.image_url = data.image_url
-    # handle category update safely
+    if data.age_limit is not None:
+        event.age_limit = data.age_limit
+    if data.status is not None:
+        event.status = data.status
+    if data.duration is not None:
+        event.duration = data.duration
+        # handle category update safely
     if data.category_id:
         category = db.query(models.Category).filter(
             models.Category.id == data.category_id
@@ -187,3 +407,70 @@ def upload_event_image(
     db.refresh(event)
 
     return {"message": "Image uploaded", "image_url": event.image_url}
+
+@router.get("/admin/list")                                                                                               # ADMIN EVENTS LIST — with total count for pagination
+def get_events_admin(
+    page: int = 1,
+    limit: int = 10,
+    title: str = None,
+    category: str = None,
+    status: str = None,
+    db: Session = Depends(get_db),
+    user=Depends(get_current_user)
+):
+    admin_check(user)
+
+    query = db.query(models.Event)
+
+    if title:
+        query = query.filter(models.Event.title.ilike(f"%{title}%"))
+    if category:
+        query = query.filter(models.Event.category.ilike(category))
+    if status:
+        query = query.filter(models.Event.status == status)
+
+    total = query.count()
+    skip = (page - 1) * limit
+    events = query.order_by(models.Event.id.desc()).offset(skip).limit(limit).all()
+
+    return {
+        "items": events,
+        "total": total,
+        "page": page,
+        "limit": limit,
+        "total_pages": max(1, (total + limit - 1) // limit)
+    }
+
+
+@router.post("/{event_id}/duplicate", response_model=schemas.EventResponse)                                              # DUPLICATE EVENT
+def duplicate_event(
+    event_id: int,
+    db: Session = Depends(get_db),
+    user=Depends(get_current_user)
+):
+    admin_check(user)
+
+    original = db.query(models.Event).filter(models.Event.id == event_id).first()
+    if not original:
+        raise HTTPException(status_code=404, detail="Event not found")
+
+    copy = models.Event(
+        title=f"{original.title} (Copy)",
+        location=original.location,
+        description=original.description,
+        date_time=original.date_time,
+        price=original.price,
+        image_url=original.image_url,
+        total_seats=original.total_seats,
+        available_seats=original.total_seats,
+        category=original.category,
+        category_id=original.category_id,
+        age_limit=original.age_limit,
+        duration=original.duration,
+        status="draft",
+    )
+
+    db.add(copy)
+    db.commit()
+    db.refresh(copy)
+    return copy

@@ -3,7 +3,7 @@ load_dotenv()
 from fastapi.middleware.cors import CORSMiddleware
 from utils.helpers import get_db
 from fastapi import FastAPI, Request
-from fastapi.responses import JSONResponse
+from fastapi.responses import JSONResponse, FileResponse
 from fastapi.exceptions import RequestValidationError
 from starlette.exceptions import HTTPException as StarletteHTTPException
 
@@ -19,7 +19,7 @@ from sqlalchemy import text
 from database import engine
 import models
 
-from routers import (auth,events,bookings,admin,analytics,engagement,profile,payment)
+from routers import (auth,events,bookings,admin,analytics,engagement,profile,payment,seating,inventory)
 
 app = FastAPI()
 app.add_middleware(
@@ -80,6 +80,12 @@ app.include_router(analytics.router, prefix="/api/analytics", tags=["Analytics"]
 app.include_router(engagement.router, prefix="/api/engagement", tags=["Engagement"])
 app.include_router(profile.router, prefix="/api/profile", tags=["Profile"])
 app.include_router(payment.router, prefix="/api/payment", tags=["Payment"])
+app.include_router(seating.router, prefix="/api/seating", tags=["Seating"])
+app.include_router(inventory.router)                                                                     # PREFIX/TAGS ALREADY SET ON THE ROUTER ITSELF
+
+@app.get("/login")
+async def login_page():
+    return FileResponse("frontend/pages/login.html")
 
 @app.get("/")
 async def root():
