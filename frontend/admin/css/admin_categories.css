@@ -1,0 +1,47 @@
+/* Page wrapper padding */
+.categories-page-content { padding: 20px 24px; }
+
+/* Breadcrumb above the page title */
+.page-breadcrumb { font-size: 0.78rem; color: var(--muted); margin-bottom: 10px; display: flex; align-items: center; gap: 6px; }
+
+/* Breadcrumb link back to Dashboard */
+.page-breadcrumb a { color: var(--muted); }
+.page-breadcrumb a:hover { color: #fff; }
+
+/* Breadcrumb current page label */
+.page-breadcrumb span { color: #cbd5e1; }
+
+/* Header row — title left, Add Category button right */
+.categories-page-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
+.categories-page-header h2 { font-size: 1.4rem; font-weight: 700; }
+
+/* Grid of category cards — 3 per row on desktop */
+.categories-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; }
+
+/* Single category card */
+.category-card { background: var(--panel); border: 1px solid var(--border); border-radius: 14px; padding: 18px; }
+
+/* Top row inside the card — icon chip + name/count */
+.category-card-top { display: flex; align-items: center; gap: 12px; margin-bottom: 16px; }
+
+/* Colored icon chip — background color set per category via inline style from JS */
+.category-icon-chip { width: 44px; height: 44px; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 1.2rem; flex-shrink: 0; }
+
+/* Category name */
+.category-card-top h5 { font-size: 1rem; margin: 0; }
+
+/* Event count under the name */
+.category-card-top small { color: var(--muted); font-size: 0.75rem; }
+
+/* Edit/Delete button row at the bottom of the card */
+.category-card-actions { display: flex; gap: 10px; }
+
+/* Edit button — outlined, neutral */
+.category-card-actions .btn-edit { flex: 1; background: var(--panel-2); border: 1px solid var(--border); color: #cbd5e1; border-radius: 8px; padding: 7px; font-size: 0.8rem; }
+
+/* Delete button — red icon-only square */
+.category-card-actions .btn-delete { width: 36px; background: rgba(239, 68, 68, 0.12); border: 1px solid rgba(239, 68, 68, 0.3); color: #f87171; border-radius: 8px; font-size: 0.8rem; }
+
+/* Responsive — 2 then 1 column on smaller screens */
+@media (max-width: 992px) { .categories-grid { grid-template-columns: repeat(2, 1fr); } }
+@media (max-width: 576px) { .categories-grid { grid-template-columns: 1fr; } }
