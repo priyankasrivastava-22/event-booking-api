@@ -3,6 +3,7 @@ import models
 from utils.helpers import get_db
 from core.security import get_current_user
 from schemas import CategoryCreate, NotificationCreate
+from sqlalchemy import func
 
 router = APIRouter()
 
@@ -107,3 +108,15 @@ def get_my_notifications( db=Depends(get_db), user=Depends(get_current_user)):
         models.Notification.created_at.desc()
     ).all()
     return notifications
+
+@router.get("/admin/categories-with-counts")
+def get_categories_with_counts( db=Depends(get_db), user=Depends(get_current_user)):
+    if user["role"] != "admin":
+        raise HTTPException( status_code=403, detail="Only admin allowed")
+    results = (
+        db.query(models.Category.id, models.Category.name, func.count(models.Event.id).label("event_count"))
+        .outerjoin(models.Event, models.Event.category_id == models.Category.id)
+        .group_by(models.Category.id, models.Category.name)
+        .all()
+    )
+    return [{"id": r.id, "name": r.name, "event_count": r.event_count} for r in results]
