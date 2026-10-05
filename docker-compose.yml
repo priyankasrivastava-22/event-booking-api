@@ -1,0 +1,28 @@
+services:
+  api:
+    build: ./event-booking-api
+    ports:
+      - "8000:8000"
+    environment:
+      DATABASE_URL: postgresql://eventora:localpassword@db:5432/eventora
+      SECRET_KEY: local-dev-secret-key-not-for-production
+      PHONE_ENCRYPTION_KEY: E7hfvkI39O885ADu15rXVEIytIao61EvzweP3_Wuu5M=
+      PHONE_HMAC_SECRET: local-dev-hmac-secret-not-for-production
+    depends_on:
+      - db
+    volumes:
+      - ./event-booking-api:/app
+
+  db:
+    image: postgres:16
+    environment:
+      POSTGRES_USER: eventora
+      POSTGRES_PASSWORD: localpassword
+      POSTGRES_DB: eventora
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+
+volumes:
+  pgdata:

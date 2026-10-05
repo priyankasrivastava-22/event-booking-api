@@ -112,6 +112,17 @@ def create_row(zone_id: int, data: schemas_seating.RowCreate, db: Session = Depe
     return {"success": True, "row_id": row.id, "row_label": row.row_label, "seats_created": len(seats)}  # RETURN GENERATION RESULT
 
 
+@router.delete("/admin/zones/{zone_id}")                                                                                 # DELETE ZONE
+def delete_zone(zone_id: int, db: Session = Depends(get_db), current_user: models.User = Depends(get_current_user)):
+    require_admin(current_user)
+    zone = db.query(models.EventZone).filter(models.EventZone.id == zone_id).first()
+    if not zone:
+        raise HTTPException(status_code=404, detail="Zone not found")
+    db.delete(zone)
+    db.commit()
+    return {"message": "deleted"}
+
+
 @router.get("/events/{event_id}/seats", response_model=list[schemas_seating.SeatResponse])                              # PUBLIC SEAT MAP
 def get_event_seats(event_id: int, db: Session = Depends(get_db)):                           # FETCH EVENT SEATS
 

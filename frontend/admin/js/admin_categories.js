@@ -37,32 +37,21 @@ document.addEventListener("DOMContentLoaded", loadCategories);
 async function loadCategories() {
     const grid = document.getElementById("categoriesGrid");
     grid.innerHTML = `<div class="text-muted text-center py-4">Loading...</div>`;
-
     try {
         const res = await fetch(`${API_BASE}/engagement/admin/categories-with-counts`, { headers: authHeaders() });
-
         if (res.status === 401) { window.location.href = "../../pages/login.html"; return; }
-
-        // Read the body once, then branch on res.ok - a 403/500 response still has a
-        // JSON body (e.g. {"detail": "Only admin allowed"}), which is NOT an array,
-        // so treating it as the category list silently showed "No categories yet"
-        // for every kind of error, not just a genuinely empty table.
         const data = await res.json().catch(() => null);
-
         if (!res.ok) {
             const message = (data && data.detail) ? data.detail : `Request failed (${res.status})`;
             grid.innerHTML = `<div class="text-danger text-center py-4">${escapeHtml(message)}</div>`;
             console.error("Load categories error:", res.status, data);
             return;
         }
-
         const categories = Array.isArray(data) ? data : [];
-
         if (!categories.length) {
             grid.innerHTML = `<div class="text-muted text-center py-4">No categories yet. Add your first one.</div>`;
             return;
         }
-
         grid.innerHTML = categories.map(cat => {
             const visual = getCategoryVisual(cat.name);
             return `
@@ -83,7 +72,6 @@ async function loadCategories() {
                 </div>
             `;
         }).join("");
-
     } catch (error) {
         console.error("Load categories error:", error);
         grid.innerHTML = `<div class="text-danger text-center py-4">Unable to load categories.</div>`;
@@ -94,12 +82,10 @@ async function loadCategories() {
 async function createCategory() {
     const name = document.getElementById("newCategoryName").value.trim();
     if (!name) { alert("Category name is required."); return; }
-
     try {
         const res = await fetch(`${API_BASE}/engagement/admin/categories`, { method: "POST", headers: authHeaders(), body: JSON.stringify({ name }) });
         const data = await res.json();
         if (!res.ok) throw new Error(data.detail || "Failed to create category.");
-
         bootstrap.Modal.getOrCreateInstance(document.getElementById("addCategoryModal")).hide();
         document.getElementById("newCategoryName").value = "";
         loadCategories();
@@ -118,12 +104,10 @@ function openEditCategoryModal(id, name) {
 async function saveEditedCategory() {
     const name = document.getElementById("editCategoryName").value.trim();
     if (!name) { alert("Category name is required."); return; }
-
     try {
         const res = await fetch(`${API_BASE}/engagement/admin/categories/${editingCategoryId}`, { method: "PUT", headers: authHeaders(), body: JSON.stringify({ name }) });
         const data = await res.json();
         if (!res.ok) throw new Error(data.detail || "Failed to update category.");
-
         bootstrap.Modal.getOrCreateInstance(document.getElementById("editCategoryModal")).hide();
         editingCategoryId = null;
         loadCategories();
@@ -137,9 +121,7 @@ async function deleteCategory(id, eventCount) {
     const warning = eventCount > 0
         ? `This category has ${eventCount} event(s). Deleting it may affect those events. Continue?`
         : "Delete this category?";
-
     if (!confirm(warning)) return;
-
     try {
         const res = await fetch(`${API_BASE}/engagement/admin/categories/${id}`, { method: "DELETE", headers: authHeaders() });
         if (!res.ok) { const data = await res.json().catch(() => ({})); throw new Error(data.detail || "Failed to delete category."); }

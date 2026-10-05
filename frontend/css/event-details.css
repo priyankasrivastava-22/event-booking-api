@@ -244,3 +244,131 @@ p { color: var(--text-secondary); line-height: 1.7; margin: 0; }  /* body paragr
     .price-card { flex-direction: column; align-items: stretch; text-align: center; }
     .hero-book-btn { width: 100%; }
 }
+
+/* ============================================================
+   ADDITIONS — paste this at the end of event-details.css
+   Styles elements that exist in the HTML but had no matching
+   CSS rule yet (status tag, seat count badge, progress bar,
+   zone section heading, quantity section wrapper).
+   ============================================================ */
+
+/* -- status tag (Available / Sold Out pill in the tag row) -- */
+.status-tag { color: var(--accent-green); border-color: rgba(52, 211, 153, 0.4); background: rgba(52, 211, 153, 0.08); } /* green by default */
+.status-tag.sold-out { color: var(--accent-red); border-color: rgba(248, 113, 113, 0.4); background: rgba(248, 113, 113, 0.08); } /* red variant — add class="status-tag sold-out" via JS when status is Sold Out */
+
+/* -- selected seat count badge, next to "Select Your Seats" -- */
+.selected-seat-count { min-width: 34px; height: 34px; padding: 0 10px; border-radius: 999px; display: inline-flex; align-items: center; justify-content: center; font-weight: 700; font-size: 0.9rem; background: var(--grad-primary); color: #1a0b28; } /* gradient pill matching the theme */
+
+/* -- availability progress bar (overrides Bootstrap's default light styling) -- */
+.availability-progress { margin-top: 12px; }
+.availability-progress .progress { height: 8px; border-radius: 999px; background: rgba(255, 255, 255, 0.06); overflow: hidden; } /* dark track instead of Bootstrap's light grey */
+.availability-progress .progress-bar { background: var(--grad-primary); transition: width 0.4s ease; } /* gradient fill matching the theme */
+.availability-progress .progress-bar.low { background: linear-gradient(135deg, var(--accent-amber), var(--accent-red)); } /* switches to amber/red when stock is low */
+
+.availability-header { display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap; margin-bottom: 4px; } /* header row above the progress bar */
+.availability-header h5 { font-size: 0.98rem; margin-bottom: 2px; }
+.availability-header p { font-size: 0.8rem; margin: 0; }
+.availability-status { font-size: 0.82rem; font-weight: 700; color: var(--accent-green); padding: 6px 14px; border-radius: 999px; background: rgba(52, 211, 153, 0.1); border: 1px solid rgba(52, 211, 153, 0.35); white-space: nowrap; } /* pill badge */
+
+/* -- zone section heading, sits above the zone card list -- */
+.inventory-section-heading { margin-bottom: 14px; }
+.inventory-section-heading strong { display: block; font-size: 0.95rem; margin-bottom: 2px; }
+.inventory-section-heading small { color: var(--text-muted); font-size: 0.8rem; }
+
+/* -- shared quantity section wrapper (used by both general + zone types) -- */
+.quantity-section.d-none { display: none; }
+.quantity-section { margin-top: 14px; }
+
+/* ============================================================
+   STATS CARD V2 — Event Type / Age Limit / Total Seats / Duration
+   Layout + colored icons, all in one place
+   ============================================================ */
+
+.stats-card-v2 {
+    display: flex;                                     /* ek line mein rakhne ke liye zaroori */
+    flex-direction: row;
+    flex-wrap: nowrap;                                  /* ek hi line, wrap nahi hoga */
+    justify-content: space-between;
+    align-items: center;
+    gap: 10px;
+    padding: 16px;
+    overflow-x: auto;                                   /* chhoti screen pe scroll ho jaaye, tootega nahi */
+}
+
+.stats-card-v2 .stat-box {
+    flex: 1 1 0;                                        /* sab boxes equal width */
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    min-width: 0;
+    white-space: nowrap;
+}
+
+.stats-card-v2 .stat-box i {
+    width: 40px;
+    height: 40px;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.1rem;
+    flex-shrink: 0;
+}
+
+.stats-card-v2 .stat-text {
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+    overflow: hidden;
+}
+
+.stats-card-v2 .stat-value {
+    font-size: 0.95rem;
+    font-weight: 700;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.stats-card-v2 .stat-title {
+    font-size: 0.68rem;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    white-space: nowrap;
+}
+
+/* -- Icon colors — matches reference: purple music, pink star, blue smiley, green clock -- */
+
+.stats-card-v2 .stat-box.stat-purple i {
+    color: #a78bfa;
+    background: rgba(167, 139, 250, 0.14);
+    border: 1.5px solid rgba(167, 139, 250, 0.45);
+}
+
+.stats-card-v2 .stat-box.stat-pink i {
+    color: #f472b6;
+    background: rgba(244, 114, 182, 0.14);
+    border: 1.5px solid rgba(244, 114, 182, 0.45);
+}
+
+.stats-card-v2 .stat-box.stat-blue i {
+    color: #60a5fa;
+    background: rgba(96, 165, 250, 0.14);
+    border: 1.5px solid rgba(96, 165, 250, 0.45);
+}
+
+.stats-card-v2 .stat-box.stat-green i {
+    color: #34d399;
+    background: rgba(52, 211, 153, 0.14);
+    border: 1.5px solid rgba(52, 211, 153, 0.45);
+}
+
+/* -- Mobile: screen chhoti ho toh 2x2 grid mein wrap karne do -- */
+@media (max-width: 480px) {
+    .stats-card-v2 {
+        flex-wrap: wrap;
+    }
+    .stats-card-v2 .stat-box {
+        flex: 1 1 45%;
+    }
+}

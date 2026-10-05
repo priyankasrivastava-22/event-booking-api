@@ -52,7 +52,11 @@ const AppState = {
     token: null,
     online: navigator.onLine,
     searchQuery: "",
-    lastRefresh: null
+    lastRefresh: null,
+    dashboardStats: null,
+    recentEvents: [],
+    recentBookings: [],
+    recentUsers: []
 };
 
 // CACHE STORAGE
@@ -78,7 +82,14 @@ const DOM = {
     adminName: null,
     bannerAdminName: null,
     searchInput: null,
-    loader: null
+    loader: null,
+    navigationLinks: null,
+    avatar: null,
+    notificationButton: null,
+    notificationDot: null,
+    banner: null,
+    dashboardHeader: null,
+    logoutButton: null
 };
 
 // REQUEST TRACKER
@@ -3234,6 +3245,8 @@ async function refreshDashboard() {
 
     await loadDashboard();
 
+    await loadBookingsPerMonthChart();
+
     renderDashboard();
 
 }
@@ -3272,13 +3285,28 @@ function renderDashboard() {
 
 }
 
+
 // Render statistic cards
-function renderDashboardStats() {
-    const stats = AppState.dashboardStats || {};
-    setText(byId("totalEvents"), formatNumber(stats.total_events || 0));
-    setText(byId("totalUsers"), formatNumber(stats.total_users || 0));
-    setText(byId("totalBookings"), formatNumber(stats.total_bookings || 0));
-    setText(byId("totalRevenue"), formatCurrency(stats.revenue || stats.total_revenue || 0));
+async function loadAndRenderStats() {
+
+    try {
+
+        const response = await apiGet("/analytics/stats");
+        const result = await handleApiResponse(response);
+        const stats = result.data || {};
+
+        setText(byId("totalEvents"), stats.total_events ?? 0);
+        setText(byId("totalUsers"), stats.total_users ?? 0);
+        setText(byId("totalBookings"), stats.total_bookings ?? 0);
+        setText(byId("totalRevenue"), `₹${formatNumber(stats.revenue ?? 0)}`);
+
+    } catch (error) {
+
+        logAPIError(error);
+        createToast("Unable to load dashboard stats.", "error");
+
+    }
+
 }
 
 // Render recent events
@@ -3302,6 +3330,8 @@ function renderRecentEvents() {
             <td>${escapeHTML(event.category || "-")}</td>
             <td>${formatDate(event.date_time)}</td>
             <td>${event.available_seats}</td>
+            <td><button class="btn btn-sm btn-outline-light" onclick="openEditEventModal(${event.id})">Edit</button></td>
+
         </tr>
     `).join("");
 }
@@ -3372,4 +3402,420 @@ function clearDashboard() {
     AppState.recentBookings = [];
     AppState.recentUsers = [];
     renderDashboard();
+}
+
+/* ============================================================
+   CREATE / EDIT EVENT — wired to the modals in admin.html
+   Uses the exact same apiGet/apiPost/apiPut/handleApiResponse/
+   createToast/byId/escapeHTML helpers already defined above.
+============================================================ */
+
+let currentEditEventId = null;
+
+// Populate the category dropdown in the Create Event modal
+async function loadCategoryOptions() {
+
+    try {
+
+        const response = await apiGet("/engagement/categories");
+
+        const result = await handleApiResponse(response);
+
+        const categories = result.data || [];
+
+        const select = byId("categorySelect");
+
+        if (!select) return;
+
+        select.innerHTML = categories
+            .map(category => `<option value="${category.id}">${escapeHTML(category.name)}</option>`)
+            .join("");
+
+    } catch (error) {
+
+        logAPIError(error);
+
+    }
+
+}
+
+// Clear every input in the Create Event modal back to blank
+function resetCreateEventForm() {
+
+    ["title", "description", "location", "price", "seats", "date", "duration"].forEach(id => {
+
+        const field = byId(id);
+
+        if (field) field.value = "";
+
+    });
+
+    const ageLimitField = byId("ageLimit");
+
+    if (ageLimitField) ageLimitField.value = "All Ages";
+
+}
+
+// CREATE EVENT — reads the Create Event modal and calls POST /events/
+async function createEvent() {
+
+    const title = byId("title")?.value.trim();
+
+    const location = byId("location")?.value.trim();
+
+    if (!title || !location) {
+
+        createToast("Title and location are required.", "error");
+
+        return;
+
+    }
+
+    const payload = {
+
+        title,
+
+        location,
+
+        description: byId("description")?.value.trim() || null,
+
+        price: Number(byId("price")?.value || 0),
+
+        total_seats: Number(byId("seats")?.value || 0),
+
+        date_time: byId("date")?.value || null,
+
+        category_id: byId("categorySelect")?.value ? Number(byId("categorySelect").value) : null,
+
+        age_limit: byId("ageLimit")?.value || "All Ages",
+
+        duration: byId("duration")?.value.trim() || null
+
+    };
+
+    try {
+
+        const response = await apiPost("/events/", payload);
+
+        await handleApiResponse(response);
+
+        createToast("Event created successfully.", "success");
+
+        const modalElement = byId("createEventModal");
+
+        bootstrap.Modal.getOrCreateInstance(modalElement).hide();
+
+        resetCreateEventForm();
+
+        await refreshDashboard();
+
+    } catch (error) {
+
+        logAPIError(error);
+
+        createToast(error.message || "Unable to create event.", "error");
+
+    }
+
+}
+
+// OPEN EDIT MODAL — fetches the event and pre-fills every field, including the new ones
+async function openEditEventModal(eventId) {
+
+    try {
+
+        const response = await apiGet(`/events/${eventId}`);
+
+        const result = await handleApiResponse(response);
+
+        const event = result.data;
+
+        currentEditEventId = eventId;
+
+        setValue(byId("edit_title"), event.title);
+
+        setValue(byId("edit_location"), event.location);
+
+        setValue(byId("edit_price"), event.price);
+
+        setValue(byId("edit_seats"), event.available_seats ?? event.total_seats);
+
+        setValue(byId("edit_date"), toDateTimeLocalValue(event.date_time));
+
+        setValue(byId("edit_description"), event.description);
+
+        setValue(byId("edit_ageLimit"), event.age_limit || "All Ages");
+
+        setValue(byId("edit_duration"), event.duration);
+
+        const modalElement = byId("editEventModal");
+
+        await loadTicketTypes(eventId);
+
+        bootstrap.Modal.getOrCreateInstance(modalElement).show();
+
+    } catch (error) {
+
+        logAPIError(error);
+
+        createToast(error.message || "Unable to load this event.", "error");
+
+    }
+
+}
+
+// SAVE EDITED EVENT — calls PUT /events/{id} with whatever is in the Edit Event modal
+async function saveEditedEvent() {
+
+    if (!currentEditEventId) {
+
+        createToast("No event selected to edit.", "error");
+
+        return;
+
+    }
+
+    const payload = {
+
+        title: byId("edit_title")?.value.trim(),
+
+        location: byId("edit_location")?.value.trim(),
+
+        price: Number(byId("edit_price")?.value || 0),
+
+        available_seats: Number(byId("edit_seats")?.value || 0),
+
+        date_time: byId("edit_date")?.value || null,
+
+        description: byId("edit_description")?.value.trim() || null,
+
+        age_limit: byId("edit_ageLimit")?.value || "All Ages",
+
+        duration: byId("edit_duration")?.value.trim() || null
+
+    };
+
+    try {
+
+        const response = await apiPut(`/events/${currentEditEventId}`, payload);
+
+        await handleApiResponse(response);
+
+        createToast("Event updated successfully.", "success");
+
+        const modalElement = byId("editEventModal");
+
+        bootstrap.Modal.getOrCreateInstance(modalElement).hide();
+
+        currentEditEventId = null;
+
+        await refreshDashboard();
+
+    } catch (error) {
+
+        logAPIError(error);
+
+        createToast(error.message || "Unable to update event.", "error");
+
+    }
+
+}
+
+// Small helper — safely set a form field's value only if the element exists
+function setValue(element, value) {
+
+    if (element) element.value = value ?? "";
+
+}
+
+// Small helper — converts an ISO date string into the format <input type="datetime-local"> expects
+function toDateTimeLocalValue(isoString) {
+
+    if (!isoString) return "";
+
+    const date = new Date(isoString);
+
+    if (Number.isNaN(date.getTime())) return "";
+
+    const pad = number => String(number).padStart(2, "0");
+
+    return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}T${pad(date.getHours())}:${pad(date.getMinutes())}`;
+
+}
+
+// Populate the category dropdown once, and add an Edit button to each Recent Events row
+document.addEventListener("DOMContentLoaded", () => {
+
+    loadCategoryOptions();
+
+});
+
+// Load and display all ticket types for the event currently being edited
+async function loadTicketTypes(eventId) {
+
+    try {
+
+        const response = await apiGet(`/events/${eventId}/ticket-types`);
+
+        const result = await handleApiResponse(response);
+
+        const ticketTypes = result.data || [];
+
+        const container = byId("ticketTypesList");
+
+        if (!container) return;
+
+        if (!ticketTypes.length) {
+
+            container.innerHTML = `<p class="text-muted small">No ticket types yet.</p>`;
+
+            return;
+
+        }
+
+        container.innerHTML = ticketTypes.map(tt => `
+            <div class="d-flex justify-content-between align-items-center border border-secondary rounded px-2 py-1 mb-1">
+                <span>${escapeHTML(tt.name)} — ₹${tt.price} (${tt.inventory_limit ?? "Unlimited"})</span>
+                <button class="btn btn-sm btn-outline-danger" onclick="deleteTicketType(${tt.id})">×</button>
+            </div>
+        `).join("");
+
+    } catch (error) {
+
+        logAPIError(error);
+
+    }
+
+}
+
+// Add a new ticket type to the event currently being edited
+async function addTicketType() {
+
+    if (!currentEditEventId) {
+
+        createToast("Save the event first before adding ticket types.", "error");
+
+        return;
+
+    }
+
+    const name = byId("newTicketName")?.value.trim();
+
+    const price = Number(byId("newTicketPrice")?.value || 0);
+
+    const limitRaw = byId("newTicketLimit")?.value.trim();
+
+    if (!name) {
+
+        createToast("Ticket name is required.", "error");
+
+        return;
+
+    }
+
+    const payload = {
+
+        event_id: currentEditEventId,
+
+        name,
+
+        price,
+
+        inventory_limit: limitRaw ? Number(limitRaw) : null
+
+    };
+
+    try {
+
+        const response = await apiPost(`/events/${currentEditEventId}/ticket-types`, payload);
+
+        await handleApiResponse(response);
+
+        createToast("Ticket type added.", "success");
+
+        byId("newTicketName").value = "";
+
+        byId("newTicketPrice").value = "";
+
+        byId("newTicketLimit").value = "";
+
+        await loadTicketTypes(currentEditEventId);
+
+    } catch (error) {
+
+        logAPIError(error);
+
+        createToast(error.message || "Unable to add ticket type.", "error");
+
+    }
+
+}
+
+// Delete a ticket type
+async function deleteTicketType(ticketTypeId) {
+
+    try {
+
+        const response = await apiDelete(`/events/ticket-types/${ticketTypeId}`);
+
+        await handleApiResponse(response);
+
+        createToast("Ticket type removed.", "success");
+
+        await loadTicketTypes(currentEditEventId);
+
+    } catch (error) {
+
+        logAPIError(error);
+
+        createToast(error.message || "Unable to delete ticket type.", "error");
+
+    }
+
+}
+
+let bookingsChartInstance = null;
+
+// Bar chart — bookings grouped by month, real data from /analytics/bookings-by-month
+async function loadBookingsPerMonthChart() {
+
+    try {
+
+        const response = await apiGet("/analytics/bookings-by-month");
+        const result = await handleApiResponse(response);
+        const data = result.data || [];
+
+        const canvas = byId("bookingsPerMonthChart");
+
+        if (!canvas) return;
+
+        if (bookingsChartInstance) bookingsChartInstance.destroy();
+
+        bookingsChartInstance = new Chart(canvas, {
+            type: "bar",
+            data: {
+                labels: data.map(d => d.month),
+                datasets: [{
+                    data: data.map(d => d.bookings),
+                    backgroundColor: "#8b7cff",
+                    borderRadius: 6,
+                    maxBarThickness: 22
+                }]
+            },
+            options: {
+                responsive: true,
+                plugins: { legend: { display: false } },
+                scales: {
+                    x: { grid: { display: false }, ticks: { color: "#94a3b8" } },
+                    y: { grid: { color: "rgba(255,255,255,0.05)" }, ticks: { color: "#94a3b8" } }
+                }
+            }
+        });
+
+    } catch (error) {
+
+        logAPIError(error);
+
+    }
+
 }

@@ -1,0 +1,52 @@
+/* Page wrapper padding */
+.analytics-page-content { padding: 20px 24px; }
+
+/* Breadcrumb above the header */
+.page-breadcrumb { font-size: 0.78rem; color: var(--muted); margin-bottom: 10px; display: flex; align-items: center; gap: 6px; }
+.page-breadcrumb a { color: var(--muted); text-decoration: none; }
+.page-breadcrumb a:hover { color: #fff; }
+.page-breadcrumb span { color: #cbd5e1; }
+
+/* Header row — title left, year dropdown right */
+.analytics-page-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 18px; }
+.analytics-page-header h2 { font-size: 1.4rem; font-weight: 700; }
+
+/* Year dropdown — reuses the same select-wrapper/chevron pattern as other pages */
+.year-select-wrapper { flex: 0 0 150px; position: relative; height: 42px; }
+.year-select-wrapper select { width: 100%; height: 100%; background: var(--panel-2) !important; border: 1px solid var(--border) !important; color: #cbd5e1 !important; border-radius: 10px; font-size: 0.85rem; padding: 0 34px 0 14px; box-sizing: border-box; appearance: none; -webkit-appearance: none; -moz-appearance: none; cursor: pointer; }
+.year-select-wrapper .select-arrow { position: absolute; right: 12px; top: 50%; transform: translateY(-50%); font-size: 0.75rem; color: #94a3b8; pointer-events: none; }
+
+/* ============================================================
+   STAT CARDS
+   ============================================================ */
+
+.analytics-stats-row { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin-bottom: 20px; }
+.analytics-stat-card { background: var(--panel); border: 1px solid var(--border); border-radius: 14px; padding: 16px 18px; }
+.analytics-stat-label { font-size: 0.75rem; color: #a78bfa; display: block; margin-bottom: 8px; }
+.analytics-stat-card h3 { font-size: 1.5rem; font-weight: 700; margin: 0 0 6px; }
+.analytics-stat-trend { font-size: 0.72rem; color: #34d399; font-weight: 600; }
+.analytics-stat-trend.negative { color: #f87171; }
+
+@media (max-width: 992px) { .analytics-stats-row { grid-template-columns: repeat(2, 1fr); } }
+
+/* ============================================================
+   CHART + TOP EVENTS COLUMNS
+   ============================================================ */
+
+.analytics-columns { display: grid; grid-template-columns: 1.6fr 1fr; gap: 16px; }
+
+.analytics-chart-card, .analytics-top-card { padding: 18px; }
+.analytics-chart-card h5, .analytics-top-card h5 { font-size: 0.95rem; margin-bottom: 16px; }
+
+/* Top performing events ranked list */
+.top-events-list { list-style: none; padding: 0; margin: 0 0 16px; counter-reset: rank; }
+.top-events-list li { display: flex; justify-content: space-between; align-items: center; padding: 10px 0; border-bottom: 1px solid var(--border); font-size: 0.85rem; }
+.top-events-list li:last-child { border-bottom: none; }
+.top-events-list .rank-number { color: var(--muted); margin-right: 8px; }
+.top-events-list .event-revenue { color: #34d399; font-weight: 600; }
+
+/* View Full Report button */
+.btn-view-report { width: 100%; padding: 10px; background: var(--panel-2); border: 1px solid var(--border); color: #cbd5e1; border-radius: 10px; font-size: 0.82rem; }
+.btn-view-report:hover { background: rgba(109, 93, 246, 0.15); color: #fff; }
+
+@media (max-width: 992px) { .analytics-columns { grid-template-columns: 1fr; } }

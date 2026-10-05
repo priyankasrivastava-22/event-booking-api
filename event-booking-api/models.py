@@ -64,6 +64,9 @@ class Event(Base):  # EVENT
     inventories = relationship("Inventory", back_populates="event", cascade="all, delete-orphan")  # Sellable inventory
     bookings = relationship("Booking", back_populates="event")  # Event bookings
     tickets_rel = relationship("Ticket", back_populates="event")  # Event tickets
+    age_limit = Column(String, nullable=True, default="All Ages")
+    duration = Column(String, nullable=True)
+    status = Column(String, default="published", nullable=False)  # published / draft / archived
 
 
 class VenueLayout(Base):  # VENUE LAYOUT
@@ -444,3 +447,13 @@ class AuditLog(Base):  # AUDIT LOG
     timestamp = Column(DateTime(timezone=True), default=lambda: datetime.now(timezone.utc), nullable=False, index=True)  # Audit timestamp
 
     user = relationship("User", back_populates="audit_logs")  # User relationship
+
+
+class Announcement(Base):
+    __tablename__ = "announcements"
+    id = Column(Integer, primary_key=True, index=True)
+    title = Column(String, nullable=False)
+    message = Column(String, nullable=False)
+    audience = Column(String, default="all", nullable=False)   # "all" ya "registered"
+    sent_count = Column(Integer, default=0, nullable=False)
+    created_at = Column(DateTime, default=lambda: datetime.now(timezone.utc))

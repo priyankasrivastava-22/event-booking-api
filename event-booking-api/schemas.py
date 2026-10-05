@@ -18,6 +18,9 @@ class EventCreate(BaseModel):  # Event creation request
     category_id: Optional[int] = None  # Category ID
     category: Optional[str] = None  # Legacy category name
     inventory_type: str = "general"  # seat, zone or general inventory
+    age_limit: Optional[str] = None
+    duration: Optional[str] = None
+    status: str = "published"
 
 
 class EventUpdate(BaseModel):  # Event update request
@@ -32,6 +35,9 @@ class EventUpdate(BaseModel):  # Event update request
     category: Optional[str] = None  # Legacy category name
     category_id: Optional[int] = None  # Category ID
     inventory_type: Optional[str] = None  # Inventory model
+    age_limit: Optional[str] = None
+    duration: Optional[str] = None
+    status: Optional[str] = None
 
 
 class EventResponse(BaseModel):  # Event response
@@ -47,6 +53,9 @@ class EventResponse(BaseModel):  # Event response
     category: Optional[str] = None  # Category name
     category_id: Optional[int] = None  # Category ID
     inventory_type: str  # Inventory model
+    age_limit: str | None = None
+    duration: str | None = None
+    status: str = "published"
 
     model_config = ConfigDict(from_attributes=True)  # Enable SQLAlchemy ORM conversion
 
@@ -635,3 +644,22 @@ class ChangePhoneRequest(BaseModel):  # Phone change request
 class ChangePasswordRequest(BaseModel):  # Password change request
     password: str  # New password
     verification_token: str  # Verification token
+
+class UserAdminUpdate(BaseModel):
+    role: Optional[str] = None
+    is_active: Optional[bool] = None
+
+
+class AnnouncementCreate(BaseModel):
+    title: str
+    message: str
+    audience: str = "all"
+
+class AnnouncementResponse(BaseModel):
+    id: int
+    title: str
+    message: str
+    audience: str
+    sent_count: int
+    created_at: datetime
+    model_config = ConfigDict(from_attributes=True)
