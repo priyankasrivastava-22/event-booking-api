@@ -1,0 +1,118 @@
+/* Page wrapper padding */
+.users-page-content { padding: 20px 24px; }
+
+/* Breadcrumb above the title */
+.page-breadcrumb { font-size: 0.78rem; color: var(--muted); margin-bottom: 10px; display: flex; align-items: center; gap: 6px; }
+.page-breadcrumb a { color: var(--muted); }
+.page-breadcrumb a:hover { color: #fff; }
+.page-breadcrumb span { color: #cbd5e1; }
+
+/* Page title */
+.users-page-title { font-size: 1.4rem; font-weight: 700; margin-bottom: 16px; }
+
+/* Table card */
+.users-table-card { padding: 0; overflow: hidden; }
+.users-table-card table { margin: 0; font-size: 0.82rem; }
+.users-table-card thead th { font-size: 0.7rem; text-transform: uppercase; color: var(--muted); padding: 12px 16px; border-bottom: 1px solid var(--border); }
+.users-table-card td { padding: 10px 16px; }
+
+/* User cell — avatar + name stacked horizontally */
+.user-cell { display: flex; align-items: center; gap: 10px; }
+
+/* Avatar circle — photo or initials fallback */
+.user-avatar { width: 34px; height: 34px; border-radius: 50%; object-fit: cover; flex-shrink: 0; }
+.user-avatar-fallback { width: 34px; height: 34px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 0.8rem; font-weight: 700; color: #fff; flex-shrink: 0; background: linear-gradient(135deg, var(--primary), var(--primary-2)); }
+
+/* Status pill — reused colors matching events page conventions */
+.status-badge.active { background: rgba(52, 211, 153, 0.15); color: #34d399; }
+.status-badge.inactive { background: rgba(239, 68, 68, 0.15); color: #f87171; }
+
+/* Role pill */
+.role-badge { padding: 3px 10px; border-radius: 999px; font-size: 0.68rem; font-weight: 700; background: var(--panel-2); color: #cbd5e1; text-transform: capitalize; }
+.role-badge.admin { background: rgba(139, 92, 246, 0.15); color: #a78bfa; }
+
+/* Page wrapper padding */
+.users-page-content { padding: 20px 24px; }
+
+/* Breadcrumb above the title */
+.page-breadcrumb { font-size: 0.78rem; color: var(--muted); margin-bottom: 10px; display: flex; align-items: center; gap: 6px; }
+.page-breadcrumb a { color: var(--muted); text-decoration: none; }
+.page-breadcrumb a:hover { color: #fff; }
+.page-breadcrumb span { color: #cbd5e1; }
+
+/* Page title */
+.users-page-title { font-size: 1.4rem; font-weight: 700; margin-bottom: 16px; }
+
+/* ============================================================
+   FILTER ROW — search + 2 dropdowns, all on one line, same size
+   ============================================================ */
+
+.events-filter-row { display: flex; align-items: center; gap: 12px; margin-bottom: 18px; }
+
+/* Search box container */
+.events-filter-row .events-search { flex: 1; height: 42px; display: flex; align-items: center; gap: 10px; padding: 0 14px; background: var(--panel-2); border: 1px solid var(--border); border-radius: 10px; box-sizing: border-box; }
+
+/* Search icon inside the box */
+.events-filter-row .events-search i { font-size: 0.85rem; color: #64748b; flex-shrink: 0; }
+
+/* Search input — transparent, no native border/outline */
+.events-filter-row .events-search input { background: transparent; border: none; outline: none; color: #e2e8f0; width: 100%; font-size: 0.85rem; }
+
+/* Search placeholder color — otherwise invisible on dark background */
+.events-filter-row .events-search input::placeholder { color: #64748b; }
+
+/* Wrapper around each dropdown — anchors the chevron icon inside it */
+.events-filter-row .select-wrapper { position: relative; flex: 0 0 170px; height: 42px; }
+
+/* The select fills its wrapper; native browser arrow removed so only our icon shows */
+.events-filter-row .select-wrapper select { width: 100%; height: 100%; margin: 0; background: var(--panel-2) !important; border: 1px solid var(--border) !important; color: #cbd5e1 !important; border-radius: 10px; font-size: 0.85rem; padding: 0 34px 0 14px; box-sizing: border-box; appearance: none; -webkit-appearance: none; -moz-appearance: none; cursor: pointer; }
+
+/* Select focus state — purple border instead of default blue browser outline */
+.events-filter-row .select-wrapper select:focus { outline: none; border-color: var(--primary) !important; box-shadow: none; }
+
+/* Chevron icon — absolutely positioned inside .select-wrapper, right-aligned, vertically centered */
+.events-filter-row .select-arrow { position: absolute; right: 12px; top: 50%; transform: translateY(-50%); font-size: 0.75rem; color: #94a3b8; pointer-events: none; line-height: 1; }
+
+/* ============================================================
+   USERS TABLE
+   ============================================================ */
+
+.users-table-card { padding: 0; overflow: hidden; background: var(--panel); border: 1px solid var(--border); border-radius: 14px; }
+.users-table-card table { margin: 0; font-size: 0.82rem; }
+.users-table-card thead th { font-size: 0.7rem; text-transform: uppercase; color: var(--muted); padding: 12px 16px; border-bottom: 1px solid var(--border); }
+.users-table-card td { padding: 10px 16px; }
+
+/* User cell — avatar + name */
+.user-cell { display: flex; align-items: center; gap: 10px; }
+.user-avatar { width: 34px; height: 34px; border-radius: 50%; object-fit: cover; flex-shrink: 0; }
+.user-avatar-fallback { width: 34px; height: 34px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 0.8rem; font-weight: 700; color: #fff; flex-shrink: 0; background: linear-gradient(135deg, var(--primary), var(--primary-2)); }
+
+/* Status pill */
+.status-badge { padding: 4px 12px; border-radius: 999px; font-size: 0.68rem; font-weight: 700; text-transform: capitalize; }
+.status-badge.active { background: rgba(52, 211, 153, 0.15); color: #34d399; }
+.status-badge.inactive { background: rgba(239, 68, 68, 0.15); color: #f87171; }
+
+/* Role pill */
+.role-badge { padding: 3px 10px; border-radius: 999px; font-size: 0.68rem; font-weight: 700; background: var(--panel-2); color: #cbd5e1; text-transform: capitalize; }
+.role-badge.admin { background: rgba(139, 92, 246, 0.15); color: #a78bfa; }
+
+/* Row action icon buttons (view/edit/delete) */
+.action-icon-btn { width: 30px; height: 30px; border: none; border-radius: 8px; background: var(--panel-2); color: #cbd5e1; margin-right: 4px; font-size: 0.8rem; }
+.action-icon-btn.danger { color: #f87171; }
+
+/* ============================================================
+   PAGINATION
+   ============================================================ */
+
+.events-pagination-row { display: flex; justify-content: space-between; align-items: center; margin-top: 16px; }
+.pagination-controls { display: flex; gap: 6px; }
+.pagination-controls button { width: 32px; height: 32px; border-radius: 8px; border: 1px solid var(--border); background: var(--panel); color: #cbd5e1; font-size: 0.8rem; }
+.pagination-controls button.active { background: linear-gradient(135deg, var(--primary), var(--primary-2)); color: #fff; border: none; }
+.pagination-controls button:disabled { opacity: 0.4; }
+.pagination-summary { font-size: 0.75rem; color: var(--muted); }
+
+/* Mobile — stack filter elements */
+@media (max-width: 768px) {
+    .events-filter-row { flex-wrap: wrap; }
+    .events-filter-row .events-search, .events-filter-row .select-wrapper { flex: 1 1 100%; }
+}

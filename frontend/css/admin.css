@@ -14,7 +14,6 @@
 
 html,body{height:100%;font-family:Inter,Segoe UI,Arial,sans-serif;background:var(--bg);color:var(--text)}
 
-body{overflow:hidden}
 
 a{text-decoration:none;color:inherit}
 
@@ -99,17 +98,20 @@ transition:.25s;
 .main-wrapper{
 display:flex;
 flex-direction:column;
-overflow:hidden;
+overflow-y:auto;
 }
 
 .topbar{
 height:80px;
 display:flex;
-justify-content:space-between;
+justify-content:flex-end;
 align-items:center;
-padding:0 30px;
+padding:0 24px;
 background:#111827;
 border-bottom:1px solid var(--border);
+position: sticky;      /* FIX — topbar ab hamesha upar chipka rahega */
+top: 0;                 /* FIX — viewport ke top se stick karega */
+z-index: 10;
 }
 
 .search-box{
@@ -209,7 +211,7 @@ padding:0 24px 16px;
 
 .dashboard-content{
 flex:1;
-overflow:auto;
+overflow:visible;
 padding:0 24px 24px;
 }
 
@@ -261,4 +263,228 @@ border-radius:18px;
 .topbar{padding:0 16px}
 .search-box{width:100%}
 .welcome-banner{flex-direction:column;align-items:flex-start;gap:20px}
+}
+
+/* ============================================================
+   DASHBOARD LAYOUT FIX v2 — smaller, compact, with breathing
+   room from screen edges (not edge-to-edge, not oversized)
+   ============================================================ */
+
+.main-wrapper {
+    overflow-y: auto;
+    padding-top: 14px;
+}
+
+/* Topbar — slightly shorter, tighter */
+.topbar {
+    height: 64px;
+    padding: 0 24px;
+}
+
+.search-box {
+    width: 320px;
+    padding: 8px 14px;
+}
+
+/* Welcome banner — smaller, with margin so it doesn't touch edges */
+.welcome-banner {
+    margin: 18px 24px 0;
+    padding: 18px 22px;
+    border-radius: 16px;
+}
+
+.welcome-banner h2 {
+    font-size: 1.2rem;
+}
+
+.greeting {
+    font-size: 0.78rem;
+}
+
+.banner-text {
+    font-size: 0.8rem;
+    margin-top: 6px;
+}
+
+.banner-graphic {
+    font-size: 60px;
+}
+
+/* Dashboard header + content — contained, with side/top padding so nothing touches the edge */
+
+
+.dashboard-content {
+    padding: 0 24px 24px;
+    max-width: none;            /* FIX: ab poori available width use karega */
+    margin: 0;                  /* FIX: centering hata di */
+    font-size: 0.82rem;
+}
+
+/* Stat cards — small and tight */
+.dashboard-content .row.g-3 {
+    --bs-gutter-x: 12px;
+    margin-bottom: 6px;
+}
+
+.dashboard-content .row.g-3 .card {
+    padding: 12px 14px;
+    border-radius: 10px;
+}
+
+.dashboard-content .row.g-3 .card h3 {
+    font-size: 1.1rem;
+    font-weight: 700;
+    margin-top: 2px;
+}
+
+.dashboard-content .row.g-3 .card small {
+    font-size: 0.66rem;
+}
+
+/* Table cards — compact rows */
+.dashboard-content .card {
+    border-radius: 10px;
+    padding: 14px;
+    margin-bottom: 16px;
+}
+
+.dashboard-content .card h5 {
+    font-size: 0.9rem;
+    margin-bottom: 10px;
+}
+
+.dashboard-content table {
+    font-size: 0.78rem;
+    width: 100%;
+}
+
+.dashboard-content table th {
+    font-size: 0.64rem;
+    text-transform: uppercase;
+    color: #94a3b8;
+    padding: 7px 10px;
+}
+
+.dashboard-content table td {
+    padding: 8px 10px;
+}
+
+/* Sidebar — slightly tighter so it matches the smaller scale */
+.sidebar {
+    padding: 18px;
+}
+
+.sidebar-logo {
+    margin-bottom: 24px;
+}
+
+.admin-nav {
+    padding: 10px 14px;
+    font-size: 0.85rem;
+}
+
+.stats-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 12px;
+    margin: 16px 24px 20px;
+}
+
+.stat-card {
+    background: var(--panel);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 16px;
+}
+
+.stat-card-top {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 10px;
+}
+
+.stat-card-label {
+    font-size: 1.6 rem;
+    color: var(--muted);
+}
+
+.stat-card-icon {
+    width: 32px;
+    height: 32px;
+    border-radius: 9px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.9rem;
+    flex-shrink: 0;
+}
+
+.icon-blue   { background: rgba(59, 130, 246, 0.18); color: #60a5fa; }
+.icon-purple { background: rgba(139, 92, 246, 0.18); color: #a78bfa; }
+.icon-orange { background: rgba(249, 115, 22, 0.18); color: #fb923c; }
+.icon-gold   { background: rgba(245, 158, 11, 0.18); color: #fbbf24; }
+
+.stat-card h2 {
+    font-size: 1 rem;
+    font-weight: 700;
+    margin: 0;
+}
+
+.stat-card-trend {
+    font-size: 0.7 rem;
+    color: #34d399;              /* green, for positive growth */
+}
+
+.stat-card-trend.negative {
+    color: #f87171;
+}
+
+@media (max-width: 992px) {
+    .stats-grid { grid-template-columns: repeat(2, 1fr); }
+}
+
+@media (max-width: 576px) {
+    .stats-grid { grid-template-columns: 1fr; }
+}
+
+.dashboard-columns {
+    display: block;
+    grid-template-columns: 1fr 420px;   /* left flexible, right fixed-ish width */
+    gap: 20px;
+    align-items: start;
+}
+
+.dashboard-left {
+    min-height: 200px;
+    /* abhi khaali hai — future charts/quick-actions yahan aa sakte hain */
+}
+
+.dashboard-right {
+    display: flex;
+    flex-direction: column;
+}
+
+.dashboard-right table {
+    font-size: 0.72rem;    /* narrow column mein table thodi compact rakhni padegi */
+}
+
+.dashboard-right table th,
+.dashboard-right table td {
+    padding: 6px 8px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 90px;
+}
+
+@media (max-width: 992px) {
+    .dashboard-columns {
+        grid-template-columns: 1fr;   /* chhoti screen pe ek column mein stack ho jaayega */
+    }
+}
+
+.dashboard-left .card h5 {
+    font-size: 0.9rem;
+    margin-bottom: 14px;
 }

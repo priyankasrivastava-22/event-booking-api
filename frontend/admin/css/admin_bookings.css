@@ -1,0 +1,75 @@
+/* Page wrapper padding */
+.bookings-page-content { padding: 20px 24px; }
+
+/* Breadcrumb above the title */
+.page-breadcrumb { font-size: 0.78rem; color: var(--muted); margin-bottom: 10px; display: flex; align-items: center; gap: 6px; }
+.page-breadcrumb a { color: var(--muted); text-decoration: none; }
+.page-breadcrumb a:hover { color: #fff; }
+.page-breadcrumb span { color: #cbd5e1; }
+
+/* Page title */
+.bookings-page-title { font-size: 1.4rem; font-weight: 700; margin-bottom: 16px; }
+
+/* ============================================================
+   STAT CARDS — Today / Pending / Completed / Cancelled
+   ============================================================ */
+
+.bookings-stats-row { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin-bottom: 18px; }
+.booking-stat-card { background: var(--panel); border: 1px solid var(--border); border-radius: 12px; padding: 14px 16px; }
+.booking-stat-label { font-size: 0.72rem; color: var(--muted); display: block; margin-bottom: 6px; }
+.booking-stat-card h3 { font-size: 1.5rem; font-weight: 700; margin: 0; }
+
+.stat-blue { color: #60a5fa; }
+.stat-amber { color: #fbbf24; }
+.stat-green { color: #34d399; }
+.stat-red { color: #f87171; }
+
+@media (max-width: 768px) { .bookings-stats-row { grid-template-columns: repeat(2, 1fr); } }
+
+/* ============================================================
+   FILTER ROW — search, event dropdown, status dropdown, date range
+   ============================================================ */
+
+.events-filter-row { display: flex; align-items: center; gap: 12px; margin-bottom: 18px; flex-wrap: wrap; }
+
+.events-filter-row .events-search { flex: 1; min-width: 200px; height: 42px; display: flex; align-items: center; gap: 10px; padding: 0 14px; background: var(--panel-2); border: 1px solid var(--border); border-radius: 10px; box-sizing: border-box; }
+.events-filter-row .events-search i { font-size: 0.85rem; color: #64748b; flex-shrink: 0; }
+.events-filter-row .events-search input { background: transparent; border: none; outline: none; color: #e2e8f0; width: 100%; font-size: 0.85rem; }
+.events-filter-row .events-search input::placeholder { color: #64748b; }
+
+.events-filter-row .select-wrapper { position: relative; flex: 0 0 170px; height: 42px; }
+.events-filter-row .select-wrapper select { width: 100%; height: 100%; margin: 0; background: var(--panel-2) !important; border: 1px solid var(--border) !important; color: #cbd5e1 !important; border-radius: 10px; font-size: 0.85rem; padding: 0 34px 0 14px; box-sizing: border-box; appearance: none; -webkit-appearance: none; -moz-appearance: none; cursor: pointer; }
+.events-filter-row .select-wrapper select:focus { outline: none; border-color: var(--primary) !important; box-shadow: none; }
+.events-filter-row .select-arrow { position: absolute; right: 12px; top: 50%; transform: translateY(-50%); font-size: 0.75rem; color: #94a3b8; pointer-events: none; line-height: 1; }
+
+.events-filter-row .date-input { flex: 0 0 150px; height: 42px; background: var(--panel-2); border: 1px solid var(--border); border-radius: 10px; color: #cbd5e1; padding: 0 12px; font-size: 0.82rem; box-sizing: border-box; }
+.events-filter-row .date-input::-webkit-calendar-picker-indicator { filter: invert(0.7); cursor: pointer; }
+
+/* ============================================================
+   BOOKINGS TABLE
+   ============================================================ */
+
+.bookings-table-card { padding: 0; overflow: hidden; }
+.bookings-table-card table { margin: 0; font-size: 0.82rem; }
+.bookings-table-card thead th { font-size: 0.7rem; text-transform: uppercase; color: var(--muted); padding: 12px 16px; border-bottom: 1px solid var(--border); }
+.bookings-table-card td { padding: 10px 16px; }
+
+.booking-id-cell { color: #94a3b8; font-weight: 600; }
+
+.status-badge { padding: 4px 12px; border-radius: 999px; font-size: 0.68rem; font-weight: 700; text-transform: capitalize; }
+.status-badge.pending { background: rgba(251, 191, 36, 0.15); color: #fbbf24; }
+.status-badge.confirmed { background: rgba(52, 211, 153, 0.15); color: #34d399; }
+.status-badge.cancelled { background: rgba(239, 68, 68, 0.15); color: #f87171; }
+
+.action-icon-btn { width: 30px; height: 30px; border: none; border-radius: 8px; background: var(--panel-2); color: #cbd5e1; margin-right: 4px; font-size: 0.8rem; }
+
+/* ============================================================
+   PAGINATION
+   ============================================================ */
+
+.events-pagination-row { display: flex; justify-content: space-between; align-items: center; margin-top: 16px; }
+.pagination-controls { display: flex; gap: 6px; }
+.pagination-controls button { width: 32px; height: 32px; border-radius: 8px; border: 1px solid var(--border); background: var(--panel); color: #cbd5e1; font-size: 0.8rem; }
+.pagination-controls button.active { background: linear-gradient(135deg, var(--primary), var(--primary-2)); color: #fff; border: none; }
+.pagination-controls button:disabled { opacity: 0.4; }
+.pagination-summary { font-size: 0.75rem; color: var(--muted); }

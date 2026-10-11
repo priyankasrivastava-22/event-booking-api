@@ -4,6 +4,8 @@ from sqlalchemy.exc import IntegrityError
 import models, schemas
 from utils.helpers import get_db
 from core.security import get_current_user
+from sqlalchemy import func, String
+from datetime import datetime
 
 router = APIRouter()
 
@@ -31,14 +33,71 @@ def users(
 
 
 # ---------------- ALL BOOKINGS ----------------
-@router.get("/bookings")
-def bookings(
+@router.get("/bookings/list")                                                                                            # ADMIN BOOKINGS LIST — with stats, joins, filters, pagination
+def get_bookings_admin(
+    page: int = 1,
+    limit: int = 10,
+    search: str = None,
+    event_id: int = None,
+    status: str = None,
+    start_date: str = None,
+    end_date: str = None,
     db: Session = Depends(get_db),
     user=Depends(get_current_user)
 ):
     admin_check(user)
-    return db.query(models.Booking).all()
 
+    base_query = db.query(models.Booking)
+
+    if search:
+        base_query = base_query.join(models.User, models.User.id == models.Booking.user_id).filter(
+            (models.User.username.ilike(f"%{search}%")) |
+            (models.User.full_name.ilike(f"%{search}%")) |
+            (models.Booking.id.cast(String).ilike(f"%{search}%"))
+        )
+    if event_id:
+        base_query = base_query.filter(models.Booking.event_id == event_id)
+    if status:
+        base_query = base_query.filter(models.Booking.status == status)
+    if start_date:
+        base_query = base_query.filter(models.Booking.booking_time >= start_date)
+    if end_date:
+        base_query = base_query.filter(models.Booking.booking_time <= end_date)
+
+    total = base_query.count()
+    skip = (page - 1) * limit
+    bookings = base_query.order_by(models.Booking.id.desc()).offset(skip).limit(limit).all()
+
+    today = datetime.utcnow().date()
+    stats = {
+        "today": db.query(func.count(models.Booking.id)).filter(func.date(models.Booking.booking_time) == today).scalar(),
+        "pending": db.query(func.count(models.Booking.id)).filter(models.Booking.status == "pending").scalar(),
+        "completed": db.query(func.count(models.Booking.id)).filter(models.Booking.status == "confirmed").scalar(),
+        "cancelled": db.query(func.count(models.Booking.id)).filter(models.Booking.status == "cancelled").scalar(),
+    }
+
+    items = []
+    for b in bookings:
+        booking_user = db.query(models.User).filter(models.User.id == b.user_id).first()
+        booking_event = db.query(models.Event).filter(models.Event.id == b.event_id).first()
+        items.append({
+            "id": b.id,
+            "user_name": booking_user.full_name or booking_user.username if booking_user else "—",
+            "event_title": booking_event.title if booking_event else "—",
+            "tickets": b.tickets,
+            "total_amount": b.total_amount,
+            "status": b.status,
+            "booking_time": b.booking_time,
+        })
+
+    return {
+        "items": items,
+        "stats": stats,
+        "total": total,
+        "page": page,
+        "limit": limit,
+        "total_pages": max(1, (total + limit - 1) // limit)
+    }
 
 # ---------------- ADMIN CANCEL BOOKING ----------------
 @router.delete("/bookings/{booking_id}")
@@ -277,3 +336,121 @@ def create_zone(
         raise HTTPException(status_code=409, detail="A zone with this code already exists for this event") from exc
 
     return zone
+
+@router.get("/users/list")                                                                                               # ADMIN USERS LIST — paginated, with booking counts
+def get_users_admin(
+    page: int = 1,
+    limit: int = 10,
+    search: str = None,
+    role: str = None,
+    status: str = None,
+    db: Session = Depends(get_db),
+    user=Depends(get_current_user)
+):
+    admin_check(user)
+
+    query = db.query(models.User)
+
+    if search:
+        query = query.filter(
+            (models.User.username.ilike(f"%{search}%")) |
+            (models.User.email.ilike(f"%{search}%")) |
+            (models.User.full_name.ilike(f"%{search}%"))
+        )
+    if role:
+        query = query.filter(models.User.role == role)
+    if status == "active":
+        query = query.filter(models.User.is_active == True)
+    elif status == "inactive":
+        query = query.filter(models.User.is_active == False)
+
+    total = query.count()
+    skip = (page - 1) * limit
+    users = query.order_by(models.User.id.desc()).offset(skip).limit(limit).all()
+
+    booking_counts = dict(
+        db.query(models.Booking.user_id, func.count(models.Booking.id))
+        .filter(models.Booking.user_id.in_([u.id for u in users]) if users else False)
+        .group_by(models.Booking.user_id)
+        .all()
+    )
+
+    items = [
+        {
+            "id": u.id,
+            "username": u.username,
+            "full_name": u.full_name,
+            "email": u.email,
+            "role": u.role,
+            "is_active": u.is_active,
+            "profile_image": u.profile_image,
+            "bookings_count": booking_counts.get(u.id, 0),
+        }
+        for u in users
+    ]
+
+    return {
+        "items": items,
+        "total": total,
+        "page": page,
+        "limit": limit,
+        "total_pages": max(1, (total + limit - 1) // limit)
+    }
+
+
+@router.put("/users/{user_id}")                                                                                          # ADMIN UPDATE USER — role/status
+def update_user_admin(
+    user_id: int,
+    data: schemas.UserAdminUpdate,
+    db: Session = Depends(get_db),
+    user=Depends(get_current_user)
+):
+    admin_check(user)
+
+    target = db.query(models.User).filter(models.User.id == user_id).first()
+    if not target:
+        raise HTTPException(status_code=404, detail="User not found")
+
+    if data.role is not None:
+        target.role = data.role
+    if data.is_active is not None:
+        target.is_active = data.is_active
+
+    db.commit()
+    db.refresh(target)
+    return {"id": target.id, "role": target.role, "is_active": target.is_active}
+
+@router.post("/announcements", response_model=schemas.AnnouncementResponse)                                              # SEND ANNOUNCEMENT — records it + creates a personal notification for each matching user
+def create_announcement(data: schemas.AnnouncementCreate, db: Session = Depends(get_db), user=Depends(get_current_user)):
+    admin_check(user)
+
+    query = db.query(models.User)
+    if data.audience == "registered":
+        query = query.filter(models.User.email_verified == True)
+    recipients = query.all()
+
+    announcement = models.Announcement(title=data.title, message=data.message, audience=data.audience, sent_count=len(recipients))
+    db.add(announcement)
+
+    for recipient in recipients:
+        db.add(models.Notification(message=f"{data.title}: {data.message}", user_id=recipient.id))
+
+    db.commit()
+    db.refresh(announcement)
+    return announcement
+
+
+@router.get("/announcements")                                                                                            # ANNOUNCEMENT HISTORY — paginated
+def get_announcements(page: int = 1, limit: int = 5, db: Session = Depends(get_db), user=Depends(get_current_user)):
+    admin_check(user)
+    query = db.query(models.Announcement).order_by(models.Announcement.id.desc())
+    total = query.count()
+    skip = (page - 1) * limit
+    items = query.offset(skip).limit(limit).all()
+    return {
+        "items": items,
+        "total": total,
+        "page": page,
+        "limit": limit,
+        "total_pages": max(1, (total + limit - 1) // limit)
+    }

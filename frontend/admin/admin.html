@@ -35,37 +35,37 @@
 
         <nav class="sidebar-menu">
 
-            <a href="#" class="admin-nav active" data-section="stats">
+            <a href="admin.html" class="admin-nav active" data-section="stats">
                 <i class="bi bi-grid-1x2-fill"></i>
                 <span>Dashboard</span>
             </a>
 
-            <a href="#" class="admin-nav" data-section="events">
+            <a href="pages/admin_event.html" class="admin-nav" data-section="events">
                 <i class="bi bi-calendar-event"></i>
                 <span>Events</span>
             </a>
 
-            <a href="#" class="admin-nav" data-section="categories">
+            <a href="pages/admin_categories.html" class="admin-nav" data-section="categories">
                 <i class="bi bi-tags"></i>
                 <span>Categories</span>
             </a>
 
-            <a href="#" class="admin-nav" data-section="users">
+            <a href="pages/admin_users.html" class="admin-nav" data-section="users">
                 <i class="bi bi-people"></i>
                 <span>Users</span>
             </a>
 
-            <a href="#" class="admin-nav" data-section="bookings">
+            <a href="pages/admin_bookings.html" class="admin-nav" data-section="bookings">
                 <i class="bi bi-ticket-perforated"></i>
                 <span>Bookings</span>
             </a>
 
-            <a href="#" class="admin-nav" data-section="analytics">
+            <a href="pages/admin_analytics.html" class="admin-nav" data-section="analytics">
                 <i class="bi bi-bar-chart-line"></i>
                 <span>Analytics</span>
             </a>
 
-            <a href="#" class="admin-nav" data-section="notifications">
+            <a href="pages/admin_notifications.html" class="admin-nav" data-section="notifications">
                 <i class="bi bi-bell"></i>
                 <span>Notifications</span>
             </a>
@@ -97,124 +97,145 @@
         <!-- ===================== -->
         <!-- TOPBAR -->
         <!-- ===================== -->
-
         <header class="topbar">
 
-            <div class="search-box">
+    <div class="topbar-right">
 
-                <i class="bi bi-search"></i>
+        <div class="search-box">
+            <i class="bi bi-search"></i>
+            <input type="text" id="adminEventSearch" placeholder="Search users, events, bookings...">
+        </div>
 
-                <input
-                    type="text"
-                    id="adminEventSearch"
-                    placeholder="Search users, events, bookings..."
-                >
+        <button class="icon-btn">
+            <i class="bi bi-bell"></i>
+            <span class="notification-dot"></span>
+        </button>
 
+        <div class="admin-profile">
+            <div class="avatar">A</div>
+            <div>
+                <h6 id="adminName">Admin</h6>
+                <small>Administrator</small>
             </div>
+        </div>
 
-            <div class="topbar-right">
+    </div>
 
-                <button class="icon-btn">
+</header>
 
-                    <i class="bi bi-bell"></i>
-
-                    <span class="notification-dot"></span>
-
-                </button>
-
-                <div class="admin-profile">
-
-                    <div class="avatar">
-                        A
-                    </div>
-
-                    <div>
-
-                        <h6 id="adminName">
-                            Admin
-                        </h6>
-
-                        <small>
-                            Administrator
-                        </small>
-
-                    </div>
-
-                </div>
-
-            </div>
-
-        </header>
 
         <!-- ===================== -->
         <!-- WELCOME BANNER -->
         <!-- ===================== -->
 
-        <section class="welcome-banner">
+       <section class="welcome-banner">
+    <div>
+        <p id="greeting" class="greeting">Good Morning</p>
+        <h2>Welcome back, <span id="bannerAdminName">Admin</span> 👋</h2>
+        <p class="banner-text">Manage events, bookings and platform insights.</p>
+    </div>
+    <div class="banner-graphic"><i class="bi bi-bar-chart-fill"></i></div>
+</section>
 
-            <div>
-
-                <p id="greeting" class="greeting">
-
-                    Good Morning
-
-                </p>
-
-                <h2>
-
-                    Welcome back,
-                    <span id="bannerAdminName">
-                        Admin
-                    </span>
-
-                </h2>
-
-                <p class="banner-text">
-
-                    Manage events, monitor bookings, track analytics,
-                    and keep EVENTORA running smoothly.
-
-                </p>
-
-            </div>
-
-            <div class="banner-graphic">
-
-                <i class="bi bi-bar-chart-fill"></i>
-
-            </div>
-
-        </section>
-
-        <!-- ===================== -->
-        <!-- SECTION HEADER -->
-        <!-- ===================== -->
-
-        <div class="dashboard-header">
-
-            <div>
-
-                <h3 id="section-title">
-
-                    Dashboard
-
-                </h3>
-
-            </div>
-
-            <div id="header-actions"></div>
-
+<div class="stats-grid">
+    <div class="stat-card">
+        <div class="stat-card-top">
+            <span class="stat-card-label">Total Events</span>
+            <div class="stat-card-icon icon-blue"><i class="bi bi-calendar-event"></i></div>
         </div>
+        <h2 id="totalEvents">0</h2>
+        <span class="stat-card-trend" id="eventsTrend"></span>
+    </div>
+
+    <div class="stat-card">
+        <div class="stat-card-top">
+            <span class="stat-card-label">Registered Users</span>
+            <div class="stat-card-icon icon-purple"><i class="bi bi-people-fill"></i></div>
+        </div>
+        <h2 id="totalUsers">0</h2>
+        <span class="stat-card-trend" id="usersTrend"></span>
+    </div>
+
+    <div class="stat-card">
+        <div class="stat-card-top">
+            <span class="stat-card-label">Bookings</span>
+            <div class="stat-card-icon icon-orange"><i class="bi bi-ticket-perforated-fill"></i></div>
+        </div>
+        <h2 id="totalBookings">0</h2>
+        <span class="stat-card-trend" id="bookingsTrend"></span>
+    </div>
+
+    <div class="stat-card">
+        <div class="stat-card-top">
+            <span class="stat-card-label">Revenue</span>
+            <div class="stat-card-icon icon-gold"><i class="bi bi-currency-rupee"></i></div>
+        </div>
+        <h2 id="totalRevenue">₹0</h2>
+        <span class="stat-card-trend" id="revenueTrend"></span>
+    </div>
+</div>
 
         <!-- ===================== -->
         <!-- DYNAMIC CONTENT -->
         <!-- ===================== -->
+<section id="admin-main-view" class="dashboard-content">
 
-        <section
-            id="admin-main-view"
-            class="dashboard-content">
+    <div class="dashboard-columns">
 
-        </section>
+        <!-- LEFT COLUMN — future widgets/charts ke liye jagah -->
+        <div class="dashboard-left">
+    <div class="card bg-dark text-white p-3">
+        <h5>Bookings Per Month</h5>
+        <canvas id="bookingsPerMonthChart" height="180"></canvas>
+    </div>
+</div>
+
+        <!-- RIGHT COLUMN — activity feed jaisa panel -->
+        <div class="dashboard-right">
+
+            <div class="card bg-dark text-white p-3 mb-3">
+                <h5>Recent Events</h5>
+                <table class="table table-dark table-sm">
+                    <thead>
+                        <tr><th>Title</th><th>Category</th><th>Date</th><th>Seats</th><th>Action</th></tr>
+                    </thead>
+                    <tbody id="recentEventsTable">
+                        <tr><td colspan="5" class="text-center text-muted">Loading...</td></tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <div class="card bg-dark text-white p-3 mb-3">
+                <h5>Recent Bookings</h5>
+                <table class="table table-dark table-sm">
+                    <thead>
+                        <tr><th>User</th><th>Event</th><th>Tickets</th><th>Date</th></tr>
+                    </thead>
+                    <tbody id="recentBookingsTable">
+                        <tr><td colspan="4" class="text-center text-muted">Loading...</td></tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <div class="card bg-dark text-white p-3 mb-3">
+                <h5>Recent Users</h5>
+                <table class="table table-dark table-sm">
+                    <thead>
+                        <tr><th>Name</th><th>Email</th><th>Role</th><th>Joined</th></tr>
+                    </thead>
+                    <tbody id="recentUsersTable">
+                        <tr><td colspan="4" class="text-center text-muted">Loading...</td></tr>
+                    </tbody>
+                </table>
+            </div>
+
+        </div>
+
+    </div>
+
+    <small class="text-muted" id="lastUpdated"></small>
+
+</section>
 
     </main>
 
@@ -256,7 +277,16 @@
 
                 <input id="date" type="datetime-local" class="form-control mb-2">
 
-                <select id="categorySelect" class="form-select"></select>
+                <select id="categorySelect" class="form-select mb-2"></select>
+
+                <select id="ageLimit" class="form-select mb-2">
+                    <option value="All Ages">All Ages</option>
+                    <option value="13+">13+</option>
+                    <option value="18+">18+</option>
+                    <option value="21+">21+</option>
+                </select>
+
+                <input id="duration" class="form-control mb-2" placeholder="Duration (e.g. 3.5 Hrs)">
 
             </div>
 
@@ -317,7 +347,16 @@
 
                 <textarea
                     id="edit_description"
-                    class="form-control"></textarea>
+                    class="form-control mb-2"></textarea>
+
+                <select id="edit_ageLimit" class="form-select mb-2">
+                    <option value="All Ages">All Ages</option>
+                    <option value="13+">13+</option>
+                    <option value="18+">18+</option>
+                    <option value="21+">21+</option>
+                </select>
+
+                <input id="edit_duration" class="form-control mb-2" placeholder="Duration (e.g. 3.5 Hrs)">
 
             </div>
 
