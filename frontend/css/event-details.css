@@ -1,374 +1,821 @@
 /* ============================================================
-   EVENTORA — EVENT DETAILS PAGE (v2 — Aurora theme)
-   Drop-in replacement. Uses the SAME class/id names already
-   referenced by event-details.js and event-details.html, so no
-   JavaScript changes are required for this file to work.
+   EVENTORA — EVENT DETAILS PAGE
+   Compact two-column premium layout for all 3 inventory modes.
    ============================================================ */
 
-/* ---------- 1. DESIGN TOKENS ---------- */
 :root {
-    --bg-deep: #0a0612;                                            /* page background base */
-    --bg-soft: #120b1f;                                            /* secondary background */
-    --card-bg: rgba(24, 16, 41, 0.55);                             /* glass card fill */
-    --card-bg-solid: #170f28;                                      /* solid card fallback */
-    --card-border: rgba(217, 70, 239, 0.16);                       /* subtle magenta border */
-    --card-border-strong: rgba(217, 70, 239, 0.4);                 /* strong magenta border */
-
-    --grad-primary: linear-gradient(135deg, #d946ef 0%, #6366f1 55%, #3b82f6 100%); /* signature gradient */
-    --grad-primary-hover: linear-gradient(135deg, #e879f9 0%, #818cf8 55%, #60a5fa 100%); /* hover state gradient */
-    --accent-pink: #e879f9;                                        /* accent pink */
-    --accent-blue: #60a5fa;                                        /* accent blue */
-    --accent-green: #34d399;                                       /* success/available green */
-    --accent-amber: #fbbf24;                                       /* warning/limited amber */
-    --accent-red: #f87171;                                         /* danger/sold-out red */
-
-    --text-primary: #f5f0fb;                                       /* main text */
-    --text-secondary: #b4a7c9;                                     /* secondary text */
-    --text-muted: #6f6386;                                         /* muted labels */
-
-    --glow-sm: 0 0 14px rgba(217, 70, 239, 0.35);                  /* small glow */
-    --glow-md: 0 0 28px rgba(217, 70, 239, 0.32);                  /* medium glow */
-    --glow-lg: 0 0 60px rgba(99, 102, 241, 0.35);                  /* large glow */
-
-    --radius-lg: 22px;                                             /* large corner radius */
-    --radius-md: 16px;                                             /* medium corner radius */
-    --radius-sm: 11px;                                             /* small corner radius */
+    --page-bg: #080b16;
+    --panel: #101729;
+    --panel-2: #151d31;
+    --panel-3: #0e1525;
+    --border: rgba(148, 163, 184, .16);
+    --border-strong: rgba(139, 92, 246, .42);
+    --text: #f8fafc;
+    --text-soft: #cbd5e1;
+    --muted: #7f8ba3;
+    --purple: #8b5cf6;
+    --purple-2: #6d5dfc;
+    --blue: #4f8cff;
+    --green: #2dd4a5;
+    --red: #fb5a73;
+    --amber: #f7b955;
+    --gradient: linear-gradient(135deg, #c93ce9 0%, #8758f5 48%, #4786ff 100%);
+    --shadow: 0 24px 70px rgba(0, 0, 0, .32);
 }
 
-/* ---------- 2. RESET & BASE ---------- */
-* { box-sizing: border-box; }                                      /* predictable sizing everywhere */
+* { box-sizing: border-box; }
+
+html { background: var(--page-bg); }
 
 body {
-    margin: 0;                                                     /* remove default margin */
-    font-family: 'Inter', sans-serif;                              /* body typeface */
-    color: var(--text-primary);                                    /* base text color */
+    margin: 0;
+    min-height: 100vh;
+    font-family: "Inter", sans-serif;
+    color: var(--text);
     background:
-        radial-gradient(circle at 10% 0%, rgba(217, 70, 239, 0.22), transparent 42%),
-        radial-gradient(circle at 90% 15%, rgba(99, 102, 241, 0.20), transparent 45%),
-        radial-gradient(circle at 50% 100%, rgba(59, 130, 246, 0.14), transparent 55%),
-        var(--bg-deep);                                            /* layered aurora backdrop */
-    background-attachment: fixed;                                  /* keep glow fixed while scrolling */
-    min-height: 100vh;                                             /* full viewport height */
+        radial-gradient(circle at 6% 0%, rgba(144, 54, 204, .16), transparent 34%),
+        radial-gradient(circle at 93% 8%, rgba(52, 86, 190, .17), transparent 32%),
+        var(--page-bg);
 }
 
-h1, h2, h3, h4, h5 { font-family: 'Poppins', sans-serif; margin: 0; color: var(--text-primary); } /* display headings */
-p { color: var(--text-secondary); line-height: 1.7; margin: 0; }  /* body paragraphs */
+button, input { font: inherit; }
 
-/* ---------- 3. LAYOUT SHELL ---------- */
-.event-wrapper { width: min(1500px, 100%); margin: 0 auto; padding: 22px; } /* page shell */
-
-.loading-state, .error-state {                                     /* full-page state screens */
-    min-height: 60vh; display: flex; flex-direction: column;
-    align-items: center; justify-content: center; gap: 14px; text-align: center;
-}
-.loading-state .spinner-border { color: var(--accent-pink); }      /* recolor bootstrap spinner */
-.error-state i { font-size: 2.6rem; color: var(--accent-red); }    /* error icon */
-
-.top-bar { display: flex; align-items: center; justify-content: space-between; margin-bottom: 26px; } /* header row */
-
-.action-btn {
-    border: 1px solid var(--card-border);                          /* subtle outline */
-    background: var(--card-bg);                                    /* glass fill */
-    color: var(--text-primary);                                    /* readable text */
-    border-radius: var(--radius-sm);                               /* rounded pill-ish */
-    font-family: 'Inter', sans-serif; font-weight: 600; font-size: 0.92rem;
-    padding: 10px 18px; cursor: pointer; transition: all 0.25s ease;
-    backdrop-filter: blur(12px);                                   /* frosted glass effect */
-}
-.action-btn:hover { border-color: var(--card-border-strong); box-shadow: var(--glow-sm); transform: translateY(-1px); } /* hover lift */
-.back-btn { display: inline-flex; align-items: center; gap: 6px; } /* back button layout */
-.top-actions { display: flex; align-items: center; gap: 12px; }    /* right-side actions row */
-.icon-btn { width: 46px; height: 46px; padding: 0; border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; font-size: 1.1rem; } /* circular icon buttons */
-
-/* ---------- 4. MAIN GRID ---------- */
-.event-grid { display: grid; grid-template-columns: 1.15fr 1fr; gap: 28px; align-items: start; } /* two-column layout */
-@media (max-width: 992px) { .event-grid { grid-template-columns: 1fr; } } /* stack on tablet */
-
-.left-panel { display: flex; flex-direction: column; gap: 0; }     /* left info column */
-.right-panel { display: flex; flex-direction: column; gap: 18px; position: sticky; top: 22px; } /* sticky booking column */
-@media (max-width: 992px) { .right-panel { position: static; } }   /* drop sticky on stacked layout */
-
-/* ---------- 5. HERO IMAGE ---------- */
-.hero-card { position: relative; border-radius: var(--radius-lg) var(--radius-lg) 0 0; overflow: hidden; border: 1px solid var(--card-border); border-bottom: none; } /* rounded top only, joins content card below */
-.event-image { width: 100%; height: 100%; min-height: 380px; max-height: 460px; object-fit: cover; object-position: center top; display: block; } /* crop from top so posters keep their focal point */
-.image-overlay { position: absolute; inset: 0; background: linear-gradient(180deg, rgba(10, 6, 18, 0) 40%, rgba(10, 6, 18, 0.92) 100%); pointer-events: none; } /* fade into content card */
-
-.category-badge {
-    position: absolute; top: 18px; left: 18px; z-index: 2;
-    display: inline-flex; align-items: center; gap: 8px;
-    padding: 9px 18px; border-radius: 999px; font-size: 0.85rem; font-weight: 700;
-    color: #1a0b28; background: var(--grad-primary); box-shadow: var(--glow-md);
+.event-page-shell {
+    width: min(1540px, calc(100% - 34px));
+    margin: 0 auto;
+    padding: 16px 0 26px;
 }
 
-/* ---------- 6. CONTENT CARD ---------- */
-.content-card { background: var(--card-bg); border: 1px solid var(--card-border); border-top: none; border-radius: 0 0 var(--radius-lg) var(--radius-lg); backdrop-filter: blur(18px); padding: 28px; } /* main info body */
-
-.title-row { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; margin-bottom: 6px; } /* title + verified badge row */
-.title-row h1 { font-size: 2.3rem; font-weight: 700; letter-spacing: -0.02em; } /* event title size */
-.subtitle { font-size: 1rem; font-weight: 600; background: linear-gradient(135deg, var(--accent-pink), var(--accent-blue)); -webkit-background-clip: text; background-clip: text; color: transparent; margin-top: 6px; } /* gradient subtitle text */
-
-.verified-badge { width: 34px; height: 34px; border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; background: var(--grad-primary); color: #1a0b28; font-size: 1.05rem; box-shadow: var(--glow-sm); flex-shrink: 0; } /* verified check circle */
-
-.tag-wrapper { display: flex; gap: 10px; flex-wrap: wrap; margin: 18px 0 22px; } /* category/inventory tag row */
-.event-tag { padding: 7px 16px; border-radius: 999px; font-size: 0.82rem; font-weight: 600; color: var(--accent-pink); border: 1px solid var(--card-border-strong); background: rgba(217, 70, 239, 0.08); } /* pill tag */
-.inventory-tag { color: var(--accent-blue); border-color: rgba(96, 165, 250, 0.4); background: rgba(96, 165, 250, 0.08); } /* distinct color for inventory-type tag */
-
-.description-block h4 { font-size: 1.1rem; font-weight: 600; margin-bottom: 10px; } /* "About Event" heading */
-.description-block p { font-size: 0.95rem; margin-bottom: 24px; }  /* description text */
-
-.meta-row { display: flex; gap: 16px; flex-wrap: wrap; }           /* date/location row */
-.meta-card { flex: 1; min-width: 220px; display: flex; align-items: center; gap: 14px; padding: 16px 18px; border-radius: var(--radius-md); border: 1px solid var(--card-border); background: rgba(255, 255, 255, 0.03); } /* single meta pill */
-.meta-icon { width: 42px; height: 42px; border-radius: 12px; display: inline-flex; align-items: center; justify-content: center; font-size: 1.1rem; color: var(--accent-pink); background: rgba(217, 70, 239, 0.12); border: 1px solid var(--card-border-strong); flex-shrink: 0; } /* meta icon chip */
-.meta-card div { display: flex; flex-direction: column; gap: 4px; } /* meta text stack */
-.meta-label { font-size: 0.78rem; color: var(--text-muted); font-weight: 500; text-transform: uppercase; letter-spacing: 0.04em; } /* small label */
-.meta-value { font-size: 0.98rem; font-weight: 600; color: var(--text-primary); } /* meta value text */
-
-/* ---------- 7. RIGHT PANEL CARDS (shared) ---------- */
-.card { background: var(--card-bg); border: 1px solid var(--card-border); border-radius: var(--radius-lg); backdrop-filter: blur(18px); padding: 24px; } /* generic glass card */
-
-.price-card { display: flex; align-items: center; justify-content: space-between; gap: 16px; flex-wrap: wrap; border-color: var(--card-border-strong); box-shadow: var(--glow-lg); } /* top price + book-now card */
-.small-title { font-size: 0.83rem; color: var(--text-muted); font-weight: 500; text-transform: uppercase; letter-spacing: 0.05em; } /* "Starting From" label */
-.price-value { font-family: 'Poppins', sans-serif; font-size: 2.3rem; font-weight: 700; margin-top: 4px; background: linear-gradient(135deg, var(--accent-pink), var(--accent-blue)); -webkit-background-clip: text; background-clip: text; color: transparent; } /* gradient price */
-.price-unit { font-size: 0.85rem; font-weight: 500; margin-left: 4px; color: var(--text-secondary); -webkit-text-fill-color: var(--text-secondary); } /* "/ticket" suffix */
-
-.hero-book-btn, .book-btn {                                        /* primary gradient CTA (top card + summary card) */
-    border: none; border-radius: var(--radius-sm); padding: 14px 30px; font-size: 1rem; font-weight: 700;
-    color: #1a0b28; background: var(--grad-primary); box-shadow: var(--glow-md); cursor: pointer; transition: all 0.25s ease;
-}
-.hero-book-btn:hover, .book-btn:hover:not(:disabled) { background: var(--grad-primary-hover); box-shadow: 0 0 36px rgba(217, 70, 239, 0.5); transform: translateY(-1px); } /* hover glow */
-.book-btn { width: 100%; padding: 15px; }                          /* full-width in summary card */
-.book-btn:disabled { opacity: 0.6; cursor: not-allowed; transform: none; box-shadow: none; } /* disabled/processing state */
-
-.stats-card { display: flex; justify-content: space-between; align-items: center; gap: 10px; flex-wrap: wrap; } /* category/seats/tickets row */
-.stat-box { flex: 1; display: flex; align-items: center; gap: 10px; min-width: 0; }
-.stat-box i { flex-shrink: 0; width: 40px; height: 40px; display: inline-flex; align-items: center; justify-content: center; border-radius: 11px; font-size: 1.05rem; color: var(--accent-pink); background: rgba(217, 70, 239, 0.12); border: 1px solid var(--card-border-strong); } /* stat icon chip */
-.stat-text { display: flex; flex-direction: column; gap: 2px; min-width: 0; overflow: hidden; }
-.stat-value { font-size: 1rem; font-weight: 700; color: var(--text-primary); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; } /* numeric/status value */
-.stat-title { font-size: 0.7rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.04em; white-space: nowrap; } /* stat label */
-
-/* ---------- 8. TRUST BADGES ROW (new — matches reference design) ---------- */
-.trust-badges { display: flex; justify-content: space-between; gap: 10px; flex-wrap: wrap; } /* row of reassurance badges */
-.trust-badge { flex: 1; min-width: 140px; display: flex; align-items: center; gap: 10px; } /* single badge */
-.trust-badge i { width: 38px; height: 38px; border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; font-size: 1rem; color: var(--accent-green); background: rgba(52, 211, 153, 0.12); border: 1px solid rgba(52, 211, 153, 0.35); flex-shrink: 0; } /* green check-style icon */
-.trust-badge strong { display: block; font-size: 0.82rem; font-weight: 700; }
-.trust-badge span { display: block; font-size: 0.72rem; color: var(--text-muted); }
-
-/* ---------- 9. INVENTORY SELECTION CARD ---------- */
-.section-heading { margin-bottom: 16px; }                          /* "Select Tickets" heading block */
-.section-heading h4 { font-size: 1.08rem; margin-bottom: 4px; }
-.section-heading p { font-size: 0.85rem; }
-.inventory-section.d-none { display: none; }                       /* hidden inventory panel */
-.empty-inventory { padding: 24px; text-align: center; color: var(--text-muted); font-size: 0.9rem; border: 1px dashed var(--card-border); border-radius: var(--radius-md); } /* no-inventory state */
-
-/* -- General admission ticket row -- */
-.ticket-row { display: flex; align-items: center; justify-content: space-between; gap: 14px; padding: 16px 18px; border: 1px solid var(--card-border); border-radius: var(--radius-md); background: rgba(255, 255, 255, 0.03); } /* single ticket type row */
-.ticket-row strong { font-size: 0.95rem; display: block; }
-.ticket-row small { color: var(--text-muted); font-size: 0.78rem; } /* availability text */
-
-.quantity-control { display: flex; align-items: center; gap: 10px; } /* qty stepper */
-.quantity-btn { width: 34px; height: 34px; border-radius: 50%; border: 1px solid var(--card-border-strong); background: rgba(217, 70, 239, 0.1); color: var(--text-primary); font-size: 1.1rem; font-weight: 700; cursor: pointer; transition: all 0.2s ease; } /* +/- button */
-.quantity-btn:hover { background: var(--grad-primary); color: #1a0b28; }
-#quantity { width: 54px; background: rgba(8, 5, 15, 0.7); border: 1px solid var(--card-border-strong); color: var(--text-primary); border-radius: var(--radius-sm); padding: 8px; font-size: 1rem; font-weight: 700; text-align: center; -moz-appearance: textfield; } /* quantity number input */
-#quantity::-webkit-outer-spin-button, #quantity::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; } /* hide native spinners, custom buttons used instead */
-
-/* -- Zone selection cards -- */
-.zone-list { display: flex; flex-direction: column; gap: 12px; }   /* stacked zone options */
-.zone-option {                                                     /* one zone as a selectable card (built by JS) */
-    width: 100%; display: flex; align-items: center; justify-content: space-between; gap: 14px;
-    padding: 16px 18px; border-radius: var(--radius-md); border: 1.5px solid var(--card-border);
-    background: rgba(255, 255, 255, 0.03); color: var(--text-primary); cursor: pointer; text-align: left;
-    transition: all 0.2s ease; font-family: 'Inter', sans-serif;
-}
-.zone-option span { display: flex; flex-direction: column; gap: 3px; } /* name + availability stack */
-.zone-option strong { font-size: 0.95rem; }
-.zone-option small { color: var(--text-muted); font-size: 0.78rem; }
-.zone-option:hover:not(:disabled) { border-color: var(--card-border-strong); transform: translateY(-1px); } /* hover lift */
-.zone-option.selected { border-color: var(--accent-pink); background: rgba(217, 70, 239, 0.12); box-shadow: var(--glow-sm); } /* active selection */
-.zone-option:disabled { opacity: 0.45; cursor: not-allowed; }      /* sold-out zone */
-
-/* -- Seat map -- */
-.seat-selection-header { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 16px; flex-wrap: wrap; } /* seat panel header */
-.seat-selection-header strong { display: block; font-size: 0.95rem; }
-.seat-selection-header small { color: var(--text-muted); font-size: 0.8rem; }
-
-.seat-legend { display: flex; gap: 18px; flex-wrap: wrap; margin-bottom: 16px; padding: 12px 16px; border-radius: var(--radius-sm); background: rgba(255, 255, 255, 0.03); border: 1px solid var(--card-border); } /* legend row (new) */
-.seat-legend-item { display: flex; align-items: center; gap: 8px; font-size: 0.78rem; color: var(--text-secondary); } /* single legend entry */
-.seat-legend-swatch { width: 16px; height: 16px; border-radius: 5px; display: inline-block; } /* legend color chip */
-.seat-legend-swatch.available { background: rgba(255, 255, 255, 0.08); border: 1.5px solid var(--card-border-strong); }
-.seat-legend-swatch.selected { background: var(--grad-primary); }
-.seat-legend-swatch.locked { background: rgba(251, 191, 36, 0.25); border: 1.5px solid var(--accent-amber); }
-.seat-legend-swatch.sold { background: rgba(255, 255, 255, 0.04); border: 1.5px solid var(--text-muted); }
-
-.seat-map { display: flex; flex-direction: column; gap: 10px; max-height: 360px; overflow-y: auto; padding-right: 6px; } /* scrollable seat grid */
-.seat-map::-webkit-scrollbar { width: 6px; }
-.seat-map::-webkit-scrollbar-thumb { background: var(--card-border-strong); border-radius: 999px; }
-
-.seat-row { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
-.seat-row-label { width: 22px; flex-shrink: 0; font-size: 0.78rem; font-weight: 700; color: var(--text-muted); text-align: center; } /* row letter/number */
-
-.seat { width: 32px; height: 32px; border-radius: 8px; border: 1.5px solid var(--card-border-strong); background: rgba(255, 255, 255, 0.06); color: var(--text-secondary); font-size: 0.7rem; font-weight: 700; cursor: pointer; transition: all 0.15s ease; flex-shrink: 0; } /* single seat button, base state */
-.seat.available:hover { border-color: var(--accent-pink); transform: scale(1.08); } /* hover on selectable seat */
-.seat.selected { background: var(--grad-primary); border-color: transparent; color: #1a0b28; box-shadow: var(--glow-sm); transform: scale(1.05); } /* chosen seat */
-.seat.locked { background: rgba(251, 191, 36, 0.18); border-color: var(--accent-amber); color: var(--accent-amber); cursor: not-allowed; } /* held by someone else */
-.seat.sold, .seat.inactive { background: rgba(255, 255, 255, 0.02); border-color: transparent; color: var(--text-muted); cursor: not-allowed; opacity: 0.5; } /* unavailable seat */
-.seat:disabled { pointer-events: none; }
-
-/* ---------- 10. HOLD COUNTDOWN TIMER (new) ---------- */
-.hold-timer { display: none; align-items: center; justify-content: center; gap: 8px; padding: 10px 16px; border-radius: var(--radius-sm); background: rgba(251, 191, 36, 0.1); border: 1px solid rgba(251, 191, 36, 0.4); color: var(--accent-amber); font-size: 0.85rem; font-weight: 700; margin-bottom: 14px; } /* countdown pill, hidden until a hold exists */
-.hold-timer.active { display: flex; }                              /* shown once a booking hold is active */
-.hold-timer.urgent { background: rgba(248, 113, 113, 0.12); border-color: rgba(248, 113, 113, 0.45); color: var(--accent-red); } /* under 1 minute left */
-
-/* ---------- 11. BOOKING SUMMARY ---------- */
-.summary-card h4 { font-size: 1.05rem; margin-bottom: 16px; }
-.summary-row { display: flex; justify-content: space-between; align-items: center; font-size: 0.94rem; color: var(--text-secondary); margin-bottom: 12px; }
-.summary-row span:last-child { color: var(--text-primary); font-weight: 600; }
-.summary-divider { height: 1px; background: var(--card-border); margin: 16px 0; }
-.summary-total { display: flex; justify-content: space-between; align-items: center; font-size: 1.15rem; font-weight: 700; margin-bottom: 20px; }
-.summary-total span:last-child { background: linear-gradient(135deg, var(--accent-pink), var(--accent-blue)); -webkit-background-clip: text; background-clip: text; color: transparent; } /* gradient total */
-.booking-message { margin-top: 12px; text-align: center; font-size: 0.88rem; min-height: 1.2em; } /* success/error text under button */
-.booking-message.is-error { color: var(--accent-red); }
-.booking-message.is-success { color: var(--accent-green); }
-
-/* ---------- 12. RESPONSIVE ---------- */
-@media (max-width: 768px) {
-    .event-wrapper { padding: 14px; }                              /* tighter page padding on mobile */
-    .title-row h1 { font-size: 1.6rem; }                           /* smaller title on mobile */
-    .event-image { min-height: 220px; max-height: 260px; }        /* shorter hero on mobile */
-    .top-bar { flex-wrap: wrap; gap: 12px; }
-    .content-card { padding: 20px; }
-    .card { padding: 18px; }
-    .meta-row { flex-direction: column; }                          /* stack date/location */
-    .stats-card { flex-direction: column; align-items: stretch; } /* stack stat boxes */
-    .trust-badges { flex-direction: column; }                      /* stack trust badges */
-    .seat { width: 28px; height: 28px; font-size: 0.65rem; }      /* smaller seats fit narrow screens */
-    .price-card { flex-direction: column; align-items: stretch; text-align: center; }
-    .hero-book-btn { width: 100%; }
-}
-
-/* ============================================================
-   ADDITIONS — paste this at the end of event-details.css
-   Styles elements that exist in the HTML but had no matching
-   CSS rule yet (status tag, seat count badge, progress bar,
-   zone section heading, quantity section wrapper).
-   ============================================================ */
-
-/* -- status tag (Available / Sold Out pill in the tag row) -- */
-.status-tag { color: var(--accent-green); border-color: rgba(52, 211, 153, 0.4); background: rgba(52, 211, 153, 0.08); } /* green by default */
-.status-tag.sold-out { color: var(--accent-red); border-color: rgba(248, 113, 113, 0.4); background: rgba(248, 113, 113, 0.08); } /* red variant — add class="status-tag sold-out" via JS when status is Sold Out */
-
-/* -- selected seat count badge, next to "Select Your Seats" -- */
-.selected-seat-count { min-width: 34px; height: 34px; padding: 0 10px; border-radius: 999px; display: inline-flex; align-items: center; justify-content: center; font-weight: 700; font-size: 0.9rem; background: var(--grad-primary); color: #1a0b28; } /* gradient pill matching the theme */
-
-/* -- availability progress bar (overrides Bootstrap's default light styling) -- */
-.availability-progress { margin-top: 12px; }
-.availability-progress .progress { height: 8px; border-radius: 999px; background: rgba(255, 255, 255, 0.06); overflow: hidden; } /* dark track instead of Bootstrap's light grey */
-.availability-progress .progress-bar { background: var(--grad-primary); transition: width 0.4s ease; } /* gradient fill matching the theme */
-.availability-progress .progress-bar.low { background: linear-gradient(135deg, var(--accent-amber), var(--accent-red)); } /* switches to amber/red when stock is low */
-
-.availability-header { display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap; margin-bottom: 4px; } /* header row above the progress bar */
-.availability-header h5 { font-size: 0.98rem; margin-bottom: 2px; }
-.availability-header p { font-size: 0.8rem; margin: 0; }
-.availability-status { font-size: 0.82rem; font-weight: 700; color: var(--accent-green); padding: 6px 14px; border-radius: 999px; background: rgba(52, 211, 153, 0.1); border: 1px solid rgba(52, 211, 153, 0.35); white-space: nowrap; } /* pill badge */
-
-/* -- zone section heading, sits above the zone card list -- */
-.inventory-section-heading { margin-bottom: 14px; }
-.inventory-section-heading strong { display: block; font-size: 0.95rem; margin-bottom: 2px; }
-.inventory-section-heading small { color: var(--text-muted); font-size: 0.8rem; }
-
-/* -- shared quantity section wrapper (used by both general + zone types) -- */
-.quantity-section.d-none { display: none; }
-.quantity-section { margin-top: 14px; }
-
-/* ============================================================
-   STATS CARD V2 — Event Type / Age Limit / Total Seats / Duration
-   Layout + colored icons, all in one place
-   ============================================================ */
-
-.stats-card-v2 {
-    display: flex;                                     /* ek line mein rakhne ke liye zaroori */
-    flex-direction: row;
-    flex-wrap: nowrap;                                  /* ek hi line, wrap nahi hoga */
-    justify-content: space-between;
-    align-items: center;
-    gap: 10px;
-    padding: 16px;
-    overflow-x: auto;                                   /* chhoti screen pe scroll ho jaaye, tootega nahi */
-}
-
-.stats-card-v2 .stat-box {
-    flex: 1 1 0;                                        /* sab boxes equal width */
+/* ---------------- TOP CONTROLS ---------------- */
+.event-topbar {
+    min-height: 46px;
     display: flex;
     align-items: center;
-    gap: 10px;
-    min-width: 0;
-    white-space: nowrap;
+    justify-content: space-between;
+    margin-bottom: 14px;
 }
 
-.stats-card-v2 .stat-box i {
-    width: 40px;
+.top-control-group { display: flex; gap: 9px; }
+
+.top-control {
     height: 40px;
-    border-radius: 12px;
+    border: 1px solid var(--border);
+    color: var(--text-soft);
+    background: rgba(16, 23, 41, .78);
+    backdrop-filter: blur(14px);
+    border-radius: 11px;
+    cursor: pointer;
+    transition: .18s ease;
+}
+
+.top-control:hover {
+    color: #fff;
+    border-color: var(--border-strong);
+    background: rgba(31, 39, 66, .92);
+    transform: translateY(-1px);
+}
+
+.back-control {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 0 13px;
+    font-size: .82rem;
+    font-weight: 650;
+}
+
+.icon-control {
+    width: 40px;
+    display: grid;
+    place-items: center;
+    padding: 0;
+    border-radius: 50%;
+    font-size: .96rem;
+}
+
+.icon-control .bi-heart-fill { color: #ff4f78; }
+
+/* ---------------- LOAD / ERROR ---------------- */
+.loading-state,
+.error-state {
+    min-height: 65vh;
     display: flex;
     align-items: center;
     justify-content: center;
-    font-size: 1.1rem;
-    flex-shrink: 0;
+    flex-direction: column;
+    text-align: center;
+    gap: 12px;
+    color: var(--muted);
 }
 
-.stats-card-v2 .stat-text {
+.loading-state .spinner-border { color: var(--purple); }
+.error-state i { font-size: 2rem; color: var(--red); }
+.error-state h4 { margin: 0; color: var(--text); }
+.error-state p { margin: 0; }
+.retry-btn {
+    border: 0;
+    color: white;
+    background: var(--gradient);
+    padding: 10px 18px;
+    border-radius: 10px;
+    font-weight: 700;
+}
+
+/* ---------------- MAIN PAGE ---------------- */
+/* Equal desktop columns: neither side is wider, narrower, zoomed or stretched. */
+.event-layout {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 18px;
+    align-items: stretch;
+}
+
+.event-information-column,
+.booking-column {
+    width: 100%;
+    min-width: 0;
+    align-self: stretch;
+}
+
+/* Both columns grow to the same grid-row height. Content keeps its own proportions. */
+.event-information-column {
     display: flex;
     flex-direction: column;
-    min-width: 0;
-    overflow: hidden;
 }
 
-.stats-card-v2 .stat-value {
-    font-size: 0.95rem;
+.booking-column {
+    position: sticky;
+    top: 14px;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+/* ---------------- HERO ---------------- */
+.hero-card {
+    position: relative;
+    height: clamp(270px, 25vw, 340px);
+    flex: 0 0 auto;
+    overflow: hidden;
+    border: 1px solid var(--border);
+    border-bottom: 0;
+    border-radius: 18px 18px 0 0;
+    background: var(--panel);
+}
+
+.event-image {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    object-position: center;
+    aspect-ratio: auto;
+    display: block;
+}
+
+.hero-shade {
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(180deg, rgba(7, 10, 20, .03) 25%, rgba(7, 10, 20, .2) 55%, rgba(8, 11, 22, .9) 100%);
+    pointer-events: none;
+}
+
+.hero-category {
+    position: absolute;
+    top: 15px;
+    left: 15px;
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    padding: 8px 12px;
+    border: 1px solid rgba(255,255,255,.16);
+    border-radius: 999px;
+    background: rgba(13, 18, 34, .82);
+    backdrop-filter: blur(10px);
+    color: #fff;
+    font-size: .76rem;
     font-weight: 700;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
 }
 
-.stats-card-v2 .stat-title {
-    font-size: 0.68rem;
-    color: var(--text-muted);
+.hero-category i { color: #cf7cff; }
+
+/* ---------------- LEFT INFO CARD ---------------- */
+.event-info-card {
+    flex: 1 1 auto;
+    min-height: 0;
+    padding: 20px;
+    border: 1px solid var(--border);
+    border-radius: 0 0 18px 18px;
+    background: rgba(15, 22, 39, .92);
+    box-shadow: var(--shadow);
+}
+
+.title-area {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 16px;
+}
+
+.title-copy { min-width: 0; }
+
+.event-tags {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 7px;
+    margin-bottom: 11px;
+}
+
+.event-tag {
+    padding: 5px 10px;
+    border-radius: 999px;
+    color: #e4c8ff;
+    border: 1px solid rgba(184, 91, 255, .35);
+    background: rgba(136, 62, 201, .12);
+    font-size: .7rem;
+    font-weight: 700;
+}
+
+.inventory-tag {
+    color: #9fc5ff;
+    border-color: rgba(79, 140, 255, .34);
+    background: rgba(79, 140, 255, .1);
+}
+
+.availability-tag {
+    color: #65e7be;
+    border-color: rgba(45, 212, 165, .32);
+    background: rgba(45, 212, 165, .1);
+}
+
+.availability-tag.sold-out {
+    color: #ff8798;
+    border-color: rgba(251, 90, 115, .34);
+    background: rgba(251, 90, 115, .1);
+}
+
+#title {
+    margin: 0;
+    font-family: "Poppins", sans-serif;
+    font-size: clamp(1.75rem, 2.4vw, 2.6rem);
+    line-height: 1.08;
+    letter-spacing: -.035em;
+}
+
+.verified-mark {
+    flex: 0 0 auto;
+    width: 34px;
+    height: 34px;
+    border-radius: 50%;
+    display: grid;
+    place-items: center;
+    color: white;
+    background: var(--gradient);
+    box-shadow: 0 8px 20px rgba(117, 78, 243, .28);
+}
+
+.about-section { margin-top: 20px; }
+
+.section-eyebrow {
+    display: block;
+    color: #7c8ba6;
+    font-size: .65rem;
+    line-height: 1;
+    font-weight: 800;
+    letter-spacing: .11em;
     text-transform: uppercase;
-    white-space: nowrap;
 }
 
-/* -- Icon colors — matches reference: purple music, pink star, blue smiley, green clock -- */
+.section-title-row h2,
+.detail-card h3,
+.booking-card-heading h2,
+.summary-heading h3 {
+    margin: 5px 0 0;
+    font-family: "Poppins", sans-serif;
+}
 
-.stats-card-v2 .stat-box.stat-purple i {
+.section-title-row h2 { font-size: 1rem; }
+.about-section p {
+    margin: 9px 0 0;
+    color: #b7c1d3;
+    font-size: .88rem;
+    line-height: 1.65;
+}
+
+.event-lower-grid {
+    display: grid;
+    grid-template-columns: 1.08fr .92fr;
+    gap: 12px;
+    margin-top: 15px;
+}
+
+.detail-card {
+    min-width: 0;
+    padding: 14px;
+    border-radius: 14px;
+    border: 1px solid var(--border);
+    background: rgba(255,255,255,.025);
+}
+
+.detail-card-heading {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 12px;
+}
+
+.detail-card-heading.compact-heading { margin-bottom: 8px; }
+.detail-card h3 { font-size: .9rem; }
+
+.detail-icon {
+    width: 34px;
+    height: 34px;
+    flex: 0 0 34px;
+    display: grid;
+    place-items: center;
+    border-radius: 10px;
+    color: #d7b3ff;
+    background: rgba(139, 92, 246, .12);
+    border: 1px solid rgba(139, 92, 246, .3);
+}
+
+/* Static map placeholder — ready to be replaced by real map later */
+.map-placeholder {
+    position: relative;
+    overflow: hidden;
+    height: 148px;
+    border-radius: 11px;
+    border: 1px solid rgba(148,163,184,.12);
+    background: #e9eef5;
+}
+
+.map-placeholder svg { width: 100%; height: 100%; display: block; }
+
+.map-overlay-label {
+    position: absolute;
+    left: 10px;
+    bottom: 10px;
+    display: grid;
+    grid-template-columns: 28px auto;
+    grid-template-rows: auto auto;
+    column-gap: 7px;
+    padding: 8px 10px;
+    border-radius: 9px;
+    background: rgba(11, 17, 30, .9);
+    color: #fff;
+    box-shadow: 0 8px 24px rgba(0,0,0,.18);
+}
+
+.map-overlay-label i {
+    grid-row: 1 / 3;
+    align-self: center;
     color: #a78bfa;
-    background: rgba(167, 139, 250, 0.14);
-    border: 1.5px solid rgba(167, 139, 250, 0.45);
+    font-size: 1rem;
 }
 
-.stats-card-v2 .stat-box.stat-pink i {
-    color: #f472b6;
-    background: rgba(244, 114, 182, 0.14);
-    border: 1.5px solid rgba(244, 114, 182, 0.45);
+.map-overlay-label span { font-size: .7rem; font-weight: 700; }
+.map-overlay-label small { color: #8f9bb1; font-size: .58rem; }
+
+.info-list { display: flex; flex-direction: column; }
+.info-line {
+    min-height: 36px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 14px;
+    border-bottom: 1px solid rgba(148,163,184,.09);
+    font-size: .72rem;
 }
 
-.stats-card-v2 .stat-box.stat-blue i {
-    color: #60a5fa;
-    background: rgba(96, 165, 250, 0.14);
-    border: 1.5px solid rgba(96, 165, 250, 0.45);
+.info-line:last-child { border-bottom: 0; }
+.info-line > span {
+    min-width: 0;
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    color: #7f8ba3;
+}
+.info-line i { color: #9f85ff; }
+.info-line strong {
+    color: #e8edf7;
+    font-weight: 650;
+    text-align: right;
 }
 
-.stats-card-v2 .stat-box.stat-green i {
-    color: #34d399;
-    background: rgba(52, 211, 153, 0.14);
-    border: 1.5px solid rgba(52, 211, 153, 0.45);
+.availability-inline {
+    display: inline-block;
+    margin-left: 5px;
+    color: var(--green);
+    font-size: .63rem;
 }
 
-/* -- Mobile: screen chhoti ho toh 2x2 grid mein wrap karne do -- */
-@media (max-width: 480px) {
-    .stats-card-v2 {
-        flex-wrap: wrap;
+.availability-meter { margin-top: 8px; }
+.availability-meter .progress {
+    height: 5px;
+    background: rgba(255,255,255,.06);
+    border-radius: 999px;
+}
+.availability-meter .progress-bar { background: var(--gradient); border-radius: 999px; }
+.availability-meter .progress-bar.low { background: linear-gradient(90deg, var(--amber), var(--red)); }
+
+/* ---------------- BOOKING COLUMN ---------------- */
+.booking-card,
+.booking-summary-card {
+    border: 1px solid var(--border);
+    border-radius: 18px;
+    background: rgba(15, 22, 39, .94);
+    box-shadow: var(--shadow);
+}
+
+.booking-card {
+    flex: 1 1 auto;
+    min-height: 0;
+    padding: 18px;
+    overflow: hidden;
+}
+.booking-summary-card {
+    flex: 0 0 auto;
+    padding: 16px 18px;
+}
+
+
+.booking-card-heading h2 { font-size: 1.2rem; }
+.booking-card-heading p {
+    margin: 7px 0 0;
+    color: #8f9bb1;
+    font-size: .78rem;
+    line-height: 1.45;
+}
+
+.inventory-section { margin-top: 16px; }
+.inventory-section.d-none { display: none !important; }
+
+.choice-list {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    max-height: 286px;
+    overflow-y: auto;
+    padding-right: 3px;
+}
+.choice-list::-webkit-scrollbar { width: 5px; }
+.choice-list::-webkit-scrollbar-thumb { background: #33405c; border-radius: 999px; }
+
+/* JS uses .zone-option for both general ticket types and zones */
+.zone-option {
+    width: 100%;
+    min-height: 60px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    padding: 10px 12px;
+    border: 1px solid rgba(148,163,184,.15);
+    border-radius: 12px;
+    background: #121b2d;
+    color: var(--text);
+    text-align: left;
+    cursor: pointer;
+    transition: .16s ease;
+}
+
+.zone-option:hover:not(:disabled) {
+    border-color: rgba(139,92,246,.45);
+    background: #162139;
+    transform: translateY(-1px);
+}
+
+.zone-option.selected {
+    border-color: #9b64ff;
+    background: linear-gradient(135deg, rgba(151,67,205,.18), rgba(70,109,219,.15));
+    box-shadow: inset 0 0 0 1px rgba(155,100,255,.12), 0 8px 24px rgba(68,50,155,.12);
+}
+
+.zone-option:disabled { opacity: .45; cursor: not-allowed; }
+.zone-option span { display: flex; flex-direction: column; gap: 4px; }
+.zone-option strong { font-size: .82rem; }
+.zone-option small { color: #71809a; font-size: .67rem; }
+.zone-option > strong:last-child { color: #f4eaff; font-size: .86rem; white-space: nowrap; }
+
+.empty-inventory {
+    padding: 18px;
+    border: 1px dashed rgba(148,163,184,.18);
+    border-radius: 12px;
+    color: #7f8ba3;
+    text-align: center;
+    font-size: .78rem;
+}
+
+.quantity-card {
+    margin-top: 11px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    padding: 11px 12px;
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    background: rgba(255,255,255,.025);
+}
+.quantity-card.d-none { display: none !important; }
+.quantity-card strong { display: block; font-size: .78rem; }
+.quantity-card small { display: block; margin-top: 3px; color: #73819a; font-size: .64rem; }
+
+.quantity-control { display: flex; align-items: center; gap: 8px; }
+.quantity-btn {
+    width: 31px;
+    height: 31px;
+    border: 1px solid rgba(139,92,246,.35);
+    border-radius: 9px;
+    background: rgba(139,92,246,.09);
+    color: white;
+    font-size: 1rem;
+    cursor: pointer;
+}
+.quantity-btn:hover { background: rgba(139,92,246,.2); }
+#quantity {
+    width: 42px;
+    height: 31px;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    background: #0d1423;
+    color: white;
+    text-align: center;
+    outline: none;
+    -moz-appearance: textfield;
+}
+#quantity::-webkit-outer-spin-button,
+#quantity::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
+
+/* ---------------- SEAT MAP ---------------- */
+.seat-selection-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    margin-bottom: 10px;
+}
+.seat-selection-header strong { display: block; font-size: .82rem; }
+.seat-selection-header small { display: block; margin-top: 2px; color: #71809a; font-size: .66rem; }
+.selected-seat-count {
+    min-width: 30px;
+    height: 30px;
+    padding: 0 8px;
+    display: grid;
+    place-items: center;
+    border-radius: 999px;
+    background: var(--gradient);
+    color: white;
+    font-size: .75rem;
+    font-weight: 800;
+}
+
+.seat-legend {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+    padding: 9px 10px;
+    border-radius: 10px;
+    background: rgba(255,255,255,.025);
+    border: 1px solid rgba(148,163,184,.09);
+    color: #8592a9;
+    font-size: .63rem;
+}
+.seat-legend span { display: inline-flex; align-items: center; gap: 5px; }
+.legend-dot { width: 10px; height: 10px; border-radius: 3px; display: inline-block; }
+.legend-dot.available { background: var(--green); }
+.legend-dot.selected { background: var(--purple); }
+.legend-dot.locked { background: var(--amber); }
+.legend-dot.sold { background: var(--red); }
+
+.stage-banner {
+    width: min(230px, 70%);
+    margin: 14px auto 16px;
+    padding: 7px 10px;
+    border-radius: 7px 7px 22px 22px;
+    background: linear-gradient(180deg, #26324b, #192338);
+    color: #cdd6e7;
+    text-align: center;
+    font-size: .62rem;
+    font-weight: 800;
+    letter-spacing: .13em;
+}
+
+.seat-map {
+    max-height: 300px;
+    overflow: auto;
+    padding: 2px 3px 6px 0;
+}
+.seat-map::-webkit-scrollbar { width: 6px; height: 6px; }
+.seat-map::-webkit-scrollbar-thumb { background: #33405c; border-radius: 999px; }
+
+.seat-zone-block {
+    padding: 11px 0 13px;
+    border-bottom: 1px solid rgba(148,163,184,.09);
+}
+.seat-zone-block:last-child { border-bottom: 0; }
+.seat-zone-title {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+    margin-bottom: 9px;
+    color: #d7deeb;
+    font-size: .7rem;
+    font-weight: 800;
+}
+.seat-zone-title span:last-child { color: #9b8cff; font-size: .64rem; }
+
+.seat-row {
+    display: grid;
+    grid-template-columns: 24px minmax(0, 1fr);
+    align-items: center;
+    gap: 6px;
+    margin-bottom: 6px;
+}
+.seat-row:last-child { margin-bottom: 0; }
+.seat-row-label {
+    color: #71809a;
+    text-align: center;
+    font-size: .64rem;
+    font-weight: 800;
+}
+.seat-row-buttons {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 5px;
+}
+.seat {
+    width: 28px;
+    height: 28px;
+    padding: 0;
+    border: 1px solid transparent;
+    border-radius: 6px;
+    color: #07111b;
+    background: var(--green);
+    font-size: .57rem;
+    font-weight: 800;
+    cursor: pointer;
+    transition: .13s ease;
+}
+.seat.available:hover { transform: translateY(-2px) scale(1.05); box-shadow: 0 5px 14px rgba(45,212,165,.2); }
+.seat.selected { color: white; background: var(--purple); box-shadow: 0 0 0 2px rgba(139,92,246,.2); }
+.seat.locked { color: #111827; background: var(--amber); cursor: not-allowed; }
+.seat.sold, .seat.inactive { color: #ffeef1; background: var(--red); opacity: .72; cursor: not-allowed; }
+.seat:disabled { pointer-events: none; }
+
+/* ---------------- HOLD TIMER ---------------- */
+.hold-timer {
+    margin-top: 13px;
+    padding: 9px 11px;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    gap: 7px;
+    border: 1px solid rgba(247,185,85,.35);
+    border-radius: 10px;
+    color: #f5c873;
+    background: rgba(247,185,85,.08);
+    font-size: .72rem;
+    font-weight: 700;
+}
+.hold-timer.active { display: flex; }
+.hold-timer.urgent { color: #ff8da0; border-color: rgba(251,90,115,.4); background: rgba(251,90,115,.08); }
+
+/* ---------------- SUMMARY ---------------- */
+.summary-heading {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    margin-bottom: 11px;
+}
+.summary-heading h3 { font-size: 1rem; }
+.summary-heading > i { color: #8c73ff; font-size: 1.1rem; }
+.selection-detail {
+    margin-bottom: 13px;
+    padding: 9px 10px;
+    border: 1px solid rgba(148,163,184,.1);
+    border-radius: 9px;
+    background: rgba(255,255,255,.02);
+    color: #7f8ba3;
+    font-size: .67rem;
+    line-height: 1.45;
+}
+.summary-row,
+.summary-total {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+}
+.summary-row {
+    min-height: 30px;
+    color: #8f9bb1;
+    font-size: .75rem;
+}
+.summary-row strong { color: #eef2f8; }
+.summary-divider { height: 1px; margin: 9px 0; background: rgba(148,163,184,.12); }
+.summary-total { margin-bottom: 13px; font-size: .9rem; font-weight: 800; }
+.summary-total strong {
+    font-size: 1.08rem;
+    background: var(--gradient);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+}
+
+.continue-btn {
+    width: 100%;
+    min-height: 43px;
+    border: 0;
+    border-radius: 10px;
+    color: white;
+    background: var(--gradient);
+    font-weight: 800;
+    font-size: .82rem;
+    cursor: pointer;
+    box-shadow: 0 10px 26px rgba(93,75,205,.23);
+}
+.continue-btn:hover:not(:disabled) { filter: brightness(1.06); transform: translateY(-1px); }
+.continue-btn:disabled { opacity: .45; cursor: not-allowed; box-shadow: none; }
+
+.booking-message { min-height: 1em; margin: 8px 0 0; text-align: center; font-size: .68rem; }
+.booking-message.is-error { color: #ff8295; }
+.booking-message.is-success { color: #5ee1b8; }
+
+.booking-assurance {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+    margin-top: 12px;
+}
+.booking-assurance > div {
+    min-width: 0;
+    display: flex;
+    gap: 8px;
+    padding: 9px;
+    border: 1px solid rgba(148,163,184,.09);
+    border-radius: 9px;
+    background: rgba(255,255,255,.018);
+}
+.booking-assurance i { color: #8f7dff; }
+.booking-assurance span { min-width: 0; }
+.booking-assurance strong { display: block; font-size: .62rem; }
+.booking-assurance small { display: block; margin-top: 2px; color: #6f7c93; font-size: .55rem; line-height: 1.35; }
+
+/* ---------------- DESKTOP BALANCE ---------------- */
+@media (min-width: 1081px) {
+    /* The grid row itself sets the common height, so both sides end together. */
+    .event-information-column,
+    .booking-column {
+        height: 100%;
     }
-    .stats-card-v2 .stat-box {
-        flex: 1 1 45%;
+
+    .hero-card,
+    .event-info-card,
+    .booking-card,
+    .booking-summary-card {
+        width: 100%;
+        max-width: none;
     }
+
+    /* Keep long selectable content inside the booking card instead of extending the page. */
+    #generalInventory,
+    #zoneInventory,
+    #seatInventory {
+        min-height: 0;
+    }
+
+    .booking-card-heading {
+        flex: 0 0 auto;
+    }
+
+    /* Prevent long descriptions/labels from forcing either column wider. */
+    #description,
+    .info-line strong,
+    .zone-option span {
+        overflow-wrap: anywhere;
+    }
+}
+
+/* ---------------- RESPONSIVE ---------------- */
+@media (max-width: 1080px) {
+    .event-layout { grid-template-columns: 1fr; }
+    .booking-column { position: static; }
+    .choice-list, .seat-map { max-height: none; }
+    .event-lower-grid { grid-template-columns: 1fr 1fr; }
+}
+
+@media (max-width: 720px) {
+    .event-page-shell { width: min(100% - 20px, 1540px); padding-top: 10px; }
+    .event-topbar { margin-bottom: 10px; }
+    .back-control span { display: none; }
+    .back-control { width: 40px; padding: 0; justify-content: center; border-radius: 50%; }
+    .hero-card { height: 230px; }
+    .event-info-card { padding: 16px; }
+    .event-lower-grid { grid-template-columns: 1fr; }
+    .map-placeholder { height: 150px; }
+    .booking-assurance { grid-template-columns: 1fr; }
+    .booking-card, .booking-summary-card { border-radius: 14px; }
 }

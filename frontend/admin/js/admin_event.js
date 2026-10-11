@@ -1,6 +1,10 @@
 "use strict";
 
-const API_BASE = "https://event-booking-api-gnww.onrender.com/api";   // apna backend URL confirm kar lena
+// Override window.API_BASE_URL before loading this script for a different API.
+const API_BASE = (window.API_BASE_URL ||
+    ((["localhost", "127.0.0.1"].includes(window.location.hostname))
+        ? "http://127.0.0.1:8000"
+        : window.location.origin)).replace(/\/$/, "") + "/api";
 let currentPage = 1;
 let currentEditEventId = null;
 
@@ -24,6 +28,8 @@ function formatDate(value) {
 }
 
 document.addEventListener("DOMContentLoaded", () => {
+    const presetQuery = new URLSearchParams(location.search).get("q");
+    if (presetQuery) document.getElementById("filterSearch").value = presetQuery;
     loadEvents(1);
     loadCategoryFilterOptions();
     document.getElementById("filterSearch").addEventListener("input", debounce(() => loadEvents(1), 400));
@@ -64,11 +70,11 @@ async function loadEvents(page = 1) {
 
         tbody.innerHTML = data.items.map(event => `
             <tr>
-                <td><img class="event-poster-thumb" src="${event.image_url || '../../images/event-placeholder.jpg'}" alt=""></td>
+                <td><img class="event-poster-thumb" src="${event.image_url || '../../images/logos/logo.png'}" alt=""></td>
                 <td>${escapeHtml(event.title)}</td>
                 <td>${escapeHtml(event.category || "—")}</td>
                 <td>${formatDate(event.date_time)}</td>
-                <td>${event.available_seats}/${event.total_seats}</td>
+                <td>${event.available_seats === null ? "Unlimited" : (event.available_seats ?? 0)}/${event.total_seats === null ? "Unlimited" : (event.total_seats ?? 0)}</td>
                 <td><span class="status-badge ${event.status || 'published'}">${event.status || 'published'}</span></td>
                 <td>
                     <button class="action-icon-btn" title="View" onclick="window.open('../../pages/event-details.html?id=${event.id}', '_blank')"><i class="bi bi-eye"></i></button>
@@ -124,9 +130,16 @@ async function loadCategoryFilterOptions() {
             filterSelect.innerHTML += `<option value="${escapeHtml(cat.name)}">${escapeHtml(cat.name)}</option>`;
         });
 
+        const categoryOptions = categories.map(cat => `<option value="${cat.id}">${escapeHtml(cat.name)}</option>`).join("");
+
         const modalSelect = document.getElementById("categorySelect");
         if (modalSelect) {
-            modalSelect.innerHTML = categories.map(cat => `<option value="${cat.id}">${escapeHtml(cat.name)}</option>`).join("");
+            modalSelect.innerHTML = categoryOptions;
+        }
+
+        const editSelect = document.getElementById("edit_categorySelect");
+        if (editSelect) {
+            editSelect.innerHTML = `<option value="">Select category</option>${categoryOptions}`;
         }
     } catch (error) {
         console.error("Category load error:", error);
@@ -150,17 +163,19 @@ async function createEvent() {
         category_id: document.getElementById("categorySelect").value ? Number(document.getElementById("categorySelect").value) : null,
         age_limit: document.getElementById("ageLimit").value,
         duration: document.getElementById("duration").value.trim() || null,
-        status: document.getElementById("statusSelect").value,
+        status: "draft",  // Inventory must be configured before publishing.
         inventory_type: document.getElementById("inventoryType").value
     };
 
     try {
         const res = await fetch(`${API_BASE}/events/`, { method: "POST", headers: authHeaders(), body: JSON.stringify(payload) });
-        if (!res.ok) throw new Error("Failed to create event");
+        const created = await res.json();
+        if (!res.ok) throw new Error(created.detail || "Failed to create event");
         bootstrap.Modal.getOrCreateInstance(document.getElementById("createEventModal")).hide();
-        loadEvents(currentPage);
+        await loadEvents(currentPage);
+        if (created.id) await openEditEventModal(created.id);
     } catch (error) {
-        alert("Unable to create event.");
+        alert(error.message || "Unable to create event.");
         console.error(error);
     }
 }
@@ -181,12 +196,26 @@ async function openEditEventModal(eventId) {
         document.getElementById("edit_ageLimit").value = event.age_limit || "All Ages";
         document.getElementById("edit_duration").value = event.duration || "";
         document.getElementById("edit_status").value = event.status || "published";
-        document.getElementById("edit_imagePreview").src = event.image_url || "../../images/event-placeholder.jpg";
+        const imageUrl = event.image_url || "../../images/logos/logo.png";
+        document.getElementById("edit_imagePreview").src = imageUrl;
+        const mediaPreview = document.getElementById("edit_mediaPreview");
+        if (mediaPreview) mediaPreview.src = imageUrl;
+
+        const editCategorySelect = document.getElementById("edit_categorySelect");
+        if (editCategorySelect) {
+            if (event.category_id != null) {
+                editCategorySelect.value = String(event.category_id);
+            } else if (event.category) {
+                const match = Array.from(editCategorySelect.options).find(opt => opt.textContent.trim() === String(event.category).trim());
+                if (match) editCategorySelect.value = match.value;
+            }
+        }
+
         document.getElementById("edit_inventoryType").value = event.inventory_type || "general";
         updatePricingSectionVisibility(event.inventory_type || "general");
-        if ((event.inventory_type || "general") === "zone") {
-        await loadZonesForEvent(eventId);
-           }
+        if (["zone", "seat"].includes(event.inventory_type || "general")) {
+            await loadZonesForEvent(eventId);
+        }
         loadTicketTypes(eventId);
         bootstrap.Modal.getOrCreateInstance(document.getElementById("editEventModal")).show();
     } catch (error) {
@@ -208,17 +237,18 @@ async function saveEditedEvent() {
         age_limit: document.getElementById("edit_ageLimit").value,
         duration: document.getElementById("edit_duration").value.trim() || null,
         status: document.getElementById("edit_status").value,
-        inventory_type: document.getElementById("edit_inventoryType").value
+        inventory_type: document.getElementById("edit_inventoryType").value,
+        category_id: document.getElementById("edit_categorySelect").value ? Number(document.getElementById("edit_categorySelect").value) : null
     };
 
     try {
         const res = await fetch(`${API_BASE}/events/${currentEditEventId}`, { method: "PUT", headers: authHeaders(), body: JSON.stringify(payload) });
-        if (!res.ok) throw new Error("Failed to update event");
+        if (!res.ok) { const data = await res.json().catch(() => ({})); throw new Error(data.detail || "Failed to update event"); }
         bootstrap.Modal.getOrCreateInstance(document.getElementById("editEventModal")).hide();
         currentEditEventId = null;
         loadEvents(currentPage);
     } catch (error) {
-        alert("Unable to save changes.");
+        alert(error.message || "Unable to save changes.");
         console.error(error);
     }
 }
@@ -262,13 +292,17 @@ async function addTicketType() {
             method: "POST", headers: authHeaders(),
             body: JSON.stringify({ event_id: currentEditEventId, name, price, inventory_limit: limitRaw ? Number(limitRaw) : null })
         });
-        if (!res.ok) throw new Error();
+        if (!res.ok) {
+            const errorData = await res.json().catch(() => ({}));
+            throw new Error(errorData.detail || errorData.error || "Unable to add ticket type.");
+        }
         document.getElementById("newTicketName").value = "";
         document.getElementById("newTicketPrice").value = "";
         document.getElementById("newTicketLimit").value = "";
         loadTicketTypes(currentEditEventId);
     } catch (error) {
-        alert("Unable to add ticket type.");
+        alert(error.message || "Unable to add ticket type.");
+        console.error("Add ticket type error:", error);
     }
 }
 
@@ -311,14 +345,36 @@ function showWizardStep(step) {
     document.querySelectorAll(".wizard-pane").forEach(pane => {
         pane.classList.toggle("active", Number(pane.dataset.pane) === step);
     });
+
     document.querySelectorAll(".wizard-step").forEach(stepEl => {
         const stepNum = Number(stepEl.dataset.step);
         stepEl.classList.toggle("active", stepNum === step);
         stepEl.classList.toggle("completed", stepNum < step);
     });
-    document.getElementById("wizardBackBtn").textContent = step === 1 ? "Cancel" : "Back";
-    document.getElementById("wizardNextBtn").textContent = step === totalWizardSteps ? "Save Changes" : "Next";
+
+    document.querySelectorAll(".wizard-top-tab").forEach(tab => {
+        const stepNum = Number(tab.dataset.step);
+        tab.classList.toggle("active", stepNum === step);
+        tab.classList.toggle("completed", stepNum < step);
+    });
+
+    const backBtn = document.getElementById("wizardBackBtn");
+    const nextBtn = document.getElementById("wizardNextBtn");
+
+    if (backBtn) {
+        backBtn.innerHTML = step === 1 ? "Cancel" : '<i class="bi bi-chevron-left"></i> Back';
+    }
+
+    if (nextBtn) {
+        nextBtn.innerHTML = step === totalWizardSteps
+            ? '<i class="bi bi-check2"></i> Save Changes'
+            : 'Next <i class="bi bi-chevron-right"></i>';
+    }
+
     currentWizardStep = step;
+
+    const panel = document.querySelector(".event-editor-panel");
+    if (panel) panel.scrollTop = 0;
 }
 
 function wizardGoNext() {
@@ -347,7 +403,7 @@ function updatePricingSectionVisibility(type) {
 // Live-update jab admin dropdown badle modal khula rehte hue
 document.getElementById("edit_inventoryType")?.addEventListener("change", async (e) => {
     updatePricingSectionVisibility(e.target.value);
-    if (e.target.value === "zone" && currentEditEventId) {
+    if (["zone", "seat"].includes(e.target.value) && currentEditEventId) {
         await loadZonesForEvent(currentEditEventId);
     }
 });
@@ -355,7 +411,8 @@ document.getElementById("edit_inventoryType")?.addEventListener("change", async 
 let currentEventLayoutId = null;
 
 async function loadZonesForEvent(eventId) {
-    const container = document.getElementById("zonesList");
+    const container = document.getElementById("edit_inventoryType").value === "seat"
+        ? document.getElementById("seatZonesList") : document.getElementById("zonesList");
     container.innerHTML = `<p class="text-muted small">Loading...</p>`;
 
     try {
@@ -376,11 +433,13 @@ async function loadZonesForEvent(eventId) {
         const zonesRes = await fetch(`${API_BASE}/seating/admin/layouts/${layout.id}/zones`, { headers: authHeaders() });
         const zones = await zonesRes.json();
 
+        const seated = document.getElementById("edit_inventoryType").value === "seat";
         container.innerHTML = zones.length
             ? zones.map(z => `
                 <div class="d-flex justify-content-between align-items-center border border-secondary rounded px-2 py-1 mb-1">
-                    <span>${escapeHtml(z.name)} (${escapeHtml(z.code)}) — ₹${z.base_price} · ${z.capacity} seats</span>
-                    <button class="btn btn-sm btn-outline-danger" onclick="deleteZone(${z.id})">×</button>
+                    <span>${escapeHtml(z.name)} (${escapeHtml(z.code)}) — ₹${z.base_price} · ${z.capacity} ${seated ? "fixed seats" : "places"}</span>
+                    <div>${seated ? `<button class="btn btn-sm btn-outline-info me-2" type="button" onclick="loadSeatRows(${z.id})">Manage rows</button>` : ""}
+                    <button class="btn btn-sm btn-outline-danger" type="button" onclick="deleteZone(${z.id})">×</button></div>
                 </div>`).join("")
             : `<p class="text-muted small">No zones yet.</p>`;
 
@@ -436,12 +495,119 @@ document.querySelectorAll(".wizard-step").forEach(stepEl => {
     stepEl.addEventListener("click", () => showWizardStep(Number(stepEl.dataset.step)));
 });
 
+// Top tabs mirror the same five-step wizard.
+document.querySelectorAll(".wizard-top-tab").forEach(tab => {
+    tab.addEventListener("click", () => showWizardStep(Number(tab.dataset.step)));
+});
+
 // Jab bhi edit modal khule, wizard ko step 1 pe reset karo
 document.getElementById("editEventModal").addEventListener("show.bs.modal", () => showWizardStep(1));
 
 // Image preview — file select hote hi turant dikhao
 document.getElementById("edit_imageFile")?.addEventListener("change", function () {
     if (this.files && this.files[0]) {
-        document.getElementById("edit_imagePreview").src = URL.createObjectURL(this.files[0]);
+        const objectUrl = URL.createObjectURL(this.files[0]);
+        document.getElementById("edit_imagePreview").src = objectUrl;
+        const mediaPreview = document.getElementById("edit_mediaPreview");
+        if (mediaPreview) mediaPreview.src = objectUrl;
     }
+});
+
+
+// Fixed-seat section editor: all calls use the same backend endpoints as zone admission.
+let currentSeatZoneId = null;
+async function addSeatedZone() {
+    if (!currentEventLayoutId || !currentEditEventId) { alert("Open a fixed-seat event first."); return; }
+    const name = document.getElementById("newSeatZoneName").value.trim();
+    const code = document.getElementById("newSeatZoneCode").value.trim().toUpperCase();
+    const capacity = Number(document.getElementById("newSeatZoneCapacity").value);
+    const base_price = Number(document.getElementById("newSeatZonePrice").value);
+    if (!name || !/^[A-Z0-9_-]+$/.test(code) || !Number.isInteger(capacity) || capacity < 1 || !Number.isFinite(base_price) || base_price < 0) {
+        alert("Enter a section name, code, positive capacity and valid price."); return;
+    }
+    try {
+        const res = await fetch(`${API_BASE}/seating/admin/layouts/${currentEventLayoutId}/zones`, {
+            method: "POST", headers: authHeaders(),
+            body: JSON.stringify({name, code, zone_type: "seated", capacity, base_price})
+        });
+        const response = await res.json();
+        if (!res.ok) throw new Error(response.detail || "Unable to add section");
+        ["newSeatZoneName", "newSeatZoneCode", "newSeatZoneCapacity", "newSeatZonePrice"].forEach(id => document.getElementById(id).value = "");
+        await loadZonesForEvent(currentEditEventId);
+        await loadSeatRows(response.id);
+    } catch (err) { alert(err.message); }
+}
+async function loadSeatRows(zoneId) {
+    currentSeatZoneId = zoneId;
+    const editor = document.getElementById("seatRowsEditor");
+    const list = document.getElementById("seatRowsList");
+    editor.style.display = "block";
+    list.textContent = "Loading rows...";
+    try {
+        const res = await fetch(`${API_BASE}/seating/admin/zones/${zoneId}/rows`, {headers: authHeaders()});
+        const rows = await res.json();
+        if (!res.ok) throw new Error(rows.detail || "Unable to load rows");
+        document.getElementById("seatRowsTitle").textContent = "Rows for section #" + zoneId;
+        list.innerHTML = rows.length ? rows.map(row => `<div class="border border-secondary rounded px-2 py-1 mb-1">Row ${escapeHtml(row.row_label)} — ${row.seats.length} seats (${row.seats.filter(s => s.status === "available").length} available)</div>`).join("") : "No rows created yet.";
+    } catch (err) { list.textContent = err.message; }
+}
+async function addSeatRow() {
+    if (!currentSeatZoneId) return;
+    const row_label = document.getElementById("newRowLabel").value.trim().toUpperCase();
+    const seat_count = Number(document.getElementById("newRowSeatCount").value);
+    const starting_price = Number(document.getElementById("newRowPrice").value || 0);
+    if (!/^[A-Z0-9_-]+$/.test(row_label) || !Number.isInteger(seat_count) || seat_count < 1 || seat_count > 500 || starting_price < 0) {
+        alert("Enter a valid row label (e.g. A), 1-500 seats and a non-negative price."); return;
+    }
+    try {
+        const res = await fetch(`${API_BASE}/seating/admin/zones/${currentSeatZoneId}/rows`, {
+            method: "POST", headers: authHeaders(),
+            body: JSON.stringify({zone_id: currentSeatZoneId, row_label, seat_count, starting_price})
+        });
+        const response = await res.json();
+        if (!res.ok) throw new Error(response.detail || "Unable to generate row");
+        document.getElementById("newRowLabel").value = "";
+        document.getElementById("newRowSeatCount").value = "";
+        await loadSeatRows(currentSeatZoneId);
+        await loadZonesForEvent(currentEditEventId);
+    } catch (err) { alert(err.message); }
+}
+
+// ---------------- CREATE EVENT UI HELPERS ----------------
+// Presentation-only helper. Existing createEvent() API behavior remains unchanged.
+function updateCreateInventoryHelp() {
+    const select = document.getElementById("inventoryType");
+    const help = document.getElementById("createInventoryHelp");
+    const seatsHelp = document.getElementById("createSeatsHelp");
+    if (!select || !help || !seatsHelp) return;
+
+    const type = select.value;
+    const messages = {
+        general: {
+            booking: "General admission uses ticket types and quantities.",
+            seats: "Final availability will come from the ticket types you add after creation."
+        },
+        zone: {
+            booking: "Zone based events use named areas with their own capacity and price.",
+            seats: "Final capacity will come from the zones you configure after creation."
+        },
+        seat: {
+            booking: "Fixed seating uses sections, numbered rows and individual seats.",
+            seats: "Final seat count will come from the rows you generate after creation."
+        }
+    };
+
+    help.textContent = messages[type]?.booking || messages.general.booking;
+    seatsHelp.textContent = messages[type]?.seats || messages.general.seats;
+}
+
+document.addEventListener("DOMContentLoaded", () => {
+    const inventoryType = document.getElementById("inventoryType");
+    inventoryType?.addEventListener("change", updateCreateInventoryHelp);
+    updateCreateInventoryHelp();
+
+    document.getElementById("createEventModal")?.addEventListener("shown.bs.modal", () => {
+        updateCreateInventoryHelp();
+        document.getElementById("title")?.focus();
+    });
 });
