@@ -95,26 +95,7 @@ def hold_seats(
     db: Session = Depends(get_db),
     user=Depends(get_current_user),
 ):
-    db_user = get_authenticated_user(user, db)
-    service = InventoryService(db)
-
-    try:
-        booking = service.hold_seats(
-            event_id=request.event_id,
-            seat_ids=request.seat_ids,
-            user_id=db_user.id,
-            booking_id=request.booking_id,
-        )
-
-        return {
-            "message": "Seats held successfully",
-            "booking": _booking_response(booking),
-        }
-
-    except ValueError as exc:
-        db.rollback()
-        raise HTTPException(status_code=400, detail=str(exc))
-
+    raise HTTPException(status_code=410, detail="Use POST /api/bookings to reserve and DELETE /api/bookings/book/{id} to release unpaid reservations")
 
 @router.post("/hold/zone")
 def hold_zone(
@@ -122,27 +103,7 @@ def hold_zone(
     db: Session = Depends(get_db),
     user=Depends(get_current_user),
 ):
-    db_user = get_authenticated_user(user, db)
-    service = InventoryService(db)
-
-    try:
-        booking = service.hold_zone(
-            event_id=request.event_id,
-            zone_id=request.zone_id,
-            quantity=request.quantity,
-            user_id=db_user.id,
-            booking_id=request.booking_id,
-        )
-
-        return {
-            "message": "Zone inventory held successfully",
-            "booking": _booking_response(booking),
-        }
-
-    except ValueError as exc:
-        db.rollback()
-        raise HTTPException(status_code=400, detail=str(exc))
-
+    raise HTTPException(status_code=410, detail="Use POST /api/bookings to reserve and DELETE /api/bookings/book/{id} to release unpaid reservations")
 
 @router.post("/hold/passes")
 def hold_passes(
@@ -150,27 +111,7 @@ def hold_passes(
     db: Session = Depends(get_db),
     user=Depends(get_current_user),
 ):
-    db_user = get_authenticated_user(user, db)
-    service = InventoryService(db)
-
-    try:
-        booking = service.hold_passes(
-            event_id=request.event_id,
-            ticket_type_id=request.ticket_type_id,
-            quantity=request.quantity,
-            user_id=db_user.id,
-            booking_id=request.booking_id,
-        )
-
-        return {
-            "message": "Pass inventory held successfully",
-            "booking": _booking_response(booking),
-        }
-
-    except ValueError as exc:
-        db.rollback()
-        raise HTTPException(status_code=400, detail=str(exc))
-
+    raise HTTPException(status_code=410, detail="Use POST /api/bookings to reserve and DELETE /api/bookings/book/{id} to release unpaid reservations")
 
 @router.post("/release/seats")
 def release_seats(
@@ -178,25 +119,7 @@ def release_seats(
     db: Session = Depends(get_db),
     user=Depends(get_current_user),
 ):
-    db_user = get_authenticated_user(user, db)
-    service = InventoryService(db)
-
-    try:
-        released = service.release_seats(
-            booking_id=request.booking_id,
-            user_id=db_user.id,
-        )
-
-        return {
-            "message": "Seats released successfully",
-            "booking_id": request.booking_id,
-            "released_quantity": released,
-        }
-
-    except ValueError as exc:
-        db.rollback()
-        raise HTTPException(status_code=400, detail=str(exc))
-
+    raise HTTPException(status_code=410, detail="Use POST /api/bookings to reserve and DELETE /api/bookings/book/{id} to release unpaid reservations")
 
 @router.post("/release/zone")
 def release_zone(
@@ -204,25 +127,7 @@ def release_zone(
     db: Session = Depends(get_db),
     user=Depends(get_current_user),
 ):
-    db_user = get_authenticated_user(user, db)
-    service = InventoryService(db)
-
-    try:
-        released = service.release_zone(
-            booking_id=request.booking_id,
-            user_id=db_user.id,
-        )
-
-        return {
-            "message": "Zone inventory released successfully",
-            "booking_id": request.booking_id,
-            "released_quantity": released,
-        }
-
-    except ValueError as exc:
-        db.rollback()
-        raise HTTPException(status_code=400, detail=str(exc))
-
+    raise HTTPException(status_code=410, detail="Use POST /api/bookings to reserve and DELETE /api/bookings/book/{id} to release unpaid reservations")
 
 @router.post("/release/passes")
 def release_passes(
@@ -230,50 +135,7 @@ def release_passes(
     db: Session = Depends(get_db),
     user=Depends(get_current_user),
 ):
-    db_user = get_authenticated_user(user, db)
-    service = InventoryService(db)
-
-    try:
-        released = service.release_passes(
-            booking_id=request.booking_id,
-            user_id=db_user.id,
-        )
-
-        return {
-            "message": "Pass inventory released successfully",
-            "booking_id": request.booking_id,
-            "released_quantity": released,
-        }
-
-    except ValueError as exc:
-        db.rollback()
-        raise HTTPException(status_code=400, detail=str(exc))
-
-
-@router.post("/confirm")
-def confirm_inventory(
-    request: BookingInventoryRequest,
-    db: Session = Depends(get_db),
-    user=Depends(get_current_user),
-):
-    db_user = get_authenticated_user(user, db)
-    service = InventoryService(db)
-
-    try:
-        booking = service.confirm_inventory(
-            booking_id=request.booking_id,
-            user_id=db_user.id,
-        )
-
-        return {
-            "message": "Inventory confirmed successfully",
-            "booking": _booking_response(booking),
-        }
-
-    except ValueError as exc:
-        db.rollback()
-        raise HTTPException(status_code=400, detail=str(exc))
-
+    raise HTTPException(status_code=410, detail="Use POST /api/bookings to reserve and DELETE /api/bookings/book/{id} to release unpaid reservations")
 
 @router.post("/release-expired")
 def release_expired_holds(

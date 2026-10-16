@@ -1,9 +1,13 @@
+import os
+from datetime import datetime, timezone
 from fastapi import APIRouter, Depends, HTTPException, status                                      # FASTAPI ROUTING AND HTTP ERRORS
 from sqlalchemy.orm import Session                                                                  # SQLALCHEMY DATABASE SESSION
 from sqlalchemy.exc import IntegrityError                                                           # DATABASE CONSTRAINT HANDLING
 import models                                                                                        # DATABASE MODELS
 import schemas                                                                                      # PYDANTIC SCHEMAS
-from core.security import get_db, get_current_user                                                    # DATABASE AND AUTH DEPENDENCIES
+from utils.helpers import get_db
+from core.security import get_current_user
+from services.booking_service import BookingService                                                    # DATABASE AND AUTH DEPENDENCIES
 from utils.helpers import generate_transaction_id                                                     # TRANSACTION ID GENERATOR
 
 router = APIRouter()                                                                                 # PAYMENT ROUTER
@@ -18,79 +22,84 @@ def get_authenticated_user(user, db: Session):                                  
     return db_user                                                                                    # RETURN DATABASE USER
 
 
-def calculate_booking_amount(booking, event):                                                        # CALCULATE SERVER-SIDE BOOKING AMOUNT
-    tickets = db_tickets = booking.tickets_rel                                                     # LOAD TICKETS CREATED FOR THIS BOOKING
-    if tickets:                                                                                     # USE TICKET SNAPSHOT PRICES FOR NEW ARCHITECTURE
-        amount = sum(ticket.price_paid for ticket in tickets if ticket.status != "cancelled")      # SUM IMMUTABLE PRICES STORED ON TICKETS
-        if amount > 0:                                                                              # VALIDATE CALCULATED TICKET TOTAL
-            return amount                                                                            # RETURN TICKET-BASED TOTAL
-    if booking.tickets <= 0:                                                                        # VALIDATE LEGACY BOOKING QUANTITY
-        raise HTTPException(status_code=400, detail="Booking contains no tickets")                  # REJECT INVALID BOOKING
-    if event.price < 0:                                                                             # VALIDATE EVENT PRICE
-        raise HTTPException(status_code=400, detail="Invalid event price")                           # REJECT INVALID PRICE
-    return booking.tickets * event.price                                                            # FALLBACK FOR LEGACY GENERAL BOOKINGS
+def calculate_booking_amount(booking, event):
+    """Charge server-side, snapshotted BookingItem prices, never a client total."""
+    items = [item for item in booking.items if item.status == models.BOOKING_HELD]
+    if items:
+        return sum(item.price * item.quantity for item in items)
+    # Compatibility for already-issued legacy tickets only.
+    if booking.tickets_rel:
+        return sum(t.price_paid for t in booking.tickets_rel if t.status != models.TICKET_CANCELLED)
+    raise HTTPException(status_code=400, detail="Booking contains no held tickets")
 
 
-@router.post("/", response_model=schemas.PaymentResponse)                                           # CREATE PAYMENT
-def create_payment(data: schemas.PaymentCreate, db: Session = Depends(get_db), user=Depends(get_current_user)):  # CREATE PAYMENT FOR AUTHENTICATED BOOKING
-    db_user = get_authenticated_user(user, db)                                                       # RESOLVE AUTHENTICATED USER
+@router.post("/", response_model=schemas.PaymentResponse)
+def create_payment(data: schemas.PaymentCreate, db: Session = Depends(get_db),
+                   user=Depends(get_current_user)):
+    """MOCK payment ONLY. No real money is taken by this endpoint.
 
-    try:                                                                                             # START ATOMIC PAYMENT TRANSACTION
-        booking = db.query(models.Booking).filter(models.Booking.id == data.booking_id, models.Booking.user_id == db_user.id).with_for_update().first()  # LOCK USER BOOKING
-        if not booking:                                                                             # VALIDATE BOOKING OWNERSHIP
-            raise HTTPException(status_code=404, detail="Booking not found")                        # RETURN BOOKING NOT FOUND
+    On successful mock checkout, payment, inventory sale, tickets and booking
+    confirmation are one database transaction. Replace mock success with a
+    verified payment-provider webhook before accepting actual money.
+    """
+    db_user = get_authenticated_user(user, db)
+    if os.getenv("ENABLE_MOCK_PAYMENTS", "false").lower() != "true":
+        raise HTTPException(status_code=503, detail="Demo payments are disabled; configure a verified payment gateway for production")
+    if data.method != "mock":
+        raise HTTPException(status_code=422, detail="Only mock payment is implemented; no real card or UPI payment is processed")
+    try:
+        booking = (db.query(models.Booking)
+                   .filter(models.Booking.id == data.booking_id,
+                           models.Booking.user_id == db_user.id)
+                   .with_for_update().first())
+        if not booking:
+            raise HTTPException(status_code=404, detail="Booking not found")
+        if booking.status == models.BOOKING_CONFIRMED or booking.payment_status == "paid":
+            paid = db.query(models.Payment).filter_by(booking_id=booking.id, user_id=db_user.id).first()
+            if paid and paid.status == models.PAYMENT_SUCCESS:
+                return paid  # Retry after a dropped response must never charge or issue twice.
+            raise HTTPException(status_code=409, detail="Booking has already been confirmed")
+        if booking.status != models.BOOKING_HELD:
+            raise HTTPException(status_code=409, detail="Booking no longer has a valid hold")
+        existing_payment = db.query(models.Payment.id).filter_by(booking_id=booking.id).first()
+        if existing_payment:
+            raise HTTPException(status_code=409, detail="Payment already exists for this booking")
+        event = db.get(models.Event, booking.event_id)
+        if not event:
+            raise HTTPException(status_code=404, detail="Event not found")
+        amount = calculate_booking_amount(booking, event)
+        if amount < 0 or amount != booking.total_amount:
+            raise HTTPException(status_code=409, detail="Booking total has changed; restart checkout")
 
-        if booking.payment_status == "cancelled":                                                   # PREVENT PAYMENT FOR CANCELLED BOOKING
-            raise HTTPException(status_code=400, detail="Cannot pay for a cancelled booking")        # REJECT CANCELLED BOOKING
-
-        if booking.payment_status == "paid":                                                        # PREVENT REPEATED SUCCESSFUL PAYMENT
-            existing_payment = db.query(models.Payment).filter(models.Payment.booking_id == booking.id, models.Payment.status == "success").first()  # FIND COMPLETED PAYMENT
-            if existing_payment:                                                                     # RETURN EXISTING PAYMENT CONFLICT
-                raise HTTPException(status_code=409, detail="Payment already completed for this booking")  # REJECT DUPLICATE PAYMENT
-            raise HTTPException(status_code=409, detail="Booking is already marked as paid")        # PROTECT PAYMENT STATE
-
-        existing_payment = db.query(models.Payment).filter(models.Payment.booking_id == booking.id).with_for_update().first()  # CHECK EXISTING PAYMENT RECORD
-        if existing_payment and existing_payment.status == "success":                               # PREVENT DUPLICATE SUCCESS PAYMENT
-            raise HTTPException(status_code=409, detail="Payment already completed for this booking")  # RETURN PAYMENT CONFLICT
-
-        event = db.query(models.Event).filter(models.Event.id == booking.event_id).first()           # FIND BOOKING EVENT
-        if not event:                                                                                # VALIDATE EVENT EXISTENCE
-            raise HTTPException(status_code=404, detail="Event not found")                           # RETURN EVENT NOT FOUND
-
-        amount = calculate_booking_amount(booking, event)                                            # CALCULATE PRICE FROM SERVER-SIDE DATA
-        if amount <= 0:                                                                              # PREVENT ZERO OR NEGATIVE PAYMENT
-            raise HTTPException(status_code=400, detail="Invalid payment amount")                   # REJECT INVALID AMOUNT
-
-        transaction_id = generate_transaction_id()                                                    # GENERATE UNIQUE TRANSACTION IDENTIFIER
-
-        while db.query(models.Payment).filter(models.Payment.transaction_id == transaction_id).first():  # PROTECT AGAINST EXTREMELY RARE ID COLLISION
-            transaction_id = generate_transaction_id()                                                # GENERATE ANOTHER TRANSACTION ID
-
-        payment = models.Payment(booking_id=booking.id, user_id=db_user.id, amount=amount, status="success", method=data.method, transaction_id=transaction_id)  # CREATE PAYMENT RECORD
-
-        db.add(payment)                                                                              # ADD PAYMENT TO TRANSACTION
-        booking.payment_status = "paid"                                                             # MARK BOOKING AS PAID
-
-        if booking.tickets_rel:                                                                      # UPDATE ASSOCIATED TICKETS
-            for ticket in booking.tickets_rel:                                                       # PROCESS EACH BOOKING TICKET
-                if ticket.status in {"confirmed", "active", "reserved"}:                            # PRESERVE VALID TICKET STATES
-                    ticket.status = "confirmed"                                                     # ENSURE TICKET IS CONFIRMED
-
-        db.commit()                                                                                  # COMMIT PAYMENT AND BOOKING ATOMICALLY
-        db.refresh(payment)                                                                          # REFRESH PAYMENT FROM DATABASE
-        return payment                                                                               # RETURN CREATED PAYMENT
-
-    except HTTPException:                                                                            # HANDLE EXPECTED BUSINESS ERRORS
-        db.rollback()                                                                                # ROLLBACK FAILED TRANSACTION
-        raise                                                                                       # PRESERVE ORIGINAL HTTP ERROR
-
-    except IntegrityError as exc:                                                                    # HANDLE DATABASE CONSTRAINT CONFLICTS
-        db.rollback()                                                                                # ROLLBACK CONFLICTING TRANSACTION
-        raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail="Payment could not be created because a payment already exists") from exc  # RETURN SAFE CONFLICT
-
-    except Exception as exc:                                                                         # HANDLE UNEXPECTED DATABASE ERRORS
-        db.rollback()                                                                                # ROLLBACK FAILED TRANSACTION
-        raise HTTPException(status_code=500, detail="Unable to process payment") from exc            # RETURN SAFE GENERIC ERROR
+        # Mock-only success: no external payment is processed here.
+        service = BookingService(db)
+        service.confirm_booking(booking_id=booking.id, user_id=db_user.id, commit=False)
+        transaction_id = generate_transaction_id()
+        while db.query(models.Payment.id).filter_by(transaction_id=transaction_id).first():
+            transaction_id = generate_transaction_id()
+        payment = models.Payment(booking_id=booking.id, user_id=db_user.id,
+                                 amount=amount, status=models.PAYMENT_SUCCESS,
+                                 method="mock", provider="mock", paid_at=datetime.now(timezone.utc),
+                                 transaction_id=transaction_id)
+        db.add(payment)
+        booking.payment_status = "paid"
+        db.add(models.Notification(user_id=db_user.id,
+                    message=f"Booking #{booking.id} confirmed: {booking.tickets} ticket(s) for {event.title}."))
+        db.commit()
+        db.refresh(payment)
+        return payment
+    except HTTPException:
+        db.rollback()
+        raise
+    except ValueError as exc:
+        db.rollback()
+        raise HTTPException(status_code=409, detail=str(exc)) from exc
+    except IntegrityError as exc:
+        db.rollback()
+        raise HTTPException(status_code=409, detail="Concurrent payment already exists") from exc
+    except Exception as exc:
+        db.rollback()
+        raise HTTPException(status_code=500, detail="Unable to complete mock checkout") from exc
 
 
 @router.get("/my", response_model=list[schemas.PaymentResponse])                                    # GET AUTHENTICATED USER PAYMENTS

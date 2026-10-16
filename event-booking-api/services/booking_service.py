@@ -6,14 +6,9 @@ the Booking record's own lifecycle and, on confirm, issues the actual
 redeemable Ticket rows. It does not duplicate any locking/availability logic
 - every mutation to inventory goes through InventoryService.
 
-NOT YET WIRED IN (by design, per current project decision):
-- routers/bookings.py still has its own separate booking-creation flow.
-  This service is a standalone addition for now; wiring bookings.py to call
-  into it is a deliberate later step, not done here.
-- confirm_booking() is meant to be called once payment has actually
-  succeeded (e.g. from payment.py after a successful charge). It is not
-  wired into payment.py yet either - calling it prematurely would issue
-  tickets for an unpaid booking.
+The unified /api/bookings hold endpoint and mock /api/payment/ checkout
+now call this service. For real payment integration, call confirm_booking()
+only after verifying the gateway webhook and payment amount server-side.
 """
 
 from datetime import datetime, timezone
@@ -77,7 +72,9 @@ class BookingService:
         instead of creating a new one - safe for a client to retry a
         "start checkout" request without risking a duplicate booking.
         """
-        self._get_event(event_id)
+        event = self._get_event(event_id)
+        if event.status != "published":
+            raise ValueError("Event is not published and cannot be booked")
 
         if idempotency_key:
             existing = (
@@ -86,8 +83,8 @@ class BookingService:
                 .first()
             )
             if existing:
-                if existing.user_id != user_id:
-                    raise ValueError("This idempotency key was already used by a different user")
+                if existing.user_id != user_id or existing.event_id != event_id:
+                    raise ValueError("This idempotency key belongs to another user or event")
                 return existing
 
         booking = models.Booking(
@@ -132,12 +129,13 @@ class BookingService:
     # Confirm - call AFTER payment has succeeded
     # ------------------------------------------------------------------
 
-    def confirm_booking(self, booking_id: int, user_id: int) -> models.Booking:
+    def confirm_booking(self, booking_id: int, user_id: int, commit: bool = True) -> models.Booking:
         """Lock in held inventory as sold (via InventoryService) and issue a
         Ticket row for every unit purchased. Intended to run after payment
         has actually succeeded - it does not check payment status itself,
         since that decision belongs to whatever calls this (e.g. payment.py)."""
-        booking = self.inventory.confirm_inventory(booking_id=booking_id, user_id=user_id)
+        booking = self.inventory.confirm_inventory(booking_id=booking_id, user_id=user_id, commit=False)
+        self.db.flush()  # SessionLocal uses autoflush=False: persist item status before querying.
 
         # confirm_inventory() already validated ownership/state and flipped
         # inventory + booking + items to confirmed. Now issue tickets.
@@ -177,8 +175,9 @@ class BookingService:
                     created_at=now,
                 ))
 
-        self.db.commit()
-        self.db.refresh(booking)
+        if commit:
+            self.db.commit()
+            self.db.refresh(booking)
         return booking
 
     # ------------------------------------------------------------------
