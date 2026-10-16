@@ -1,6 +1,6 @@
 from pydantic import BaseModel, Field, ConfigDict  # Pydantic validation and ORM support
 from datetime import datetime  # Timestamp type
-from typing import Optional, List  # Optional values and lists
+from typing import Optional, List, Literal  # Optional values and lists
 
 
 # ============================================================
@@ -17,7 +17,7 @@ class EventCreate(BaseModel):  # Event creation request
     image_url: Optional[str] = None  # Cloudinary image URL
     category_id: Optional[int] = None  # Category ID
     category: Optional[str] = None  # Legacy category name
-    inventory_type: str = "general"  # seat, zone or general inventory
+    inventory_type: Literal["general", "zone", "seat"] = "general"  # per-event inventory model
     age_limit: Optional[str] = None
     duration: Optional[str] = None
     status: str = "published"
@@ -34,7 +34,7 @@ class EventUpdate(BaseModel):  # Event update request
     image_url: Optional[str] = None  # Cloudinary image URL
     category: Optional[str] = None  # Legacy category name
     category_id: Optional[int] = None  # Category ID
-    inventory_type: Optional[str] = None  # Inventory model
+    inventory_type: Optional[Literal["general", "zone", "seat"]] = None  # Inventory model
     age_limit: Optional[str] = None
     duration: Optional[str] = None
     status: Optional[str] = None
@@ -437,7 +437,7 @@ class BookingCheckout(BaseModel):  # Complete checkout request
 
 class CheckoutCreate(BaseModel):  # Checkout request
     booking_id: int  # Booking being checked out
-    method: str = "mock"  # Payment method
+    method: Literal["mock"] = "mock"  # Demo only; real gateway requires verified webhook
 
 
 class BookingDetailResponse(BaseModel):  # Detailed booking response
@@ -462,7 +462,7 @@ class BookingDetailResponse(BaseModel):  # Detailed booking response
 
 class PaymentCreate(BaseModel):  # Legacy payment request
     booking_id: int  # Booking ID
-    method: str = "mock"  # Payment method
+    method: Literal["mock"] = "mock"  # Demo only; real gateway requires verified webhook
 
 
 class PaymentResponse(BaseModel):  # Payment response

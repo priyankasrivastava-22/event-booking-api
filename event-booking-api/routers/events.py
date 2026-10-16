@@ -1,4 +1,5 @@
 from fastapi import APIRouter, Depends, HTTPException, UploadFile, File
+from datetime import datetime, timezone
 import cloudinary.uploader
 from core.cloudinary_config import cloudinary
 from sqlalchemy.orm import Session
@@ -27,6 +28,8 @@ def create_ticket_type(
     if not event:
         raise HTTPException(status_code=404, detail="Event not found")
 
+    if event.inventory_type != models.INVENTORY_GENERAL:
+        raise HTTPException(status_code=400, detail="Only general-admission events accept pass ticket types")
     db_ticket_type = models.TicketType(
         event_id=event_id,
         zone_id=ticket_type.zone_id,
@@ -63,6 +66,10 @@ def delete_ticket_type(
     if not ticket_type:
         raise HTTPException(status_code=404, detail="Ticket type not found")
 
+    if ticket_type.sold_count or ticket_type.locked_count:
+        raise HTTPException(status_code=409, detail="Cannot delete a ticket type with holds or sales")
+    if ticket_type.inventory and ticket_type.inventory.booking_items:
+        raise HTTPException(status_code=409, detail="Ticket type has booking history")
     db.delete(ticket_type)
     db.commit()
     return {"message": "deleted"}
@@ -109,7 +116,13 @@ def _build_seat_inventory(db: Session, event: models.Event) -> dict:
                     "row_label": row.row_label,
                     "row_number": row.row_number,
                     "zone_id": zone.id,
-                    "status": seat.status,
+                    "zone_name": zone.name,
+                    "zone_code": zone.code,
+                    "status": (models.SEAT_AVAILABLE
+                               if seat.inventory and seat.inventory.status == models.INVENTORY_LOCKED
+                               and seat.inventory.locked_until
+                               and seat.inventory.locked_until.replace(tzinfo=seat.inventory.locked_until.tzinfo or timezone.utc) <= datetime.now(timezone.utc)
+                               else seat.status),
                     "price": seat.price,
                 })
         zones_out.append({
@@ -169,6 +182,56 @@ def _build_general_inventory(db: Session, event: models.Event) -> list:
     ]
 
 
+def _ensure_ready_to_publish(db: Session, event: models.Event):
+    """A public event needs configured inventory before customers may pay."""
+    if event.inventory_type == models.INVENTORY_SEAT:
+        ready = db.query(models.Seat.id).filter_by(event_id=event.id, is_active=True).first()
+    elif event.inventory_type == models.INVENTORY_ZONE:
+        ready = db.query(models.EventZone.id).filter(
+            models.EventZone.event_id == event.id, models.EventZone.is_active.is_(True),
+            models.EventZone.capacity > 0).first()
+    else:
+        ready = db.query(models.TicketType.id).filter(
+            models.TicketType.event_id == event.id, models.TicketType.is_active.is_(True)).first()
+    if not ready:
+        raise HTTPException(status_code=409, detail="Configure seats, zones or ticket types before publishing")
+
+
+def _public_event(event: models.Event, db: Session) -> dict:
+    """Event card values come from sellable inventory, never legacy counters."""
+    if event.inventory_type == models.INVENTORY_SEAT:
+        seating = _build_seat_inventory(db, event)
+        seats = [s for z in seating["zones"] for s in z["seats"]]
+        total = len(seats)
+        available = sum(s["status"] == models.SEAT_AVAILABLE for s in seats)
+        prices = [s["price"] for s in seats if s["status"] == models.SEAT_AVAILABLE]
+        prices = prices or [s["price"] for s in seats]
+    elif event.inventory_type == models.INVENTORY_ZONE:
+        zones = _build_zone_inventory(db, event)
+        total = sum(z["capacity"] for z in zones)
+        available = sum(z["available"] for z in zones)
+        prices = [z["base_price"] for z in zones if z["available"] > 0]
+        prices = prices or [z["base_price"] for z in zones]
+    else:
+        kinds = _build_general_inventory(db, event)
+        total = (sum(k["inventory_limit"] for k in kinds if k["inventory_limit"] is not None)
+                 if all(k["inventory_limit"] is not None for k in kinds) else None)
+        available = (sum(k["available"] for k in kinds)
+                     if all(k["available"] is not None for k in kinds) else None)
+        prices = [k["price"] for k in kinds if k["available"] is None or k["available"] > 0]
+        prices = prices or [k["price"] for k in kinds]
+    return {
+        "id": event.id, "title": event.title, "location": event.location,
+        "description": event.description, "date_time": event.date_time,
+        "price": min(prices) if prices else event.price,
+        "image_url": event.image_url, "category": event.category,
+        "category_id": event.category_id, "total_seats": total,
+        "available_seats": available, "inventory_type": event.inventory_type,
+        "age_limit": event.age_limit, "duration": event.duration,
+        "status": event.status,
+    }
+
+
 @router.post("/", response_model=schemas.EventResponse)
 def create_event(
     event: schemas.EventCreate,
@@ -209,7 +272,8 @@ def create_event(
         category_id=category_id,
         age_limit = event.age_limit or "All Ages",
         duration = event.duration,
-        status=event.status or "published",
+        status="draft",  # Set up inventory first; publish through PUT after validation.
+        inventory_type=event.inventory_type,
     )
 
     db.add(db_event)
@@ -235,7 +299,7 @@ def get_events(
 
     db: Session = Depends(get_db)
 ):
-    query = db.query(models.Event)
+    query = db.query(models.Event).filter(models.Event.status == "published")
 
     # SEARCH BY TITLE
     if title:
@@ -249,18 +313,17 @@ def get_events(
     if date:
         query = query.filter(models.Event.date_time == date)
 
-    # FILTER BY PRICE
+    # Price filters apply to actual sellable inventory pricing, not the stale
+    # legacy Event.price column. For large catalogs replace this with a joined
+    # aggregate query and SQL pagination.
+    results = [_public_event(e, db) for e in query.order_by(models.Event.id.desc()).all()]
     if min_price is not None:
-        query = query.filter(models.Event.price >= min_price)
-
+        results = [e for e in results if e["price"] >= min_price]
     if max_price is not None:
-        query = query.filter(models.Event.price <= max_price)
+        results = [e for e in results if e["price"] <= max_price]
+    skip = (max(1, page) - 1) * max(1, min(limit, 100))
+    return results[skip : skip + max(1, min(limit, 100))]
 
-    # PAGINATION
-    skip = (page - 1) * limit
-    events = query.offset(skip).limit(limit).all()
-
-    return events
 
 @router.get("/{event_id}")
 def get_event(event_id: int, db: Session = Depends(get_db)):
@@ -270,20 +333,7 @@ def get_event(event_id: int, db: Session = Depends(get_db)):
 
     # Every field event-details.js already reads stays exactly as it was -
     # this is purely additive, nothing here changes existing behavior.
-    response = {
-        "id": event.id,
-        "title": event.title,
-        "location": event.location,
-        "description": event.description,
-        "date_time": event.date_time,
-        "price": event.price,
-        "image_url": event.image_url,
-        "total_seats": event.total_seats,
-        "available_seats": event.available_seats,
-        "category": event.category,
-        "category_id": event.category_id,
-        "inventory_type": event.inventory_type,
-    }
+    response = _public_event(event, db)
 
     # Additive per-type structure so the frontend can eventually branch on
     # inventory_type. Uses the same "seat"/"zone"/"general" values already
@@ -339,13 +389,26 @@ def update_event(
     if not event:
         raise HTTPException(status_code=404, detail="Event not found")
 
-    event.title = data.title
-    event.location = data.location
-    event.price = data.price
-    event.image_url = data.image_url
+    if data.inventory_type and data.inventory_type != event.inventory_type:
+        configured = (db.query(models.Seat.id).filter_by(event_id=event_id).first()
+                      or db.query(models.EventZone.id).filter_by(event_id=event_id).first()
+                      or db.query(models.TicketType.id).filter_by(event_id=event_id).first()
+                      or db.query(models.Booking.id).filter_by(event_id=event_id).first())
+        if configured:
+            raise HTTPException(status_code=409, detail="Cannot change inventory type after seating, tickets or bookings exist")
+        event.inventory_type = data.inventory_type
+    fields = ["title", "location", "price", "image_url", "description", "date_time"]
+    if event.inventory_type == models.INVENTORY_GENERAL:
+        fields.extend(["total_seats", "available_seats"])
+    for key in fields:
+        value = getattr(data, key)
+        if value is not None:
+            setattr(event, key, value)
     if data.age_limit is not None:
         event.age_limit = data.age_limit
     if data.status is not None:
+        if data.status == "published" and event.status != "published":
+            _ensure_ready_to_publish(db, event)
         event.status = data.status
     if data.duration is not None:
         event.duration = data.duration
@@ -390,8 +453,10 @@ def delete_event(
 def upload_event_image(
     event_id: int,
     file: UploadFile = File(...),
-    db: Session = Depends(get_db)
+    db: Session = Depends(get_db),
+    user=Depends(get_current_user),
 ):
+    admin_check(user)
     event = db.query(models.Event).filter(models.Event.id == event_id).first()
     if not event:
         raise HTTPException(status_code=404, detail="Event not found")
@@ -434,7 +499,7 @@ def get_events_admin(
     events = query.order_by(models.Event.id.desc()).offset(skip).limit(limit).all()
 
     return {
-        "items": events,
+        "items": [_public_event(e, db) for e in events],
         "total": total,
         "page": page,
         "limit": limit,
@@ -468,6 +533,7 @@ def duplicate_event(
         age_limit=original.age_limit,
         duration=original.duration,
         status="draft",
+        inventory_type=original.inventory_type,
     )
 
     db.add(copy)

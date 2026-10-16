@@ -57,6 +57,10 @@ class InventoryService:
     def _now() -> datetime:
         return datetime.now(timezone.utc)
 
+    @staticmethod
+    def _as_utc(value):
+        return value.replace(tzinfo=timezone.utc) if value is not None and value.tzinfo is None else value
+
     def _hold_expiry(self) -> datetime:
         return self._now() + timedelta(minutes=INVENTORY_HOLD_MINUTES)
 
@@ -86,8 +90,13 @@ class InventoryService:
     def _assert_booking_holdable(self, booking: models.Booking, event_id: int) -> None:
         if booking.event_id != event_id:
             raise ValueError("Booking does not belong to this event")
+        event = self._get_event(event_id)
+        if event.status != "published":
+            raise ValueError("Event is not published and cannot be booked")
         if booking.status not in (models.BOOKING_PENDING, models.BOOKING_HELD):
             raise ValueError(f"Booking is '{booking.status}' and can no longer be modified")
+        if booking.expires_at and self._as_utc(booking.expires_at) <= self._now():
+            raise ValueError("Booking hold has expired")
 
     def _existing_item(self, booking_id: int, inventory_id: int) -> Optional[models.BookingItem]:
         return (
@@ -155,7 +164,7 @@ class InventoryService:
         if (
             inventory.status == models.INVENTORY_LOCKED
             and inventory.locked_until is not None
-            and inventory.locked_until <= self._now()
+            and self._as_utc(inventory.locked_until) <= self._now()
         ):
             self._release_seat_inventory(inventory)
             return True
@@ -288,7 +297,7 @@ class InventoryService:
                 expired = (
                     inv.status == models.INVENTORY_LOCKED
                     and inv.locked_until is not None
-                    and inv.locked_until <= now
+                    and self._as_utc(inv.locked_until) <= now
                 )
                 if inv.status != models.INVENTORY_AVAILABLE and not expired:
                     raise ValueError(f"Seat {seat.seat_code} is currently unavailable")
@@ -345,7 +354,11 @@ class InventoryService:
         if len(set(seat_ids)) != len(seat_ids):
             raise ValueError("Duplicate seat_ids in request")
 
-        self._get_event(event_id)
+        event = self._get_event(event_id)
+        if event.inventory_type != models.INVENTORY_SEAT:
+            raise ValueError("This event does not offer fixed seats")
+        if len(seat_ids) > 10:
+            raise ValueError("A maximum of 10 seats can be booked at once")
         booking = self._get_owned_booking(booking_id, user_id)
         self._assert_booking_holdable(booking, event_id)
 
@@ -421,6 +434,8 @@ class InventoryService:
         booking.expires_at = expiry
         booking.status = models.BOOKING_HELD
 
+        self.db.flush()
+        booking.tickets = sum(item.quantity for item in booking.items if item.status == models.BOOKING_HELD)
         self.db.commit()
         self.db.refresh(booking)
         return booking
@@ -429,7 +444,9 @@ class InventoryService:
         if quantity is None or quantity <= 0:
             raise ValueError("quantity must be a positive number")
 
-        self._get_event(event_id)
+        event = self._get_event(event_id)
+        if event.inventory_type != models.INVENTORY_ZONE:
+            raise ValueError("This event does not offer zone admission")
         booking = self._get_owned_booking(booking_id, user_id)
         self._assert_booking_holdable(booking, event_id)
 
@@ -470,6 +487,8 @@ class InventoryService:
         booking.expires_at = self._hold_expiry()
         booking.status = models.BOOKING_HELD
 
+        self.db.flush()
+        booking.tickets = sum(item.quantity for item in booking.items if item.status == models.BOOKING_HELD)
         self.db.commit()
         self.db.refresh(booking)
         return booking
@@ -478,7 +497,9 @@ class InventoryService:
         if quantity is None or quantity <= 0:
             raise ValueError("quantity must be a positive number")
 
-        self._get_event(event_id)
+        event = self._get_event(event_id)
+        if event.inventory_type != models.INVENTORY_GENERAL:
+            raise ValueError("This event does not offer general admission passes")
         booking = self._get_owned_booking(booking_id, user_id)
         self._assert_booking_holdable(booking, event_id)
 
@@ -520,6 +541,8 @@ class InventoryService:
         booking.expires_at = self._hold_expiry()
         booking.status = models.BOOKING_HELD
 
+        self.db.flush()
+        booking.tickets = sum(item.quantity for item in booking.items if item.status == models.BOOKING_HELD)
         self.db.commit()
         self.db.refresh(booking)
         return booking
@@ -651,14 +674,14 @@ class InventoryService:
     # Confirm
     # ------------------------------------------------------------------
 
-    def confirm_inventory(self, booking_id: int, user_id: int) -> models.Booking:
+    def confirm_inventory(self, booking_id: int, user_id: int, commit: bool = True) -> models.Booking:
         booking = self._get_owned_booking(booking_id, user_id)
 
         if booking.status == models.BOOKING_CONFIRMED:
             raise ValueError("Booking is already confirmed")
         if booking.status != models.BOOKING_HELD:
             raise ValueError(f"Booking must be in 'held' state to confirm (currently '{booking.status}')")
-        if booking.expires_at and booking.expires_at <= self._now():
+        if booking.expires_at and self._as_utc(booking.expires_at) <= self._now():
             raise ValueError("Hold has expired  - please select inventory again")
 
         items = (
@@ -688,7 +711,7 @@ class InventoryService:
             if inventory.inventory_type == models.INVENTORY_SEAT:
                 if inventory.status != models.INVENTORY_LOCKED or inventory.lock_token is None:
                     raise ValueError("A held seat is no longer locked  - please select again")
-                if inventory.locked_until and inventory.locked_until <= now:
+                if inventory.locked_until and self._as_utc(inventory.locked_until) <= now:
                     raise ValueError("Hold has expired  - please select inventory again")
 
                 inventory.status = models.INVENTORY_SOLD
@@ -750,8 +773,9 @@ class InventoryService:
         booking.status = models.BOOKING_CONFIRMED
         booking.expires_at = None
 
-        self.db.commit()
-        self.db.refresh(booking)
+        if commit:
+            self.db.commit()
+            self.db.refresh(booking)
         return booking
 
     # ------------------------------------------------------------------
