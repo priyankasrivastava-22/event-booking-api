@@ -1,7 +1,11 @@
 "use strict";
 // Enable strict mode
 
-const API_BASE_URL = window.API_BASE_URL || "http://127.0.0.1:8000";
+// Set window.API_BASE_URL before this script to override for your deployment.
+const API_BASE_URL = window.API_BASE_URL ||
+    ((["localhost", "127.0.0.1"].includes(window.location.hostname))
+        ? "http://127.0.0.1:8000"
+        : window.location.origin);
 // Backend API base URL — same default as event-details.js
 
 const bookingId = new URLSearchParams(window.location.search).get("id");
@@ -115,6 +119,9 @@ function renderBooking() {
     document.getElementById("totalAmountText").textContent = Number(currentBooking.total_amount || 0).toFixed(0);
 // Show total amount
     document.getElementById("payAmountText").textContent = Number(currentBooking.total_amount || 0).toFixed(0);
+    document.getElementById("selectedItems").innerHTML = (currentBooking.items || []).map(item =>
+        `<div class="summary-row"><span>${escapeHtml(item.label)} × ${item.quantity}</span><span>₹${Number(item.subtotal).toLocaleString("en-IN")}</span></div>`
+    ).join("");
 // Mirror amount onto the pay button
 
     if (currentEventData) {
@@ -155,12 +162,34 @@ function renderBooking() {
     }
 // End expired branch
 
-    document.getElementById("paymentSection").classList.remove("d-none");
-// Show the payment step for held/pending bookings
+    document.getElementById("expiredState").classList.add("d-none");
+    document.getElementById("successSection").classList.add("d-none");
+    document.getElementById("paymentSection").classList.toggle("d-none", status !== "held");
+    if (status !== "held") { showError("This checkout has no active inventory hold."); return; }
+// Show the payment step only for a real held booking
+    // The API is authoritative about whether simulated checkout is permitted.
+    configureCheckout().catch(() => {
+        document.getElementById("paymentSection").classList.add("d-none");
+        const message = document.getElementById("checkoutUnavailable");
+        if (message) { message.classList.remove("d-none"); message.textContent = "Checkout status is unavailable. Check your API connection."; }
+    });
     startHoldCountdown(currentBooking.expires_at);
 // Start (or skip, if no expiry) the countdown timer
 }
 // End renderBooking
+
+async function configureCheckout() {
+    const response = await fetch(`${API_BASE_URL}/api/config/public`);
+    if (!response.ok) throw new Error("Could not load payment configuration");
+    const configuration = await response.json();
+    const demo = configuration.checkout_mode === "demo" && configuration.payment_methods?.includes("mock");
+    document.getElementById("paymentSection").classList.toggle("d-none", !demo);
+    const message = document.getElementById("checkoutUnavailable");
+    if (message) {
+        message.classList.toggle("d-none", demo);
+        message.textContent = demo ? "" : "Checkout is disabled for this database. Use an isolated test database and enable demo checkout, or integrate a verified payment provider before taking payments.";
+    }
+}
 
 function startHoldCountdown(expiresAt) {
 // Run a live countdown against the booking's hold expiry
@@ -175,6 +204,7 @@ function startHoldCountdown(expiresAt) {
     const expiryTime = new Date(expiresAt).getTime();
 // Parse expiry into a timestamp
     if (countdownInterval) clearInterval(countdownInterval);
+    if (!Number.isFinite(expiryTime) || expiryTime <= Date.now()) { showExpiredState(); return; }
 // Clear any previous interval before starting a new one
     countdownInterval = setInterval(() => {
 // Tick every second
@@ -223,7 +253,14 @@ function showConfirmedState() {
     document.getElementById("paymentSection").classList.add("d-none");
 // Hide the payment step
     document.getElementById("successSection").classList.remove("d-none");
-// Reveal the success block
+    document.getElementById("expiredState").classList.add("d-none");
+    const tickets = currentBooking?.ticket_details || [];
+    document.getElementById("issuedTickets").innerHTML = tickets.length
+        ? tickets.map(ticket => `<div class="issued-ticket"><strong>${escapeHtml(ticket.label)}</strong><span>Ticket: ${escapeHtml(ticket.ticket_code)}</span><span>₹${Number(ticket.price_paid).toLocaleString("en-IN")}</span></div>`).join("")
+        : `<p class="text-muted">Your issued tickets will appear in My Bookings.</p>`;
+    document.getElementById("transactionText").textContent = currentBooking?.payment?.transaction_id
+        ? `Demo payment reference: ${currentBooking.payment.transaction_id}` : "";
+// Reveal confirmed ticket details
 }
 // End showConfirmedState
 
@@ -237,7 +274,7 @@ async function confirmPayment() {
 // Read selected payment method
     button.disabled = true;
 // Prevent duplicate clicks while the request is in flight
-    button.textContent = "Processing...";
+    button.textContent = "Simulating checkout...";
 // Update button label
     message.textContent = "";
 // Clear any previous message
@@ -249,21 +286,27 @@ async function confirmPayment() {
 // Call the payment endpoint with the booking ID and chosen method
         const data = await res.json().catch(() => ({}));
 // Parse response body
-        if (!res.ok) throw new Error(data.detail || "Payment could not be completed.");
+        if (!res.ok) throw new Error(data.detail || "Demo checkout could not be completed.");
 // Surface backend validation errors (e.g. hold already expired)
-        showConfirmedState();
-// Move to the success screen on a successful payment
+        await loadBooking();
+// Re-fetch the authoritative issued tickets and payment receipt after confirmation
     } catch (error) {
 // Handle payment failure
         console.error("Payment error:", error);
 // Log for debugging
-        message.textContent = error.message || "Payment failed. Please try again.";
+        message.textContent = error.message || "Demo checkout failed. Please try again.";
 // Show the failure reason
         message.classList.add("is-error");
 // Style as an error
+        const statusRes = await fetch(`${API_BASE_URL}/api/bookings/${bookingId}/status`, {headers: authHeaders()}).catch(() => null);
+        if (statusRes?.ok) {
+            currentBooking = await statusRes.json();
+            if (currentBooking.status === "confirmed") { await loadBooking(); return; }
+            if (currentBooking.status === "expired") { showExpiredState(); return; }
+        }
         button.disabled = false;
-// Re-enable the button so the user can retry
-        button.textContent = `Confirm & Pay ₹${document.getElementById("payAmountText").textContent}`;
+// Re-enable the button only if checkout is still held
+        button.textContent = `Confirm demo booking ₹${document.getElementById("payAmountText").textContent}`;
 // Restore the button label
     }
 // End try/catch
@@ -282,3 +325,6 @@ function formatDate(value) {
 // Return localized date string, matching event-details.js's formatDate
 }
 // End formatDate
+function escapeHtml(value) {
+    return String(value ?? "").replace(/[&<>"']/g, char => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[char]));
+}

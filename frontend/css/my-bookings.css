@@ -146,3 +146,5 @@ body {
     color: #94a3b8;
     border-radius: 14px 14px 0 0;
 }
+.ticket-code-list { margin: 1rem 0; display: grid; gap: .45rem; }
+.ticket-code-row { background: #24344c; border: 1px solid #506078; padding: .65rem; border-radius: 8px; display: grid; gap: .25rem; overflow-wrap: anywhere; font-size: .9rem; }
