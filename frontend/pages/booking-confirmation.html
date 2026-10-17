@@ -9,9 +9,10 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Poppins:wght@600;700&display=swap" rel="stylesheet">
-<!--<link rel="stylesheet" href="../css/footer.css">-->
+<link rel="stylesheet" href="../css/footer.css">
 <link rel="stylesheet" href="../css/event-details.css">
 <link rel="stylesheet" href="../css/booking-confirmation.css">
+    <script src="../js/config.js"></script>
 </head>
 <body>
 <div class="event-wrapper confirm-wrapper">
@@ -40,7 +41,7 @@
 
             <div id="holdTimer" class="hold-timer">
                 <i class="bi bi-hourglass-split"></i>
-                <span>Seats reserved for <strong id="holdCountdown">--:--</strong></span>
+                <span>Tickets held for <strong id="holdCountdown">--:--</strong></span>
             </div>
 
             <div id="expiredState" class="expired-banner d-none">
@@ -59,9 +60,11 @@
             <div class="summary-row"><span>Date &amp; Time</span><span id="eventDateText">—</span></div>
             <div class="summary-row"><span>Location</span><span id="eventLocationText">—</span></div>
             <div class="summary-row"><span>Tickets</span><span id="ticketQtyText">—</span></div>
+            <div id="selectedItems" class="mb-3" aria-live="polite"></div>
             <div class="summary-divider"></div>
             <div class="summary-total"><span>Total Amount</span><span>₹<span id="totalAmountText">0</span></span></div>
 
+            <div id="checkoutUnavailable" class="alert alert-warning d-none mt-3" role="status"></div>
             <div id="paymentSection" class="payment-section">
                 <h4 class="confirm-heading">Payment Method</h4>
                 <div class="payment-options">
@@ -70,14 +73,16 @@
                         <span><i class="bi bi-credit-card-2-front"></i> Mock Payment (Demo)</span>
                     </label>
                 </div>
-                <button id="payButton" class="book-btn" type="button" onclick="confirmPayment()">Confirm &amp; Pay ₹<span id="payAmountText">0</span></button>
+                <button id="payButton" class="book-btn" type="button" onclick="confirmPayment()">Complete simulated checkout ₹<span id="payAmountText">0</span></button>
                 <p id="paymentMessage" class="booking-message"></p>
             </div>
 
             <div id="successSection" class="success-section d-none">
                 <div class="success-icon"><i class="bi bi-check-lg"></i></div>
                 <h3>Booking Confirmed!</h3>
-                <p>Your tickets are booked. A confirmation has been added to your notifications.</p>
+                <p>Demo payment was successful. Your tickets have been issued and a notification was added to your account.</p>
+                <p id="transactionText" class="text-muted small"></p>
+                <div id="issuedTickets" class="ticket-results" aria-label="Issued tickets"></div>
                 <div class="success-actions">
                     <button class="action-btn" type="button" onclick="window.location.href='my-bookings.html'">View My Bookings</button>
                     <button class="hero-book-btn" type="button" onclick="window.location.href='events.html'">Explore More Events</button>
@@ -87,7 +92,7 @@
         </div>
 
         <div class="card event-snapshot">
-            <img id="snapshotImage" class="snapshot-image" src="../images/event-placeholder.jpg" alt="Event">
+            <img id="snapshotImage" class="snapshot-image" src="../images/logos/logo.png" alt="Event">
             <div class="snapshot-body">
                 <h4 id="snapshotTitle">Event</h4>
                 <p id="snapshotCategory" class="snapshot-category">—</p>
