@@ -8,6 +8,8 @@
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <link rel="stylesheet" href="../../css/admin.css">
     <link rel="stylesheet" href="../css/admin_analytics.css">
+    <script src="../../js/config.js"></script>
+    <script src="../../js/admin-auth.js"></script>
 </head>
 <body>
 
@@ -48,7 +50,7 @@
 
             <div class="analytics-stats-row">
                 <div class="analytics-stat-card">
-                    <span class="analytics-stat-label">Total Revenue</span>
+                    <span class="analytics-stat-label">Confirmed booking amount</span>
                     <h3 id="statRevenue">₹0</h3>
                     <span id="statRevenueTrend" class="analytics-stat-trend"></span>
                 </div>
@@ -72,7 +74,7 @@
             <div class="analytics-columns">
 
                 <div class="card analytics-chart-card">
-                    <h5>Revenue Over Time</h5>
+                    <h5>Confirmed booking amount over time</h5>
                     <canvas id="revenueChart" height="180"></canvas>
                 </div>
 
