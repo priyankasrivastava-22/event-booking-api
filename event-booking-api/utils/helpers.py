@@ -2,6 +2,8 @@ from database import SessionLocal
 import secrets
 import hashlib
 import uuid
+
+
 def get_db():
     db = SessionLocal()
     try:
@@ -9,9 +11,10 @@ def get_db():
     finally:
         db.close()
 
-        
+
 def generate_transaction_id():
     return str(uuid.uuid4())
+
 
 def generate_otp():
     return f"{secrets.randbelow(1000000):06d}"

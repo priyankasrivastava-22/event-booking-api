@@ -1,6 +1,6 @@
 "use strict";
 
-const API_BASE = "https://event-booking-api-gnww.onrender.com/api";
+const API_BASE = (window.API_BASE_URL || ((["localhost", "127.0.0.1"].includes(window.location.hostname)) ? "http://127.0.0.1:8000" : window.location.origin)).replace(/\/$/, "") + "/api";
 let currentPage = 1;
 
 function getToken() { return localStorage.getItem("token") || localStorage.getItem("access_token"); }

@@ -1,13 +1,13 @@
 console.log("navbar.js loaded");
 
-const NAV_API_URL = "https://event-booking-api-gnww.onrender.com/api";
+const NAV_API_URL = (window.API_BASE_URL || ((["localhost", "127.0.0.1"].includes(window.location.hostname)) ? "http://127.0.0.1:8000" : window.location.origin)).replace(/\/$/, "") + "/api";
 
 async function loadNavbar() {
     const container = document.getElementById("navbar-container");
     if (!container) return;
 
     try {
-        const res = await fetch("navbar.html");
+        const res = await fetch("../components/navbar.html");
         const html = await res.text();
         container.innerHTML = html;
         setupNavbar();
@@ -48,7 +48,7 @@ async function loadNotificationCount() {
     if (!token) return;
 
     try {
-        const res = await fetch(`${NAV_API_URL}/engagement/my-notifications`, {
+        const res = await fetch(`${NAV_API_URL}/engagement/notifications/my`, {
             headers: { Authorization: `Bearer ${token}` }
         });
 
@@ -118,7 +118,7 @@ function setupAdminProfileOption() {
     if (!profileMenu) return;
 
     const adminLink = document.createElement("a");
-    adminLink.href = "admin.html";
+    adminLink.href = "../admin/admin.html";
     adminLink.className = "dropdown-item text-white small py-2";
     adminLink.innerHTML = '<i class="bi bi-shield-lock-fill me-2"></i>Admin Panel';
 

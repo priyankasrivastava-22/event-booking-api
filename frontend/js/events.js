@@ -1,6 +1,6 @@
 console.log("JS loaded");
 
-const API_URL = "https://event-booking-api-gnww.onrender.com/api";
+const API_URL = (window.API_BASE_URL || ((["localhost", "127.0.0.1"].includes(window.location.hostname)) ? "http://127.0.0.1:8000" : window.location.origin)).replace(/\/$/, "") + "/api";
 
 // ---------------- CATEGORY IMAGE MAPPING ----------------
 function getCategoryImage(category) {
@@ -73,10 +73,13 @@ async function loadCategories() {
     }
 }
 
+function escapeHtml(value) {
+    return String(value ?? '').replace(/[&<>"']/g, ch => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[ch]));
+}
+
 // ---------------- LOAD EVENTS & APPLY FILTERS ----------------
 async function loadEvents() {
     const token = localStorage.getItem("token");
-    if (!token) return;
 
     const category =
         document.getElementById("categoryFilter")?.value || "";
@@ -84,7 +87,7 @@ async function loadEvents() {
     const search =
         document.getElementById("searchInput")?.value.trim() || "";
 
-    let url = `${API_URL}/events?limit=16`;
+    let url = `${API_URL}/events/?limit=16`;
 
     // Build query parameters
     const params = new URLSearchParams();
@@ -104,11 +107,8 @@ async function loadEvents() {
     try {
         console.log("Loading events from:", url);
 
-        const res = await fetch(url, {
-            headers: {
-                "Authorization": `Bearer ${token}`
-            }
-        });
+        const res = await fetch(url, { headers: token ? { Authorization: `Bearer ${token}` } : {} });
+        if (!res.ok) throw new Error(`Unable to load events (${res.status})`);
 
         console.log("Events API status:", res.status);
 
@@ -123,11 +123,11 @@ async function loadEvents() {
 
         container.innerHTML = "";
 
-        if (!data || data.length === 0) {
+        if (!Array.isArray(data) || data.length === 0) {
             container.innerHTML = `
                 <div class="col-12 text-center py-5">
                     <h5 class="text-white">
-                        No events found for "${category || search}"
+                        No events found for "${escapeHtml(category || search)}"
                     </h5>
                 </div>
             `;
@@ -135,89 +135,37 @@ async function loadEvents() {
         }
 
         data.forEach(event => {
-
-            const imageUrl =
-                event.image_url ||
-                getCategoryImage(event.category);
-
-            const eventData = {
-                ...event,
-                image_url: imageUrl
-            };
-
-            const liked = isInWishlist(event.id);
-
-            container.innerHTML += `
-                <div class="col">
-                    <div class="card h-100 shadow-sm border-secondary bg-dark text-white">
-
-                        <img
-                            src="${imageUrl}"
-                            class="card-img-top"
-                            style="height: 120px; object-fit: cover;"
-                        >
-
-                        <div class="card-body p-2">
-
-                            <div class="d-flex justify-content-between align-items-center">
-
-                                <h6
-                                    class="card-title mb-1 text-truncate"
-                                    style="font-size: 0.9rem;"
-                                >
-                                    ${event.title}
-                                </h6>
-
-                                <i
-                                    class="bi ${liked ? 'bi-heart-fill text-danger' : 'bi-heart'}"
-                                    style="cursor:pointer;font-size:1rem;"
-                                    onclick='toggleWishlist(${JSON.stringify(eventData)}, this)'
-                                ></i>
-
-                            </div>
-
-                            <p
-                                class="card-text small text-muted mb-2"
-                                style="font-size: 0.75rem;"
-                            >
-                                <i class="bi bi-geo-alt"></i>
-                                ${event.location}
-                            </p>
-
-                            <div class="d-flex justify-content-between align-items-center mb-2">
-
-                                <span
-                                    class="fw-bold text-primary"
-                                    style="font-size: 0.85rem;"
-                                >
-                                    ₹${event.price}
-                                </span>
-
-                                <span
-                                    class="badge bg-secondary"
-                                    style="font-size: 0.6rem;"
-                                >
-                                    ${event.category}
-                                </span>
-
-                            </div>
-
-                            <button
-                                class="btn btn-primary btn-sm w-100"
-                                style="font-size: 0.75rem;"
-                                onclick="viewEvent(${event.id}, '${imageUrl}')"
-                            >
-                                Details
-                            </button>
-
+            const imageUrl = event.image_url || getCategoryImage(event.category);
+            const card = document.createElement("div");
+            card.className = "col";
+            card.innerHTML = `
+                <div class="card h-100 shadow-sm border-secondary bg-dark text-white">
+                    <img class="card-img-top" src="${escapeHtml(imageUrl)}" alt="${escapeHtml(event.title || 'Event')}" style="height:120px;object-fit:cover">
+                    <div class="card-body p-2">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <h6 class="card-title mb-1 text-truncate" style="font-size:.9rem">${escapeHtml(event.title || 'Event')}</h6>
+                            <button class="btn btn-link btn-sm wishlist-toggle" type="button" aria-label="Toggle wishlist"><i class="bi ${isInWishlist(event.id) ? 'bi-heart-fill text-danger' : 'bi-heart'}"></i></button>
                         </div>
+                        <p class="card-text small text-muted mb-2"><i class="bi bi-geo-alt"></i> ${escapeHtml(event.location || 'Venue TBA')}</p>
+                        <div class="d-flex justify-content-between align-items-center mb-2">
+                            <span class="fw-bold text-primary">₹${Number(event.price || 0).toLocaleString('en-IN')}</span>
+                            <span class="badge bg-secondary">${escapeHtml(event.category || 'Event')}</span>
+                        </div>
+                        <button class="btn btn-primary btn-sm w-100 view-details" type="button">Details</button>
                     </div>
-                </div>
-            `;
+                </div>`;
+            card.querySelector('.view-details').addEventListener('click', () => viewEvent(event.id, imageUrl));
+            card.querySelector('.wishlist-toggle').addEventListener('click', e => toggleWishlist({...event, image_url:imageUrl}, e.currentTarget.querySelector('i')));
+            container.appendChild(card);
         });
 
     } catch (err) {
         console.error("Events loading error:", err);
+        const container = document.getElementById("eventsContainer");
+        if (container) {
+            container.innerHTML = `<div class="col-12 alert alert-warning" role="alert">Unable to load events. Check your API connection. <button class="btn btn-sm btn-outline-dark" type="button" id="retryEvents">Retry</button></div>`;
+            document.getElementById("retryEvents")?.addEventListener("click", loadEvents);
+        }
     }
 }
 
@@ -226,7 +174,7 @@ async function loadNotificationCount() {
     const token = localStorage.getItem("token");
     if (!token) return;
     try {
-        const res = await fetch(`${API_URL}/notifications/my`, {
+        const res = await fetch(`${API_URL}/engagement/notifications/my`, {
             headers: { "Authorization": `Bearer ${token}` }
         });
         const data = await res.json();
@@ -288,7 +236,7 @@ document.addEventListener("DOMContentLoaded", () => {
     loadEvents();
     loadNotificationCount();
     loadUserAvatar();
-    setInterval(loadNotificationCount, 5000);
+    setInterval(loadNotificationCount, 60000);
 
     // Profile Name update
     const user = getUserFromToken();
@@ -325,8 +273,7 @@ document.querySelectorAll(".category-card").forEach(card => {
 
 function toggleWishlist(event, icon) {
 
-    let wishlist =
-        JSON.parse(localStorage.getItem("wishlist")) || [];
+    let wishlist = safeWishlist();
 
     const exists =
         wishlist.some(item => item.id === event.id);
@@ -369,10 +316,13 @@ function toggleWishlist(event, icon) {
 
 function isInWishlist(eventId) {
 
-    const wishlist =
-        JSON.parse(localStorage.getItem("wishlist")) || [];
+    const wishlist = safeWishlist();
 
     return wishlist.some(
         item => item.id === eventId
     );
+}
+function safeWishlist() {
+    try { const list = JSON.parse(localStorage.getItem("wishlist") || "[]"); return Array.isArray(list) ? list : []; }
+    catch { localStorage.removeItem("wishlist"); return []; }
 }
