@@ -7,7 +7,10 @@ import sys  # Add project root to Python path
 
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))  # Add project root so models can be imported
 
-load_dotenv()  # Load .env variables
+from pathlib import Path
+_API_DIR = Path(__file__).resolve().parent.parent
+load_dotenv(_API_DIR / ".env")
+load_dotenv(_API_DIR.parent / ".env")  # Works from the PyCharm project root or API folder
 
 import models  # Import SQLAlchemy models
 from database import Base  # Import shared SQLAlchemy metadata

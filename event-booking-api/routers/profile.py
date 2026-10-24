@@ -60,7 +60,7 @@ def update_profile(
         db_user.bio = data["bio"]
 
     if data.get("email") is not None:
-        db_user.email = data["email"]
+        raise HTTPException(status_code=400, detail="Change your email using the verified OTP flow in Account Settings")
 
     db.commit()
     db.refresh(db_user)
@@ -120,7 +120,8 @@ def delete_account(
     if not db_user:
         raise HTTPException(status_code=404, detail="User not found")
 
-    db.delete(db_user)
+    # Preserve paid tickets, payment receipts and audit history. Deactivate instead.
+    # A separately approved retention/deletion workflow may later anonymize account data.
+    db_user.is_active = False
     db.commit()
-
-    return {"message": "Account deleted"}
+    return {"message": "Account deactivated. Existing orders remain on record."}

@@ -1,9 +1,15 @@
+import os
 from dotenv import load_dotenv
-load_dotenv()
+from pathlib import Path
+# Work whether PyCharm starts from the repository root or event-booking-api/.
+API_DIR = Path(__file__).resolve().parent
+PROJECT_DIR = API_DIR.parent
+load_dotenv(API_DIR / ".env")
+load_dotenv(PROJECT_DIR / ".env")
 from fastapi.middleware.cors import CORSMiddleware
 from utils.helpers import get_db
 from fastapi import FastAPI, Request
-from fastapi.responses import JSONResponse, FileResponse
+from fastapi.responses import JSONResponse, RedirectResponse
 from fastapi.exceptions import RequestValidationError
 from starlette.exceptions import HTTPException as StarletteHTTPException
 
@@ -24,8 +30,8 @@ from routers import (auth,events,bookings,admin,analytics,engagement,profile,pay
 app = FastAPI()
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
-    allow_credentials=True,
+    allow_origins=[origin.strip() for origin in os.getenv("CORS_ORIGINS", "http://localhost:5500,http://127.0.0.1:5500,http://localhost:63342,http://127.0.0.1:63342").split(",") if origin.strip()],
+    allow_credentials=False,
     allow_methods=["*"],
     allow_headers=["*"],
 )
@@ -39,7 +45,8 @@ async def http_exception_handler(request: Request, exc: StarletteHTTPException):
         status_code=exc.status_code,
         content={
             "success": False,
-            "error": exc.detail
+            "detail": exc.detail,  # frontend booking/login screens read the standard FastAPI key
+            "error": exc.detail,   # retained for older clients
         }
     )
 
@@ -48,7 +55,8 @@ async def validation_exception_handler(request: Request, exc: RequestValidationE
     return JSONResponse(
         status_code=422,
         content={
-            "detail": str(exc.errors())
+            "detail": "Please check the submitted fields.",
+            "errors": [{"field": ".".join(map(str, e["loc"])), "message": e["msg"]} for e in exc.errors()]
         }
     )
 
@@ -58,6 +66,7 @@ async def global_exception_handler(request: Request, exc: Exception):
         status_code=500,
         content={
             "success": False,
+            "detail": "Internal server error",
             "error": "Internal server error"
         }
     )
@@ -68,6 +77,7 @@ async def rate_limit_handler(request: Request, exc):
         status_code=429,
         content={
             "success": False,
+            "detail": "Too many requests. Try again later.",
             "error": "Too many requests. Try again later."
         }
     )
@@ -85,7 +95,8 @@ app.include_router(inventory.router)                                            
 
 @app.get("/login")
 async def login_page():
-    return FileResponse("frontend/pages/login.html")
+    frontend_url = os.getenv("FRONTEND_URL", "http://localhost:63342/Event%20Booking/frontend")
+    return RedirectResponse(f"{frontend_url}/pages/login.html")
 
 @app.get("/")
 async def root():
@@ -94,6 +105,13 @@ async def root():
         "docs": "/docs",
         "status": "success"
     }
+
+@app.get("/api/config/public", tags=["Configuration"])
+def public_config():
+    """Only return public feature flags; never leak provider keys or DATABASE_URL."""
+    demo_enabled = os.getenv("ENABLE_MOCK_PAYMENTS", "false").lower() == "true"
+    return {"checkout_mode": "demo" if demo_enabled else "disabled",
+            "payment_methods": ["mock"] if demo_enabled else []}
 
 @app.get("/warmup")
 @app.head("/warmup")

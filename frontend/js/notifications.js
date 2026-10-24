@@ -1,4 +1,4 @@
-const API_URL = "https://event-booking-api-gnww.onrender.com/api";
+const API_URL = (window.API_BASE_URL || ((["localhost", "127.0.0.1"].includes(window.location.hostname)) ? "http://127.0.0.1:8000" : window.location.origin)).replace(/\/$/, "") + "/api";
 
 // ---------------- AUTH ----------------
 function getToken() {
@@ -19,7 +19,7 @@ async function loadNotifications() {
     if (!token) return;
 
     try {
-        const res = await fetch(`${API_URL}/engagement/my-notifications`, {
+        const res = await fetch(`${API_URL}/engagement/notifications/my`, {
             headers: {
                 "Authorization": `Bearer ${token}`
             }
@@ -57,7 +57,7 @@ function renderNotifications(notifications) {
         // FIXED: Added 'notification-item', 'notif-text', and 'notif-time' classes
         const item = `
             <div class="notification-item">
-                <p class="notif-text">${n.message}</p>
+                <p class="notif-text">${escapeNotificationHtml(n.message)}</p>
                 <div class="notif-time">
                     ${new Date(n.created_at).toLocaleString()}
                 </div>
@@ -75,3 +75,4 @@ function goBack() {
 
 // ---------------- INIT ----------------
 document.addEventListener("DOMContentLoaded", loadNotifications);
+function escapeNotificationHtml(value) { return String(value ?? "").replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c])); }

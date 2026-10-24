@@ -71,7 +71,7 @@ def get_bookings_admin(
     today = datetime.utcnow().date()
     stats = {
         "today": db.query(func.count(models.Booking.id)).filter(func.date(models.Booking.booking_time) == today).scalar(),
-        "pending": db.query(func.count(models.Booking.id)).filter(models.Booking.status == "pending").scalar(),
+        "pending": db.query(func.count(models.Booking.id)).filter(models.Booking.status == models.BOOKING_HELD).scalar(),
         "completed": db.query(func.count(models.Booking.id)).filter(models.Booking.status == "confirmed").scalar(),
         "cancelled": db.query(func.count(models.Booking.id)).filter(models.Booking.status == "cancelled").scalar(),
     }
@@ -101,69 +101,24 @@ def get_bookings_admin(
 
 # ---------------- ADMIN CANCEL BOOKING ----------------
 @router.delete("/bookings/{booking_id}")
-def admin_cancel_booking(
-    booking_id: int,
-    db: Session = Depends(get_db),
-    user=Depends(get_current_user)
-):
+def admin_cancel_booking(booking_id: int, db: Session = Depends(get_db), user=Depends(get_current_user)):
     admin_check(user)
-
+    booking = db.query(models.Booking).filter_by(id=booking_id).first()
+    if not booking:
+        raise HTTPException(status_code=404, detail="Booking not found")
+    if booking.payment_status == "paid" or booking.status == models.BOOKING_CONFIRMED:
+        raise HTTPException(status_code=409, detail="Paid booking needs a verified refund workflow before cancellation")
+    from services.booking_service import BookingService
     try:
-        booking = db.query(models.Booking).filter(
-            models.Booking.id == booking_id
-        ).with_for_update().first()
-
-        if not booking:
-            raise HTTPException(status_code=404, detail="Booking not found")
-
-        if booking.status == models.BOOKING_CANCELLED:
-            raise HTTPException(status_code=400, detail="Booking is already cancelled")
-
-        # RELEASE HELD/SOLD INVENTORY BACK TO AVAILABLE (seat/zone/ticket_type architecture)
-        for item in booking.items:
-            inventory = item.inventory
-            if inventory:
-                inventory.status = models.INVENTORY_AVAILABLE
-                inventory.lock_token = None
-                inventory.locked_until = None
-                if inventory.seat_id:
-                    seat = db.query(models.Seat).filter(models.Seat.id == inventory.seat_id).first()
-                    if seat:
-                        seat.status = models.SEAT_AVAILABLE
-            item.status = models.BOOKING_CANCELLED
-
-        # CANCEL ANY ISSUED TICKETS TIED TO THIS BOOKING
-        for ticket in booking.tickets_rel:
-            if ticket.status != models.TICKET_CANCELLED:
-                ticket.status = models.TICKET_CANCELLED
-
-        # LEGACY GENERAL-ADMISSION BOOKINGS: RETURN SEATS TO THE EVENT COUNTER
-        if booking.tickets and not booking.items:
-            db.query(models.Event).filter(
-                models.Event.id == booking.event_id
-            ).update({
-                models.Event.available_seats: models.Event.available_seats + booking.tickets
-            })
-
-        booking.status = models.BOOKING_CANCELLED
-        booking.payment_status = "cancelled"
-
-        db_admin = get_db_user(user, db)
-        db.add(models.Notification(
-            user_id=db_admin.id,
-            message=f"Booking #{booking.id} cancelled by admin for event {booking.event_id}"
-        ))
-
+        cancelled = BookingService(db).cancel_booking(booking.id, booking.user_id)
+        cancelled.payment_status = "cancelled"
+        db.add(models.Notification(user_id=get_db_user(user, db).id,
+                                   message=f"Held booking #{booking.id} cancelled by admin"))
         db.commit()
-
-    except HTTPException:
+        return {"success": True, "status": cancelled.status}
+    except ValueError as exc:
         db.rollback()
-        raise
-    except Exception as exc:
-        db.rollback()
-        raise HTTPException(status_code=500, detail="Unable to cancel booking") from exc
-
-    return {"success": True, "message": "Booking cancelled by admin"}
+        raise HTTPException(status_code=409, detail=str(exc)) from exc
 
 
 #-----------------DEACTIVATE USER----------------------
