@@ -1,0 +1,21 @@
+# Copy to .env and replace placeholders. Do not commit or share the actual URI.
+# Use your ALREADY EXISTING Aiven PostgreSQL SERVICE URI, with URL-encoded password.
+# Get it from Aiven Console -> your PostgreSQL service -> connection information.
+# sslmode=require uses TLS but does not verify the server certificate.
+# For production, download Aiven's CA to ./certs/ca.pem and use
+# sslmode=verify-full&sslrootcert=/app/certs/ca.pem (test hostname compatibility).
+DATABASE_URL=postgresql://YOUR_AIVEN_USER:URL_ENCODED_PASSWORD@YOUR_AIVEN_HOST:YOUR_AIVEN_PORT/YOUR_EXISTING_DB?sslmode=require
+SECRET_KEY=GENERATE_WITH_PYTHON_SECRETS_TOKEN_URLSAFE_48
+PHONE_ENCRYPTION_KEY=GENERATE_WITH_CRYPTOGRAPHY_FERNET_GENERATE_KEY
+PHONE_HMAC_SECRET=GENERATE_WITH_PYTHON_SECRETS_TOKEN_URLSAFE_48
+CLOUDINARY_CLOUD_NAME=
+CLOUDINARY_API_KEY=
+CLOUDINARY_API_SECRET=
+# Set true only in a private, isolated development demo with synthetic bookings.
+ENABLE_MOCK_PAYMENTS=false
+CORS_ORIGINS=http://localhost:5500,http://127.0.0.1:5500,http://localhost:63342,http://127.0.0.1:63342
+# Only needed if you deliberately opt in to the local-db profile.
+POSTGRES_PASSWORD=
+
+# Use only if you intentionally run an isolated SQLite development database; never for Aiven.
+ALLOW_SQLITE_DEV=false
